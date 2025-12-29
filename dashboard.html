@@ -3,9 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexial Suite - Login</title>
+    <title>Nexial Suite - Panel de Control</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* ============================================= */
+        /* VARIABLES CSS */
+        /* ============================================= */
+        :root {
+            --primary: #7c3aed;
+            --primary-glow: #9d5bff;
+            --secondary: #00f5ff;
+            --success: #00ff41;
+            --danger: #ff0055;
+            --warning: #ffaa00;
+            --info: #00aaff;
+            
+            --dark: #0f0f23;
+            --darker: #070710;
+            --card-bg: rgba(15, 15, 35, 0.8);
+            --glass: rgba(255, 255, 255, 0.05);
+            
+            /* Colores por rol */
+            --superadmin: #ff0055;
+            --jefe: #00ff41;
+            --gerente: #ffaa00;
+            --contador: #00aaff;
+            --vendedor: #7c3aed;
+            --distribuidor: #ff00ff;
+            --almacenero: #ff5500;
+            --supervisor: #00ffff;
+        }
+        
+        /* ============================================= */
+        /* RESET Y BASE */
+        /* ============================================= */
         * {
             margin: 0;
             padding: 0;
@@ -13,40 +45,494 @@
         }
         
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #070710;
-            color: white;
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--darker);
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        /* ============================================= */
+        /* ANIMACIONES SIMPLES */
+        /* ============================================= */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* ============================================= */
+        /* ESTRUCTURA PRINCIPAL */
+        /* ============================================= */
+        #dashboardScreen {
+            display: block;
             min-height: 100vh;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* ============================================= */
+        /* COMPONENTE: SIDEBAR */
+        /* ============================================= */
+        .sidebar {
+            width: 280px;
+            background: var(--dark);
+            border-right: 1px solid rgba(124, 58, 237, 0.3);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+        }
+        
+        .company-logo {
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 1rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary);
         }
         
-        .login-container {
-            background: rgba(15, 15, 35, 0.9);
-            border-radius: 15px;
-            padding: 2.5rem;
-            width: 100%;
-            max-width: 400px;
-            border: 1px solid rgba(124, 58, 237, 0.3);
+        .user-info {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(124, 58, 237, 0.3);
         }
         
-        .logo {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .logo i {
-            font-size: 3rem;
-            color: #7c3aed;
+        .user-badge {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
             margin-bottom: 1rem;
         }
         
-        .logo h1 {
-            color: #00f5ff;
-            font-size: 1.8rem;
+        .user-badge.superadmin { background: var(--superadmin); }
+        .user-badge.jefe { background: var(--jefe); }
+        .user-badge.gerente { background: var(--gerente); }
+        .user-badge.contador { background: var(--contador); }
+        .user-badge.vendedor { background: var(--vendedor); }
+        .user-badge.distribuidor { background: var(--distribuidor); }
+        .user-badge.almacenero { background: var(--almacenero); }
+        .user-badge.supervisor { background: var(--supervisor); }
+        
+        .user-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
         }
         
+        .user-role {
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+        
+        .nav-menu {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+        
+        .nav-title {
+            color: var(--secondary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            padding-left: 1rem;
+        }
+        
+        .nav-links {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover {
+            background: rgba(124, 58, 237, 0.1);
+            color: white;
+        }
+        
+        .nav-link.active {
+            background: linear-gradient(90deg, rgba(124, 58, 237, 0.3), transparent);
+            color: var(--secondary);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(124, 58, 237, 0.3);
+            text-align: center;
+        }
+        
+        .logout-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(255, 0, 85, 0.1);
+            border: 1px solid rgba(255, 0, 85, 0.3);
+            color: var(--danger);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 0, 85, 0.2);
+        }
+        
+        /* ============================================= */
+        /* COMPONENTE: CONTENIDO PRINCIPAL */
+        /* ============================================= */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            color: var(--secondary);
+        }
+        
+        .top-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .refresh-btn {
+            background: rgba(124, 58, 237, 0.1);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            color: var(--secondary);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: rgba(124, 58, 237, 0.2);
+        }
+        
+        /* ============================================= */
+        /* COMPONENTE: TARJETAS DE ESTADÍSTICAS */
+        /* ============================================= */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-title {
+            color: var(--secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-icon {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, white, var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-change {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .stat-change.positive { color: var(--success); }
+        .stat-change.negative { color: var(--danger); }
+        
+        /* ============================================= */
+        /* COMPONENTE: TABLAS DE DATOS */
+        /* ============================================= */
+        .table-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            margin-bottom: 2rem;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .table-title {
+            color: var(--secondary);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th {
+            background: rgba(124, 58, 237, 0.1);
+            color: var(--secondary);
+            font-weight: 600;
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+        }
+        
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .data-table tr:hover {
+            background: rgba(124, 58, 237, 0.05);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-active { background: rgba(0, 255, 65, 0.1); color: var(--success); }
+        .status-pending { background: rgba(255, 170, 0, 0.1); color: var(--warning); }
+        .status-inactive { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.5); }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .action-btn.edit { background: rgba(0, 170, 255, 0.1); color: var(--info); }
+        .action-btn.delete { background: rgba(255, 0, 85, 0.1); color: var(--danger); }
+        .action-btn.view { background: rgba(0, 255, 65, 0.1); color: var(--success); }
+        
+        /* ============================================= */
+        /* COMPONENTE: MODALES */
+        /* ============================================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(7, 7, 16, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+        }
+        
+        .modal-title {
+            color: var(--secondary);
+            font-size: 1.5rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        /* ============================================= */
+        /* COMPONENTE: VISTAS POR ROL */
+        /* ============================================= */
+        .role-view {
+            display: none;
+        }
+        
+        .role-view.active {
+            display: block;
+        }
+        
+        /* ============================================= */
+        /* COMPONENTE: DIÁLOGO DE CONFIRMACIÓN */
+        /* ============================================= */
+        .confirmation-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(7, 7, 16, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .confirmation-content {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            text-align: center;
+        }
+        
+        .confirmation-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: center;
+        }
+        
+        /* ============================================= */
+        /* COMPONENTE: LOADING SPINNER */
+        /* ============================================= */
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(7, 7, 16, 0.95);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(124, 58, 237, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ============================================= */
+        /* UTILIDADES DE FORMULARIO */
+        /* ============================================= */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -54,216 +540,1812 @@
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
-            color: #00f5ff;
+            color: var(--secondary);
             font-weight: 500;
         }
         
-        .form-group input {
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 0.8rem;
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--dark);
             border: 1px solid rgba(124, 58, 237, 0.3);
             border-radius: 6px;
             color: white;
             font-size: 1rem;
-        }
-        
-        .form-group input:focus {
-            outline: none;
-            border-color: #7c3aed;
-        }
-        
-        .btn-login {
-            width: 100%;
-            padding: 0.8rem;
-            background: linear-gradient(45deg, #7c3aed, #00f5ff);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
             transition: all 0.3s;
         }
         
-        .btn-login:hover {
-            opacity: 0.9;
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
         }
         
-        .error-message {
-            background: rgba(255, 0, 85, 0.1);
-            border: 1px solid rgba(255, 0, 85, 0.3);
-            color: #ff0055;
-            padding: 0.8rem;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-            text-align: center;
-            display: none;
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
-        .loading {
-            display: none;
-            text-align: center;
-            margin-bottom: 1rem;
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
         }
         
-        .spinner {
-            border: 3px solid rgba(124, 58, 237, 0.3);
-            border-top: 3px solid #7c3aed;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        /* ============================================= */
+        /* RESPONSIVE DESIGN */
+        /* ============================================= */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+            }
+            
+            .company-logo span,
+            .user-name,
+            .user-role,
+            .nav-title,
+            .nav-link span {
+                display: none;
+            }
+            
+            .nav-link {
+                justify-content: center;
+                padding: 1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+                margin-left: 0;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: fixed;
+                bottom: 0;
+                top: auto;
+                flex-direction: row;
+                border-right: none;
+                border-top: 1px solid rgba(124, 58, 237, 0.3);
+            }
+            
+            .sidebar-header,
+            .user-info,
+            .nav-section,
+            .nav-title {
+                display: none;
+            }
+            
+            .nav-menu {
+                display: flex;
+                justify-content: space-around;
+                width: 100%;
+                padding: 0.5rem;
+            }
+            
+            .nav-links {
+                display: flex;
+                width: 100%;
+                justify-content: space-around;
+            }
+            
+            .nav-item {
+                margin: 0;
+            }
+            
+            .sidebar-footer {
+                display: none;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="logo">
-            <i class="fas fa-brain"></i>
-            <h1>NEXIAL SUITE</h1>
+    <!-- ============================================= -->
+    <!-- ESTRUCTURA PRINCIPAL DEL DASHBOARD -->
+    <!-- ============================================= -->
+    <div id="dashboardScreen">
+        <div class="dashboard-container">
+            <!-- BLOQUE: SIDEBAR -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <div class="company-logo">
+                        <i class="fas fa-brain"></i>
+                        <span id="sidebarCompanyName">NEXIAL SUITE</span>
+                    </div>
+                </div>
+                
+                <div class="user-info">
+                    <div class="user-badge" id="userBadge">CARGANDO...</div>
+                    <div class="user-name" id="userName">Cargando...</div>
+                    <div class="user-role" id="userRole">Cargando rol...</div>
+                </div>
+                
+                <nav class="nav-menu" id="navMenu">
+                    <!-- Menú dinámico por rol -->
+                </nav>
+                
+                <div class="sidebar-footer">
+                    <button class="logout-btn" onclick="showLogoutConfirmation()">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    </button>
+                </div>
+            </aside>
+
+            <!-- BLOQUE: CONTENIDO PRINCIPAL -->
+            <main class="main-content">
+                <!-- BLOQUE: BARRA SUPERIOR -->
+                <div class="top-bar">
+                    <h1 class="page-title" id="pageTitle">Panel de Control</h1>
+                    
+                    <div class="top-actions">
+                        <button class="refresh-btn" onclick="refreshData()" title="Actualizar datos">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- BLOQUE: VISTA SUPER ADMIN -->
+                <div id="viewSuperadmin" class="role-view">
+                    <!-- Contenido dinámico para Super Admin -->
+                </div>
+
+                <!-- BLOQUE: VISTA JEFE EMPRESA -->
+                <div id="viewAdminEmpresa" class="role-view">
+                    <!-- Contenido dinámico para Jefe de Empresa -->
+                </div>
+
+                <!-- BLOQUE: VISTA GERENTE (DIRECCIÓN COMERCIAL) -->
+                <div id="viewGerente" class="role-view">
+                    <!-- Contenido dinámico para Gerente/Comercial -->
+                </div>
+
+                <!-- BLOQUE: VISTA CONTADOR (ADMINISTRACIÓN Y FINANZAS) -->
+                <div id="viewContador" class="role-view">
+                    <!-- Contenido dinámico para Contador/Finanzas -->
+                </div>
+
+                <!-- BLOQUE: VISTA VENDEDOR -->
+                <div id="viewVendedor" class="role-view">
+                    <!-- Contenido dinámico para Vendedor -->
+                </div>
+
+                <!-- BLOQUE: VISTA DISTRIBUIDOR -->
+                <div id="viewDistribuidor" class="role-view">
+                    <!-- Contenido dinámico para Distribuidor -->
+                </div>
+
+                <!-- BLOQUE: VISTA ALMACENERO -->
+                <div id="viewAlmacenero" class="role-view">
+                    <!-- Contenido dinámico para Almacenero -->
+                </div>
+
+                <!-- BLOQUE: VISTA SUPERVISOR -->
+                <div id="viewSupervisor" class="role-view">
+                    <!-- Contenido dinámico para Supervisor -->
+                </div>
+            </main>
         </div>
-        
-        <div class="error-message" id="errorMessage">
-            Error de autenticación
-        </div>
-        
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p style="margin-top: 0.5rem;">Iniciando sesión...</p>
-        </div>
-        
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" placeholder="usuario@empresa.com" required>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- COMPONENTES GLOBALES -->
+    <!-- ============================================= -->
+
+    <!-- COMPONENTE: LOADING SPINNER -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- COMPONENTE: MODAL GENÉRICO -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Título del Modal</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
-            
-            <div class="form-group">
-                <label for="password">Contraseña</label>
-                <input type="password" id="password" placeholder="********" required>
+            <div id="modalContent">
+                Contenido del modal...
             </div>
-            
-            <button type="submit" class="btn-login">
-                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-            </button>
-        </form>
+        </div>
+    </div>
+
+    <!-- COMPONENTE: DIÁLOGO DE CONFIRMACIÓN -->
+    <div class="confirmation-dialog" id="confirmationDialog">
+        <div class="confirmation-content">
+            <h3 style="color: var(--secondary); margin-bottom: 1rem;" id="confirmationTitle">¿Estás seguro?</h3>
+            <p style="color: rgba(255,255,255,0.7); margin-bottom: 1.5rem;" id="confirmationMessage"></p>
+            <div class="confirmation-buttons">
+                <button class="btn btn-secondary" onclick="hideConfirmation()">
+                    Cancelar
+                </button>
+                <button class="btn btn-primary" id="confirmActionBtn">
+                    Confirmar
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Configuración Supabase
+        // =============================================
+        // CONFIGURACIÓN SUPABASE
+        // =============================================
         const SUPABASE_URL = 'https://cmrysvcahpouziogzang.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_rj4q31YiBwxLcfuswCX21g_LxsxRc_n';
         
         // Inicializar Supabase
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Elementos DOM
-        const loginForm = document.getElementById('loginForm');
-        const errorMessage = document.getElementById('errorMessage');
-        const loading = document.getElementById('loading');
+        // =============================================
+        // VARIABLES GLOBALES
+        // =============================================
+        let currentUser = null;
+        let currentSession = null;
+        let database = {
+            empresas: [],
+            usuarios: [],
+            empleados: [],
+            productos: [],
+            clientes: [],
+            ventas: [],
+            almacenes: [],
+            inventario: [],
+            rutas: [],
+            visitas: []
+        };
         
-        // Manejar login
-        loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            
-            // Validaciones básicas
-            if (!email || !password) {
-                showError('Por favor completa todos los campos');
-                return;
+        // =============================================
+        // MÓDULO: FUNCIONES DE LOADING
+        // =============================================
+        function showLoading() {
+            document.getElementById('loadingSpinner').style.display = 'flex';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+        
+        // =============================================
+        // MÓDULO: FUNCIONES DE SUPABASE
+        // =============================================
+        async function checkSession() {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                
+                if (error) throw error;
+                
+                if (!session) {
+                    window.location.href = 'index.html';
+                    return null;
+                }
+                
+                currentSession = session;
+                return session;
+            } catch (error) {
+                console.error('Error checking session:', error);
+                window.location.href = 'index.html';
+                return null;
             }
-            
-            if (!validateEmail(email)) {
-                showError('Ingresa un email válido');
-                return;
-            }
-            
-            // Mostrar loading
-            loading.style.display = 'block';
-            errorMessage.style.display = 'none';
+        }
+        
+        async function loadUserData() {
+            if (!currentSession) return null;
             
             try {
-                // Intentar autenticación con Supabase
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
+                // Obtener usuario de la tabla usuarios basado en el email
+                const { data: usuarioData, error } = await supabase
+                    .from('usuarios')
+                    .select('*')
+                    .eq('email', currentSession.user.email)
+                    .single();
                 
                 if (error) {
-                    throw error;
+                    console.error('Error loading user:', error);
+                    return null;
                 }
                 
-                // Verificar que el usuario exista en la tabla usuarios
-                const { data: usuarioData, error: userError } = await supabase
-                    .from('usuarios')
-                    .select('*')
-                    .eq('email', email)
-                    .single();
+                currentUser = {
+                    id: usuarioData.id,
+                    email: usuarioData.email,
+                    nombre: usuarioData.nombre,
+                    rol: usuarioData.rol,
+                    empresa_id: usuarioData.empresa_id,
+                    codigo: usuarioData.codigo,
+                    activo: usuarioData.activo
+                };
                 
-                if (userError || !usuarioData) {
-                    throw new Error('Usuario no encontrado en el sistema');
+                return currentUser;
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                return null;
+            }
+        }
+        
+        // =============================================
+        // MÓDULO: CARGA DE DATOS CON RLS AUTOMÁTICO
+        // =============================================
+        async function loadEmpresas() {
+            try {
+                let query = supabase.from('empresas').select('*');
+                
+                // Superadmin ve todas, otros solo ven su empresa
+                if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
+                    query = query.eq('id', currentUser.empresa_id);
                 }
                 
-                if (!usuarioData.activo) {
-                    throw new Error('Usuario inactivo. Contacta al administrador.');
+                const { data, error } = await query;
+                
+                if (error) throw error;
+                database.empresas = data || [];
+                return database.empresas;
+            } catch (error) {
+                console.error('Error loading empresas:', error);
+                showNotification('error', 'Error', 'No se pudieron cargar las empresas');
+                return [];
+            }
+        }
+        
+        async function loadUsuarios(empresaId = null) {
+            try {
+                let query = supabase.from('usuarios').select('*');
+                
+                // Filtrar según rol
+                if (currentUser.rol === 'superadmin') {
+                    // Superadmin ve todos los usuarios
+                } else if (currentUser.rol === 'admin_empresa') {
+                    // Jefe ve todos los usuarios de su empresa
+                    query = query.eq('empresa_id', currentUser.empresa_id);
+                } else if (currentUser.rol === 'gerente') {
+                    // Gerente ve vendedores, distribuidores, almacenero de su empresa
+                    query = query.eq('empresa_id', currentUser.empresa_id)
+                                 .in('rol', ['vendedor', 'distribuidor', 'almacenero']);
+                } else if (currentUser.rol === 'contador') {
+                    // Contador ve todos menos superadmin de su empresa
+                    query = query.eq('empresa_id', currentUser.empresa_id)
+                                 .neq('rol', 'superadmin');
+                } else if (currentUser.rol === 'vendedor' || currentUser.rol === 'distribuidor' || currentUser.rol === 'almacenero') {
+                    // Operativos solo se ven a sí mismos
+                    query = query.eq('id', currentUser.id);
                 }
                 
-                // Redirigir al dashboard
-                window.location.href = 'dashboard.html';
+                const { data, error } = await query;
+                
+                if (error) throw error;
+                database.usuarios = data || [];
+                return database.usuarios;
+            } catch (error) {
+                console.error('Error loading usuarios:', error);
+                showNotification('error', 'Error', 'No se pudieron cargar los usuarios');
+                return [];
+            }
+        }
+        
+        async function loadEmpleados() {
+            try {
+                let query = supabase.from('empleados').select('*');
+                
+                if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
+                    query = query.eq('empresa_id', currentUser.empresa_id);
+                }
+                
+                const { data, error } = await query;
+                
+                if (error) throw error;
+                database.empleados = data || [];
+                return database.empleados;
+            } catch (error) {
+                console.error('Error loading empleados:', error);
+                return [];
+            }
+        }
+        
+        async function loadClientes() {
+            try {
+                let query = supabase.from('clientes').select('*');
+                
+                if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
+                    query = query.eq('empresa_id', currentUser.empresa_id);
+                }
+                
+                const { data, error } = await query;
+                
+                if (error) throw error;
+                database.clientes = data || [];
+                return database.clientes;
+            } catch (error) {
+                console.error('Error loading clientes:', error);
+                return [];
+            }
+        }
+        
+        async function loadProductos() {
+            try {
+                let query = supabase.from('productos').select('*');
+                
+                if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
+                    query = query.eq('empresa_id', currentUser.empresa_id);
+                }
+                
+                const { data, error } = await query;
+                
+                if (error) throw error;
+                database.productos = data || [];
+                return database.productos;
+            } catch (error) {
+                console.error('Error loading productos:', error);
+                return [];
+            }
+        }
+        
+        async function loadRutas() {
+            try {
+                let query = supabase.from('rutas_distribucion').select('*');
+                
+                if (currentUser.rol === 'distribuidor') {
+                    // Distribuidor ve solo sus rutas
+                    query = query.eq('distribuidor_id', currentUser.id);
+                } else if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
+                    query = query.eq('empresa_id', currentUser.empresa_id);
+                }
+                
+                const { data, error } = await query;
+                
+                if (error) throw error;
+                database.rutas = data || [];
+                return database.rutas;
+            } catch (error) {
+                console.error('Error loading rutas:', error);
+                return [];
+            }
+        }
+        
+        async function loadAllData() {
+            showLoading();
+            try {
+                await Promise.all([
+                    loadEmpresas(),
+                    loadUsuarios(),
+                    loadEmpleados(),
+                    loadClientes(),
+                    loadProductos(),
+                    loadRutas()
+                ]);
+                console.log('✅ Datos cargados desde Supabase');
+                return true;
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                showNotification('error', 'Error', 'Error cargando datos');
+                return false;
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // =============================================
+        // MÓDULO: CONFIGURACIÓN DE INTERFAZ POR ROL
+        // =============================================
+        function configureInterface() {
+            console.log('🎨 Configurando interfaz para rol:', currentUser.rol);
+            
+            const roleConfigs = {
+                'superadmin': {
+                    badgeClass: 'superadmin',
+                    badgeText: 'SUPER ADMIN',
+                    userName: currentUser.nombre || 'Administrador Sistema',
+                    userRole: 'Control Total',
+                    viewId: 'viewSuperadmin',
+                    navMenu: `
+                    <div class="nav-section">
+                        <div class="nav-title">CORPORATIVO</div>
+                        <ul class="nav-links">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active" onclick="loadSuperadminDashboard()">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard Corporativo</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadEmpresasManagement()">
+                            <i class="fas fa-building"></i>
+                            <span>Gestión de Empresas</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadUsuariosManagement()">
+                            <i class="fas fa-users-cog"></i>
+                            <span>Gestión de Usuarios</span>
+                            </a>
+                        </li>
+                        </ul>
+                    </div>
+                    `,
+                    pageTitle: 'Panel de Control Corporativo'
+                },
+                'admin_empresa': {
+                    badgeClass: 'jefe',
+                    badgeText: 'JEFE EMPRESA',
+                    userName: currentUser.nombre || 'Jefe de Empresa',
+                    userRole: 'Gestión Empresarial',
+                    viewId: 'viewAdminEmpresa',
+                    navMenu: `
+                    <div class="nav-section">
+                        <div class="nav-title">EMPRESA</div>
+                        <ul class="nav-links">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active" onclick="loadJefeDashboard()">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard Empresa</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadUsuariosEmpresa()">
+                            <i class="fas fa-users"></i>
+                            <span>Gestión de Usuarios</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadGestionProductos()">
+                            <i class="fas fa-boxes"></i>
+                            <span>Gestión de Productos</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadGestionClientes()">
+                            <i class="fas fa-users"></i>
+                            <span>Gestión de Clientes</span>
+                            </a>
+                        </li>
+                        </ul>
+                    </div>
+                    `,
+                    pageTitle: 'Dashboard Empresa'
+                },
+                'gerente': {
+                    badgeClass: 'gerente',
+                    badgeText: 'DIRECCIÓN COMERCIAL',
+                    userName: currentUser.nombre || 'Dirección Comercial',
+                    userRole: 'Gestión Comercial',
+                    viewId: 'viewGerente',
+                    navMenu: `
+                    <div class="nav-section">
+                        <div class="nav-title">COMERCIAL</div>
+                        <ul class="nav-links">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active" onclick="loadGerenteDashboard()">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard Comercial</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadGestionVendedores()">
+                            <i class="fas fa-user-tie"></i>
+                            <span>Gestión de Vendedores</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadGestionDistribuidores()">
+                            <i class="fas fa-truck"></i>
+                            <span>Gestión de Distribuidores</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadGestionAlmacenes()">
+                            <i class="fas fa-warehouse"></i>
+                            <span>Gestión de Almacenes</span>
+                            </a>
+                        </li>
+                        </ul>
+                    </div>
+                    `,
+                    pageTitle: 'Dashboard Comercial'
+                },
+                'contador': {
+                    badgeClass: 'contador',
+                    badgeText: 'ADMINISTRACIÓN',
+                    userName: currentUser.nombre || 'Administración y Finanzas',
+                    userRole: 'Gestión Financiera',
+                    viewId: 'viewContador',
+                    navMenu: `
+                    <div class="nav-section">
+                        <div class="nav-title">FINANZAS</div>
+                        <ul class="nav-links">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active" onclick="loadContadorDashboard()">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard Financiero</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadGestionVentas()">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Gestión de Ventas</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadReportesFinancieros()">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Reportes Financieros</span>
+                            </a>
+                        </li>
+                        </ul>
+                    </div>
+                    `,
+                    pageTitle: 'Dashboard Administración y Finanzas'
+                },
+                'vendedor': {
+                    badgeClass: 'vendedor',
+                    badgeText: 'VENDEDOR',
+                    userName: currentUser.nombre || 'Vendedor',
+                    userRole: 'Ventas y Comercialización',
+                    viewId: 'viewVendedor',
+                    navMenu: `
+                    <div class="nav-section">
+                        <div class="nav-title">VENTAS</div>
+                        <ul class="nav-links">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active" onclick="loadVendedorDashboard()">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Mi Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadMisClientes()">
+                            <i class="fas fa-users"></i>
+                            <span>Mis Clientes</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadMisVentas()">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Mis Ventas</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadCatalogoProductos()">
+                            <i class="fas fa-box-open"></i>
+                            <span>Catálogo de Productos</span>
+                            </a>
+                        </li>
+                        </ul>
+                    </div>
+                    `,
+                    pageTitle: 'Dashboard Vendedor'
+                },
+                'distribuidor': {
+                    badgeClass: 'distribuidor',
+                    badgeText: 'DISTRIBUIDOR',
+                    userName: currentUser.nombre || 'Distribuidor',
+                    userRole: 'Distribución y Logística',
+                    viewId: 'viewDistribuidor',
+                    navMenu: `
+                    <div class="nav-section">
+                        <div class="nav-title">DISTRIBUCIÓN</div>
+                        <ul class="nav-links">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active" onclick="loadDistribuidorDashboard()">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Mi Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadMisRutas()">
+                            <i class="fas fa-route"></i>
+                            <span>Mis Rutas</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadMisVisitas()">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Mis Visitas</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadMiUbicacion()">
+                            <i class="fas fa-map-pin"></i>
+                            <span>Mi Ubicación</span>
+                            </a>
+                        </li>
+                        </ul>
+                    </div>
+                    `,
+                    pageTitle: 'Dashboard Distribuidor'
+                },
+                'almacenero': {
+                    badgeClass: 'almacenero',
+                    badgeText: 'ALMACÉN',
+                    userName: currentUser.nombre || 'Almacén',
+                    userRole: 'Gestión de Inventario',
+                    viewId: 'viewAlmacenero',
+                    navMenu: `
+                    <div class="nav-section">
+                        <div class="nav-title">ALMACÉN</div>
+                        <ul class="nav-links">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active" onclick="loadAlmaceneroDashboard()">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard Almacén</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadGestionInventario()">
+                            <i class="fas fa-boxes"></i>
+                            <span>Gestión de Inventario</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadEntradasSalidas()">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>Entradas y Salidas</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadReportesInventario()">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>Reportes de Inventario</span>
+                            </a>
+                        </li>
+                        </ul>
+                    </div>
+                    `,
+                    pageTitle: 'Dashboard Almacén'
+                },
+                'supervisor': {
+                    badgeClass: 'supervisor',
+                    badgeText: 'SUPERVISOR',
+                    userName: currentUser.nombre || 'Supervisor',
+                    userRole: 'Supervisión y Control',
+                    viewId: 'viewSupervisor',
+                    navMenu: `
+                    <div class="nav-section">
+                        <div class="nav-title">SUPERVISIÓN</div>
+                        <ul class="nav-links">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active" onclick="loadSupervisorDashboard()">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard Supervisor</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadMonitoreoEquipos()">
+                            <i class="fas fa-user-check"></i>
+                            <span>Monitoreo de Equipos</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="loadReportesSupervision()">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Reportes de Supervisión</span>
+                            </a>
+                        </li>
+                        </ul>
+                    </div>
+                    `,
+                    pageTitle: 'Dashboard Supervisor'
+                }
+            };
+            
+            const config = roleConfigs[currentUser.rol] || roleConfigs.superadmin;
+            
+            document.getElementById('userBadge').className = `user-badge ${config.badgeClass}`;
+            document.getElementById('userBadge').textContent = config.badgeText;
+            document.getElementById('userName').textContent = config.userName;
+            document.getElementById('userRole').textContent = config.userRole;
+            
+            // Obtener nombre de empresa si existe
+            if (currentUser.empresa_id) {
+                const empresa = database.empresas.find(e => e.id === currentUser.empresa_id);
+                if (empresa) {
+                    document.getElementById('sidebarCompanyName').textContent = empresa.nombre || 'NEXIAL SUITE';
+                }
+            }
+            
+            document.getElementById('navMenu').innerHTML = config.navMenu;
+            document.getElementById('pageTitle').textContent = config.pageTitle;
+            
+            // Ocultar todas las vistas y mostrar solo la del rol actual
+            document.querySelectorAll('.role-view').forEach(view => {
+                view.classList.remove('active');
+                view.innerHTML = '';
+            });
+            
+            const activeView = document.getElementById(config.viewId);
+            activeView.classList.add('active');
+            
+            // Cargar dashboard según rol
+            setTimeout(() => {
+                if (currentUser.rol === 'superadmin') {
+                    loadSuperadminDashboard();
+                } else if (currentUser.rol === 'admin_empresa') {
+                    loadJefeDashboard();
+                } else if (currentUser.rol === 'gerente') {
+                    loadGerenteDashboard();
+                } else if (currentUser.rol === 'contador') {
+                    loadContadorDashboard();
+                } else if (currentUser.rol === 'vendedor') {
+                    loadVendedorDashboard();
+                } else if (currentUser.rol === 'distribuidor') {
+                    loadDistribuidorDashboard();
+                } else if (currentUser.rol === 'almacenero') {
+                    loadAlmaceneroDashboard();
+                } else if (currentUser.rol === 'supervisor') {
+                    loadSupervisorDashboard();
+                }
+            }, 100);
+        }
+        
+        // =============================================
+        // MÓDULO: DASHBOARD SUPER ADMIN
+        // =============================================
+        async function loadSuperadminDashboard() {
+            const empresasCount = database.empresas.length;
+            const usuariosCount = database.usuarios.length;
+            const empleadosCount = database.empleados.length;
+            const productosCount = database.productos.length;
+            
+            document.getElementById('viewSuperadmin').innerHTML = `
+                <div class="stats-grid fade-in">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Empresas Activas</div>
+                            <div class="stat-icon"><i class="fas fa-building"></i></div>
+                        </div>
+                        <div class="stat-value">${empresasCount}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> Total registradas
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Usuarios Totales</div>
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        </div>
+                        <div class="stat-value">${usuariosCount}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> En sistema
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Empleados</div>
+                            <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
+                        </div>
+                        <div class="stat-value">${empleadosCount}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-user-plus"></i> Registrados
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Productos</div>
+                            <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+                        </div>
+                        <div class="stat-value">${productosCount}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-box"></i> En catálogo
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button class="btn btn-primary" onclick="loadEmpresasManagement()" style="margin-right: 1rem;">
+                        <i class="fas fa-building"></i> Gestionar Empresas
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadUsuariosManagement()">
+                        <i class="fas fa-users-cog"></i> Gestionar Usuarios
+                    </button>
+                </div>
+            `;
+        }
+        
+        // =============================================
+        // MÓDULO: DASHBOARD JEFE EMPRESA
+        // =============================================
+        async function loadJefeDashboard() {
+            const empresaId = currentUser.empresa_id;
+            const empresa = database.empresas.find(e => e.id === empresaId);
+            
+            if (!empresa) {
+                document.getElementById('viewAdminEmpresa').innerHTML = `
+                    <div class="table-card">
+                        <div style="padding: 3rem; text-align: center;">
+                            <i class="fas fa-building" style="font-size: 4rem; color: var(--danger); margin-bottom: 1rem;"></i>
+                            <h3 style="color: var(--danger); margin-bottom: 1rem;">Empresa no encontrada</h3>
+                            <p style="color: rgba(255,255,255,0.7);">No se encontró información de tu empresa. Contacta al administrador.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const usuariosEmpresa = database.usuarios.filter(u => u.empresa_id === empresaId);
+            const empleadosEmpresa = database.empleados.filter(e => e.empresa_id === empresaId);
+            const clientesEmpresa = database.clientes.filter(c => c.empresa_id === empresaId);
+            const productosEmpresa = database.productos.filter(p => p.empresa_id === empresaId);
+            
+            document.getElementById('viewAdminEmpresa').innerHTML = `
+                <div class="stats-grid fade-in">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Usuarios Activos</div>
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        </div>
+                        <div class="stat-value">${usuariosEmpresa.length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-user-check"></i> En tu empresa
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Empleados</div>
+                            <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
+                        </div>
+                        <div class="stat-value">${empleadosEmpresa.length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-user-plus"></i> Registrados
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Clientes</div>
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        </div>
+                        <div class="stat-value">${clientesEmpresa.length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-address-book"></i> Activos
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Productos</div>
+                            <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+                        </div>
+                        <div class="stat-value">${productosEmpresa.length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-box"></i> En inventario
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3 class="table-title">Usuarios de la Empresa</h3>
+                            <div class="table-actions">
+                                <button class="btn btn-primary" onclick="loadUsuariosEmpresa()">
+                                    <i class="fas fa-users-cog"></i> Gestionar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Rol</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${usuariosEmpresa.slice(0, 5).map(usuario => `
+                                        <tr>
+                                            <td>${usuario.nombre || 'Sin nombre'}</td>
+                                            <td>
+                                                <span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; background: ${getRoleColor(usuario.rol)}; font-size: 0.8rem;">
+                                                    ${getRoleName(usuario.rol)}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="status-badge ${usuario.activo ? 'status-active' : 'status-inactive'}">
+                                                    ${usuario.activo ? 'Activo' : 'Inactivo'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="action-btn edit" onclick="editarUsuario('${usuario.id}')" title="Editar">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                    ${usuariosEmpresa.length === 0 ? `
+                                        <tr>
+                                            <td colspan="4" style="text-align: center; padding: 1rem; color: rgba(255,255,255,0.5);">
+                                                No hay usuarios registrados
+                                            </td>
+                                        </tr>
+                                    ` : ''}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3 class="table-title">Información de la Empresa</h3>
+                            <div class="table-actions">
+                                <button class="btn btn-secondary" onclick="editarInformacionEmpresa()">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                            </div>
+                        </div>
+                        <div style="padding: 1rem;">
+                            <p><strong>Código:</strong> ${empresa.codigo || 'No registrado'}</p>
+                            <p><strong>NIT:</strong> ${empresa.nit || 'No registrado'}</p>
+                            <p><strong>Dirección:</strong> ${empresa.direccion || 'No registrada'}</p>
+                            <p><strong>Teléfono:</strong> ${empresa.telefono || 'No registrado'}</p>
+                            <p><strong>Email:</strong> ${empresa.email || 'No registrado'}</p>
+                            <p><strong>Estado:</strong> <span class="status-badge ${empresa.activa ? 'status-active' : 'status-inactive'}">${empresa.activa ? 'Activa' : 'Inactiva'}</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button class="btn btn-primary" onclick="loadUsuariosEmpresa()" style="margin-right: 1rem;">
+                        <i class="fas fa-users-cog"></i> Gestionar Usuarios
+                    </button>
+                    <button class="btn btn-primary" onclick="loadGestionProductos()" style="margin-right: 1rem;">
+                        <i class="fas fa-boxes"></i> Gestionar Productos
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadGestionClientes()">
+                        <i class="fas fa-users"></i> Gestionar Clientes
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('pageTitle').textContent = `Dashboard - ${empresa.nombre}`;
+        }
+        
+        // =============================================
+        // MÓDULO: DASHBOARD GERENTE (COMERCIAL)
+        // =============================================
+        async function loadGerenteDashboard() {
+            const empresaId = currentUser.empresa_id;
+            const empresa = database.empresas.find(e => e.id === empresaId);
+            
+            // Filtrar por roles comerciales
+            const vendedores = database.usuarios.filter(u => 
+                u.empresa_id === empresaId && u.rol === 'vendedor'
+            );
+            
+            const distribuidores = database.usuarios.filter(u => 
+                u.empresa_id === empresaId && u.rol === 'distribuidor'
+            );
+            
+            const almaceneros = database.usuarios.filter(u => 
+                u.empresa_id === empresaId && u.rol === 'almacenero'
+            );
+            
+            document.getElementById('viewGerente').innerHTML = `
+                <div class="stats-grid fade-in">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Vendedores</div>
+                            <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
+                        </div>
+                        <div class="stat-value">${vendedores.length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-user-check"></i> Activos
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Distribuidores</div>
+                            <div class="stat-icon"><i class="fas fa-truck"></i></div>
+                        </div>
+                        <div class="stat-value">${distribuidores.length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-route"></i> En ruta
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Almacenes</div>
+                            <div class="stat-icon"><i class="fas fa-warehouse"></i></div>
+                        </div>
+                        <div class="stat-value">${almaceneros.length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-box"></i> Operativos
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Empresa</div>
+                            <div class="stat-icon"><i class="fas fa-building"></i></div>
+                        </div>
+                        <div class="stat-value" style="font-size: 1.5rem;">${empresa?.nombre || 'Mi Empresa'}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-chart-line"></i> Comercial
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; text-align: center;">
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3 class="table-title">Equipo Comercial</h3>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; padding: 1rem;">
+                            <div>
+                                <h4 style="color: var(--vendedor); margin-bottom: 1rem;">Vendedores</h4>
+                                ${vendedores.map(v => `
+                                    <div style="background: rgba(124,58,237,0.1); padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                                        <strong>${v.nombre}</strong>
+                                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">${v.email}</div>
+                                        <span class="status-badge ${v.activo ? 'status-active' : 'status-inactive'}" style="font-size: 0.7rem;">
+                                            ${v.activo ? 'Activo' : 'Inactivo'}
+                                        </span>
+                                    </div>
+                                `).join('')}
+                                ${vendedores.length === 0 ? '<p style="color: rgba(255,255,255,0.5); text-align: center;">No hay vendedores</p>' : ''}
+                            </div>
+                            
+                            <div>
+                                <h4 style="color: var(--distribuidor); margin-bottom: 1rem;">Distribuidores</h4>
+                                ${distribuidores.map(d => `
+                                    <div style="background: rgba(255,0,255,0.1); padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                                        <strong>${d.nombre}</strong>
+                                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">${d.email}</div>
+                                        <span class="status-badge ${d.activo ? 'status-active' : 'status-inactive'}" style="font-size: 0.7rem;">
+                                            ${d.activo ? 'Activo' : 'Inactivo'}
+                                        </span>
+                                    </div>
+                                `).join('')}
+                                ${distribuidores.length === 0 ? '<p style="color: rgba(255,255,255,0.5); text-align: center;">No hay distribuidores</p>' : ''}
+                            </div>
+                            
+                            <div>
+                                <h4 style="color: var(--almacenero); margin-bottom: 1rem;">Almaceneros</h4>
+                                ${almaceneros.map(a => `
+                                    <div style="background: rgba(255,85,0,0.1); padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                                        <strong>${a.nombre}</strong>
+                                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">${a.email}</div>
+                                        <span class="status-badge ${a.activo ? 'status-active' : 'status-inactive'}" style="font-size: 0.7rem;">
+                                            ${a.activo ? 'Activo' : 'Inactivo'}
+                                        </span>
+                                    </div>
+                                `).join('')}
+                                ${almaceneros.length === 0 ? '<p style="color: rgba(255,255,255,0.5); text-align: center;">No hay almaceneros</p>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button class="btn btn-primary" onclick="loadGestionVendedores()" style="margin-right: 1rem;">
+                        <i class="fas fa-user-tie"></i> Gestionar Vendedores
+                    </button>
+                    <button class="btn btn-primary" onclick="loadGestionDistribuidores()" style="margin-right: 1rem;">
+                        <i class="fas fa-truck"></i> Gestionar Distribuidores
+                    </button>
+                    <button class="btn btn-primary" onclick="loadGestionAlmacenes()">
+                        <i class="fas fa-warehouse"></i> Gestionar Almacenes
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('pageTitle').textContent = `Dashboard Comercial - ${empresa?.nombre || 'Mi Empresa'}`;
+        }
+        
+        // =============================================
+        // MÓDULO: DASHBOARD DISTRIBUIDOR
+        // =============================================
+        async function loadDistribuidorDashboard() {
+            const misRutas = database.rutas.filter(r => r.distribuidor_id === currentUser.id);
+            const rutasHoy = misRutas.filter(r => new Date(r.fecha).toDateString() === new Date().toDateString());
+            const rutasPendientes = misRutas.filter(r => r.estado === 'pendiente');
+            const rutasCompletadas = misRutas.filter(r => r.estado === 'completada');
+            
+            document.getElementById('viewDistribuidor').innerHTML = `
+                <div class="stats-grid fade-in">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Rutas Hoy</div>
+                            <div class="stat-icon"><i class="fas fa-route"></i></div>
+                        </div>
+                        <div class="stat-value">${rutasHoy.length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-calendar-day"></i> Programadas
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Pendientes</div>
+                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        </div>
+                        <div class="stat-value">${rutasPendientes.length}</div>
+                        <div class="stat-change ${rutasPendientes.length > 0 ? 'negative' : 'positive'}">
+                            <i class="fas ${rutasPendientes.length > 0 ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
+                            ${rutasPendientes.length > 0 ? 'Por realizar' : 'Al día'}
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Completadas</div>
+                            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                        </div>
+                        <div class="stat-value">${rutasCompletadas.length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-trophy"></i> Finalizadas
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Total Rutas</div>
+                            <div class="stat-icon"><i class="fas fa-map-marked-alt"></i></div>
+                        </div>
+                        <div class="stat-value">${misRutas.length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-chart-line"></i> Asignadas
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3 class="table-title">Mis Rutas Recientes</h3>
+                            <div class="table-actions">
+                                <button class="btn btn-primary" onclick="loadMisRutas()">
+                                    <i class="fas fa-list"></i> Ver Todas
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Fecha</th>
+                                        <th>Clientes</th>
+                                        <th>Distancia</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${misRutas.slice(0, 5).map(ruta => `
+                                        <tr>
+                                            <td>${ruta.codigo}</td>
+                                            <td>${formatDate(ruta.fecha)}</td>
+                                            <td>${ruta.clientes_orden ? JSON.parse(ruta.clientes_orden).length : 0}</td>
+                                            <td>${ruta.distancia_total_km || 0} km</td>
+                                            <td>
+                                                <span class="status-badge ${getStatusClass(ruta.estado)}">
+                                                    ${getStatusName(ruta.estado)}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="action-btn view" onclick="verRutaDetalle('${ruta.id}')" title="Ver">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    ${ruta.estado === 'pendiente' ? `
+                                                        <button class="action-btn edit" onclick="iniciarRuta('${ruta.id}')" title="Iniciar">
+                                                            <i class="fas fa-play"></i>
+                                                        </button>
+                                                    ` : ''}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                    ${misRutas.length === 0 ? `
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.5);">
+                                                <i class="fas fa-route" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                                                No tienes rutas asignadas
+                                            </td>
+                                        </tr>
+                                    ` : ''}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button class="btn btn-primary" onclick="loadMisRutas()" style="margin-right: 1rem;">
+                        <i class="fas fa-route"></i> Mis Rutas
+                    </button>
+                    <button class="btn btn-primary" onclick="loadMisVisitas()" style="margin-right: 1rem;">
+                        <i class="fas fa-map-marker-alt"></i> Mis Visitas
+                    </button>
+                    <button class="btn btn-secondary" onclick="cargarMiUbicacion()">
+                        <i class="fas fa-map-pin"></i> Compartir Ubicación
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('pageTitle').textContent = `Dashboard Distribuidor - ${currentUser.nombre}`;
+        }
+        
+        // =============================================
+        // FUNCIONES AUXILIARES
+        // =============================================
+        function getRoleName(role) {
+            const roles = {
+                'superadmin': 'Super Admin',
+                'admin_empresa': 'Jefe Empresa',
+                'gerente': 'Gerente',
+                'contador': 'Contador',
+                'vendedor': 'Vendedor',
+                'distribuidor': 'Distribuidor',
+                'almacenero': 'Almacenero',
+                'supervisor': 'Supervisor'
+            };
+            return roles[role] || role;
+        }
+        
+        function getRoleColor(role) {
+            switch(role) {
+                case 'superadmin': return 'rgba(255,0,85,0.2)';
+                case 'admin_empresa': return 'rgba(0,255,65,0.2)';
+                case 'gerente': return 'rgba(255,170,0,0.2)';
+                case 'contador': return 'rgba(0,170,255,0.2)';
+                case 'vendedor': return 'rgba(124,58,237,0.2)';
+                case 'distribuidor': return 'rgba(255,0,255,0.2)';
+                case 'almacenero': return 'rgba(255,85,0,0.2)';
+                case 'supervisor': return 'rgba(0,255,255,0.2)';
+                default: return 'rgba(255,255,255,0.1)';
+            }
+        }
+        
+        function getStatusClass(status) {
+            switch(status) {
+                case 'pendiente': return 'status-pending';
+                case 'en_ruta': return 'status-active';
+                case 'completada': return 'status-active';
+                case 'cancelada': return 'status-inactive';
+                default: return 'status-pending';
+            }
+        }
+        
+        function getStatusName(status) {
+            switch(status) {
+                case 'pendiente': return 'Pendiente';
+                case 'en_ruta': return 'En Ruta';
+                case 'completada': return 'Completada';
+                case 'cancelada': return 'Cancelada';
+                default: return status;
+            }
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'No disponible';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('es-ES');
+            } catch (e) {
+                return dateString;
+            }
+        }
+        
+        // =============================================
+        // FUNCIONES DE ACTUALIZACIÓN
+        // =============================================
+        async function refreshData() {
+            showLoading();
+            try {
+                await loadAllData();
+                
+                // Recargar la vista actual según el rol
+                if (currentUser.rol === 'superadmin') {
+                    loadSuperadminDashboard();
+                } else if (currentUser.rol === 'admin_empresa') {
+                    loadJefeDashboard();
+                } else if (currentUser.rol === 'gerente') {
+                    loadGerenteDashboard();
+                } else if (currentUser.rol === 'contador') {
+                    loadContadorDashboard();
+                } else if (currentUser.rol === 'vendedor') {
+                    loadVendedorDashboard();
+                } else if (currentUser.rol === 'distribuidor') {
+                    loadDistribuidorDashboard();
+                } else if (currentUser.rol === 'almacenero') {
+                    loadAlmaceneroDashboard();
+                } else if (currentUser.rol === 'supervisor') {
+                    loadSupervisorDashboard();
+                }
+                
+                showNotification('success', 'Datos Actualizados', 'La información se sincronizó correctamente');
+            } catch (error) {
+                console.error('Error actualizando datos:', error);
+                showNotification('error', 'Error', 'No se pudieron actualizar los datos');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // =============================================
+        // FUNCIONES DE GESTIÓN (PLACEHOLDERS)
+        // =============================================
+        function loadEmpresasManagement() {
+            showModal('Gestión de Empresas', `
+                <div style="max-width: 800px;">
+                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-building" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>Módulo de Gestión de Empresas en desarrollo</p>
+                        <p style="font-size: 0.9rem;">Pronto podrás gestionar empresas desde aquí</p>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function loadUsuariosManagement() {
+            showModal('Gestión de Usuarios', `
+                <div style="max-width: 800px;">
+                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-users-cog" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>Módulo de Gestión de Usuarios en desarrollo</p>
+                        <p style="font-size: 0.9rem;">Pronto podrás gestionar usuarios desde aquí</p>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function loadUsuariosEmpresa() {
+            showModal('Gestión de Usuarios', `
+                <div style="max-width: 800px;">
+                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>Módulo de Gestión de Usuarios en desarrollo</p>
+                        <p style="font-size: 0.9rem;">Pronto podrás gestionar usuarios de tu empresa</p>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function loadGestionProductos() {
+            showModal('Gestión de Productos', `
+                <div style="max-width: 800px;">
+                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-boxes" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>Módulo de Gestión de Productos en desarrollo</p>
+                        <p style="font-size: 0.9rem;">Pronto podrás gestionar productos desde aquí</p>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function loadGestionClientes() {
+            showModal('Gestión de Clientes', `
+                <div style="max-width: 800px;">
+                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>Módulo de Gestión de Clientes en desarrollo</p>
+                        <p style="font-size: 0.9rem;">Pronto podrás gestionar clientes desde aquí</p>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function loadGestionVendedores() {
+            showModal('Gestión de Vendedores', `
+                <div style="max-width: 800px;">
+                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-user-tie" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>Módulo de Gestión de Vendedores en desarrollo</p>
+                        <p style="font-size: 0.9rem;">Pronto podrás gestionar vendedores desde aquí</p>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function loadGestionDistribuidores() {
+            showModal('Gestión de Distribuidores', `
+                <div style="max-width: 800px;">
+                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-truck" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>Módulo de Gestión de Distribuidores en desarrollo</p>
+                        <p style="font-size: 0.9rem;">Pronto podrás gestionar distribuidores desde aquí</p>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function loadGestionAlmacenes() {
+            showModal('Gestión de Almacenes', `
+                <div style="max-width: 800px;">
+                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-warehouse" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>Módulo de Gestión de Almacenes en desarrollo</p>
+                        <p style="font-size: 0.9rem;">Pronto podrás gestionar almacenes desde aquí</p>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function loadMisRutas() {
+            showModal('Mis Rutas', `
+                <div style="max-width: 800px;">
+                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-route" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>Módulo de Mis Rutas en desarrollo</p>
+                        <p style="font-size: 0.9rem;">Pronto podrás ver y gestionar tus rutas</p>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function loadMisVisitas() {
+            showModal('Mis Visitas', `
+                <div style="max-width: 800px;">
+                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-map-marker-alt" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <p>Módulo de Mis Visitas en desarrollo</p>
+                        <p style="font-size: 0.9rem;">Pronto podrás ver el historial de tus visitas</p>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function cargarMiUbicacion() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        showNotification('success', 'Ubicación obtenida', `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`);
+                    },
+                    (error) => {
+                        showNotification('error', 'Error de ubicación', 'No se pudo obtener la ubicación');
+                    }
+                );
+            } else {
+                showNotification('error', 'Error', 'Geolocalización no soportada');
+            }
+        }
+        
+        // =============================================
+        // DASHBOARDS RESTANTES (PLACEHOLDERS)
+        // =============================================
+        function loadContadorDashboard() {
+            document.getElementById('viewContador').innerHTML = `
+                <div class="table-card">
+                    <div style="padding: 3rem; text-align: center;">
+                        <i class="fas fa-calculator" style="font-size: 4rem; color: var(--contador); margin-bottom: 1rem;"></i>
+                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Financiero</h3>
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
+                            Módulo de Administración y Finanzas en desarrollo
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function loadVendedorDashboard() {
+            document.getElementById('viewVendedor').innerHTML = `
+                <div class="table-card">
+                    <div style="padding: 3rem; text-align: center;">
+                        <i class="fas fa-user-tie" style="font-size: 4rem; color: var(--vendedor); margin-bottom: 1rem;"></i>
+                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Vendedor</h3>
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
+                            ¡Bienvenido, ${currentUser.nombre || 'Vendedor'}!
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function loadAlmaceneroDashboard() {
+            document.getElementById('viewAlmacenero').innerHTML = `
+                <div class="table-card">
+                    <div style="padding: 3rem; text-align: center;">
+                        <i class="fas fa-warehouse" style="font-size: 4rem; color: var(--almacenero); margin-bottom: 1rem;"></i>
+                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Almacén</h3>
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
+                            ¡Bienvenido, ${currentUser.nombre || 'Almacenero'}!
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function loadSupervisorDashboard() {
+            document.getElementById('viewSupervisor').innerHTML = `
+                <div class="table-card">
+                    <div style="padding: 3rem; text-align: center;">
+                        <i class="fas fa-user-check" style="font-size: 4rem; color: var(--supervisor); margin-bottom: 1rem;"></i>
+                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Supervisor</h3>
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
+                            ¡Bienvenido, ${currentUser.nombre || 'Supervisor'}!
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // =============================================
+        // FUNCIONES DE MODALES
+        // =============================================
+        function showModal(title, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+        
+        function showConfirmation(title, message, onConfirm) {
+            document.getElementById('confirmationTitle').textContent = title;
+            document.getElementById('confirmationMessage').innerHTML = message;
+            document.getElementById('confirmationDialog').style.display = 'flex';
+            
+            const confirmBtn = document.getElementById('confirmActionBtn');
+            confirmBtn.onclick = function() {
+                hideConfirmation();
+                onConfirm();
+            };
+        }
+        
+        function hideConfirmation() {
+            document.getElementById('confirmationDialog').style.display = 'none';
+        }
+        
+        // =============================================
+        // MÓDULO: NOTIFICACIONES
+        // =============================================
+        function showNotification(type, title, message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? 'rgba(0,255,65,0.1)' : 'rgba(255,0,85,0.1)'};
+                border: 1px solid ${type === 'success' ? 'var(--success)' : 'var(--danger)'};
+                color: white;
+                padding: 1rem;
+                border-radius: 8px;
+                min-width: 300px;
+                max-width: 400px;
+                z-index: 10000;
+            `;
+            
+            toast.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                    <strong style="color: ${type === 'success' ? 'var(--success)' : 'var(--danger)'}">
+                        ${title}
+                    </strong>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; cursor: pointer;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">${message}</div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 5000);
+        }
+        
+        // =============================================
+        // MÓDULO: SESIÓN Y LOGOUT
+        // =============================================
+        function showLogoutConfirmation() {
+            showConfirmation(
+                'Cerrar Sesión',
+                '¿Estás seguro de que deseas cerrar sesión?',
+                logout
+            );
+        }
+        
+        async function logout() {
+            showLoading();
+            try {
+                const { error } = await supabase.auth.signOut();
+                if (error) throw error;
+                
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+                showNotification('error', 'Error', 'No se pudo cerrar sesión');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // =============================================
+        // MÓDULO: INICIALIZACIÓN
+        // =============================================
+        async function initializeDashboard() {
+            console.log('🔄 Inicializando dashboard...');
+            showLoading();
+            
+            try {
+                // 1. Verificar sesión
+                const session = await checkSession();
+                if (!session) return;
+                
+                // 2. Cargar datos del usuario
+                const user = await loadUserData();
+                if (!user) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                // 3. Cargar datos iniciales
+                await loadAllData();
+                
+                // 4. Configurar interfaz
+                configureInterface();
+                
+                console.log('✅ Dashboard inicializado correctamente');
+                console.log(`👤 Usuario: ${user.nombre} (${user.rol})`);
+                console.log(`🏢 Empresa ID: ${user.empresa_id}`);
                 
             } catch (error) {
-                console.error('Error de login:', error);
-                showError(error.message || 'Error al iniciar sesión. Verifica tus credenciales.');
+                console.error('Error inicializando dashboard:', error);
+                showNotification('error', 'Error', 'Error al cargar el dashboard');
             } finally {
-                loading.style.display = 'none';
-            }
-        });
-        
-        // Función para mostrar errores
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-        }
-        
-        // Validar email
-        function validateEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
-        }
-        
-        // Verificar si ya hay sesión activa
-        async function checkExistingSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                // Verificar que el usuario exista en nuestra tabla
-                const { data: usuarioData } = await supabase
-                    .from('usuarios')
-                    .select('*')
-                    .eq('email', session.user.email)
-                    .single();
-                
-                if (usuarioData && usuarioData.activo) {
-                    window.location.href = 'dashboard.html';
-                }
+                hideLoading();
             }
         }
         
-        // Inicializar
+        // =============================================
+        // EVENT LISTENERS
+        // =============================================
         document.addEventListener('DOMContentLoaded', function() {
-            checkExistingSession();
-            console.log('🔐 Login Nexial Suite - Supabase');
+            document.getElementById('modalOverlay').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+            
+            document.getElementById('confirmationDialog').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideConfirmation();
+                }
+            });
+            
+            initializeDashboard();
+            
+            console.log('🚀 Nexial Suite - Supabase Edition');
+            console.log('📊 Sistema Corporativo Multiempresa v4.0');
+            console.log('🔗 Supabase URL:', SUPABASE_URL);
         });
     </script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </body>
 </html>
