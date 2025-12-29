@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexial Suite - Sistema Empresarial Integral</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="manifest" href="pwa-manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* ============================================= */
         /* REGIÓN: VARIABLES GLOBALES */
@@ -982,7 +982,7 @@
             <i class="fas fa-envelope"></i> marcelodanielcc@gmail.com
         </p>
         <p style="margin-top: 0.5rem; opacity: 0.6; font-size: 0.9rem;">
-            Conectado a Google Sheets en tiempo real
+            Powered by Supabase - PostgreSQL Database
         </p>
     </footer>
 
@@ -1003,15 +1003,15 @@
             <div class="alert" id="loginAlert"></div>
             
             <div class="form-group">
-                <label><i class="fas fa-user"></i> Usuario o Email</label>
-                <input type="text" id="loginUser" placeholder="usuario@empresa.com" autofocus>
+                <label><i class="fas fa-user"></i> Email</label>
+                <input type="email" id="loginEmail" placeholder="usuario@empresa.com" autofocus>
             </div>
             
             <div class="form-group">
                 <label><i class="fas fa-key"></i> Contraseña</label>
                 <div class="password-wrapper">
-                    <input type="password" id="loginPass" placeholder="Tu contraseña">
-                    <button type="button" class="toggle-password" onclick="togglePassword('loginPass')">
+                    <input type="password" id="loginPassword" placeholder="Tu contraseña">
+                    <button type="button" class="toggle-password" onclick="togglePassword('loginPassword')">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
@@ -1187,9 +1187,13 @@
 
     <script>
         // =============================================
-        // REGIÓN: CONFIGURACIÓN GLOBAL
+        // CONFIGURACIÓN SUPABASE
         // =============================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzmpaT2sptrHumzOnMcJd-emyVSJji4hT3Gbs463VqFkVrRZqtMTW3TomDQTvQpbXGq/exec';
+        const SUPABASE_URL = 'https://cmrysvcahpouziogzang.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_rj4q31YiBwxLcfuswCX21g_LxsxRc_n';
+        
+        // Inicializar Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // =============================================
         // MÓDULO: UTILIDADES VISUALES
@@ -1242,7 +1246,7 @@
         function openLoginModal() {
             closeAllModals();
             document.getElementById('loginModal').style.display = 'flex';
-            document.getElementById('loginUser').focus();
+            document.getElementById('loginEmail').focus();
             document.body.style.overflow = 'hidden';
         }
         
@@ -1250,8 +1254,8 @@
         function closeLoginModal() {
             document.getElementById('loginModal').style.display = 'none';
             document.getElementById('loginAlert').style.display = 'none';
-            document.getElementById('loginUser').value = '';
-            document.getElementById('loginPass').value = '';
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
             document.body.style.overflow = 'auto';
         }
         
@@ -1310,179 +1314,15 @@
         }
         
         // =============================================
-        // MÓDULO: REGISTRO DE EMPRESA
-        // =============================================
-        
-        // FUNCIÓN: Procesar registro de empresa
-        async function registerCompany(event) {
-          event.preventDefault();
-          showLoading();
-          
-          // Validar contraseñas
-          const password = document.getElementById('adminPassword').value;
-          const confirmPassword = document.getElementById('confirmPassword').value;
-          
-          if (password !== confirmPassword) {
-            showAlert('registerAlert', 'error', 'Las contraseñas no coinciden');
-            hideLoading();
-            return;
-          }
-          
-          if (password.length < 8) {
-            showAlert('registerAlert', 'error', 'La contraseña debe tener mínimo 8 caracteres');
-            hideLoading();
-            return;
-          }
-          
-          // Recopilar datos
-          const countryCode = document.getElementById('countryCode').value;
-          const phoneNumber = document.getElementById('companyPhone').value;
-          
-          const companyData = {
-            action: 'registerCompany',
-            nombre: document.getElementById('companyName').value.trim(),
-            tipo_documento: document.getElementById('docType').value,
-            numero_documento: document.getElementById('companyDocNumber').value.trim(),
-            industria: document.getElementById('companyIndustry').value,
-            nombres: document.getElementById('names').value.trim(),
-            primer_apellido: document.getElementById('firstLastName').value.trim(),
-            segundo_apellido: document.getElementById('secondLastName').value.trim() || '',
-            email: document.getElementById('companyEmail').value.trim().toLowerCase(),
-            telefono: countryCode + ' ' + phoneNumber,
-            password: password
-          };
-          
-          // Validar campos requeridos
-          const requiredFields = ['nombre', 'tipo_documento', 'numero_documento', 'industria', 
-                                'nombres', 'primer_apellido', 'email', 'telefono'];
-          
-          for (const field of requiredFields) {
-            if (!companyData[field]) {
-              const fieldNames = {
-                'nombre': 'Razón Social',
-                'tipo_documento': 'Tipo de Documento',
-                'numero_documento': 'Número de Documento',
-                'industria': 'Tipo de Industria',
-                'nombres': 'Nombres',
-                'primer_apellido': 'Primer Apellido',
-                'email': 'Email Corporativo',
-                'telefono': 'Teléfono/Celular'
-              };
-              showAlert('registerAlert', 'error', `Por favor complete el campo: ${fieldNames[field] || field}`);
-              hideLoading();
-              return;
-            }
-          }
-          
-          // Validar documento
-          const docNumber = companyData.numero_documento;
-          if (!docNumber || docNumber.trim() === '' || docNumber.length < 3) {
-            showAlert('registerAlert', 'error', 'Por favor ingrese un número de documento válido');
-            hideLoading();
-            return;
-          }
-          
-          // Validar email
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(companyData.email)) {
-            showAlert('registerAlert', 'error', 'Por favor ingrese un email válido');
-            hideLoading();
-            return;
-          }
-          
-          // Validar teléfono
-          const phoneDigits = phoneNumber.replace(/\D/g, '');
-          if (phoneDigits.length < 7) {
-            showAlert('registerAlert', 'error', 'Por favor ingrese un número de teléfono válido (mínimo 7 dígitos)');
-            hideLoading();
-            return;
-          }
-          
-          try {
-            console.log('Enviando datos de registro:', companyData);
-            
-            // Usar GET para evitar problemas CORS (más compatible con Apps Script)
-            const params = new URLSearchParams(companyData).toString();
-            const url = `${API_URL}?${params}`;
-            
-            console.log('URL completa:', url);
-            
-            const response = await fetch(url, {
-              method: 'GET',
-              mode: 'no-cors', // Importante para evitar problemas CORS
-              cache: 'no-cache'
-            });
-            
-            // En modo no-cors no podemos leer la respuesta directamente
-            // Esperar 2 segundos para que el registro se procese
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Generar email para el jefe automáticamente
-            const emailJefe = companyData.nombres.toLowerCase().split(' ')[0] + '.' + 
-                             companyData.primer_apellido.toLowerCase().replace(/\s+/g, '') + '@' + 
-                             (companyData.email.split('@')[1] || 'nexialsuite.com');
-            
-            hideLoading();
-            
-            // Mostrar mensaje de éxito con las credenciales
-            showAlert('registerAlert', 'success', 
-              '✅ ¡Registro exitoso!<br><br>' +
-              'Tu empresa ha sido registrada correctamente.<br><br>' +
-              '<strong>Credenciales de acceso:</strong><br>' +
-              '📧 Email: ' + emailJefe + '<br>' +
-              '🔑 Contraseña: ' + password + '<br><br>' +
-              'Puedes iniciar sesión ahora con estas credenciales.');
-            
-            // Limpiar formulario después de 5 segundos y redirigir al login
-            setTimeout(() => {
-              document.getElementById('registerForm').reset();
-              closeRegisterModal();
-              openLoginModal();
-              // Rellenar el email en el login
-              document.getElementById('loginUser').value = emailJefe;
-              document.getElementById('loginPass').focus();
-            }, 5000);
-            
-          } catch (error) {
-            console.error('Error en registro:', error);
-            hideLoading();
-            
-            // Generar email para el jefe de todas formas
-            const emailJefe = companyData.nombres.toLowerCase().split(' ')[0] + '.' + 
-                             companyData.primer_apellido.toLowerCase().replace(/\s+/g, '') + '@' + 
-                             (companyData.email.split('@')[1] || 'nexialsuite.com');
-            
-            // Mostrar mensaje de éxito aunque haya error de conexión
-            // (puede que el registro sí se haya hecho pero la respuesta falló)
-            showAlert('registerAlert', 'success', 
-              '✅ ¡Registro procesado!<br><br>' +
-              'Tu solicitud ha sido recibida.<br><br>' +
-              '<strong>Credenciales de acceso:</strong><br>' +
-              '📧 Email: ' + emailJefe + '<br>' +
-              '🔑 Contraseña: ' + password + '<br><br>' +
-              'Intenta iniciar sesión con estas credenciales.');
-            
-            // Limpiar formulario después de 5 segundos
-            setTimeout(() => {
-              document.getElementById('registerForm').reset();
-              closeRegisterModal();
-              openLoginModal();
-              document.getElementById('loginUser').value = emailJefe;
-              document.getElementById('loginPass').focus();
-            }, 5000);
-          }
-        }
-        
-        // =============================================
-        // MÓDULO: LOGIN DEL SISTEMA
+        // MÓDULO: LOGIN CON SUPABASE
         // =============================================
         
         // FUNCIÓN: Procesar login
         async function login() {
-            const user = document.getElementById('loginUser').value.trim();
-            const password = document.getElementById('loginPass').value;
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
             
-            if (!user || !password) {
+            if (!email || !password) {
                 showAlert('loginAlert', 'error', 'Por favor complete todos los campos');
                 return;
             }
@@ -1490,147 +1330,229 @@
             showLoading();
             
             try {
-                // Preparar datos para la API
-                const loginData = {
-                    action: 'login',
-                    email: user,
+                // Autenticar con Supabase
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
                     password: password
-                };
-                
-                console.log('Enviando datos de login:', loginData);
-                
-                // Opción 1: Usando POST
-                const formData = new URLSearchParams();
-                formData.append('action', 'login');
-                formData.append('email', user);
-                formData.append('password', password);
-                
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: formData
                 });
                 
-                // Opción 2: Si POST falla, usar GET
-                if (!response.ok) {
-                    console.log('POST falló, intentando GET...');
-                    const getResponse = await fetch(`${API_URL}?action=login&email=${encodeURIComponent(user)}&password=${encodeURIComponent(password)}&_t=${Date.now()}`);
-                    
-                    if (getResponse.ok) {
-                        const result = await getResponse.json();
-                        processLoginResponse(result);
-                        return;
-                    }
-                } else {
-                    const result = await response.json();
-                    processLoginResponse(result);
-                    return;
-                }
-                
-                // Si ambas fallan, probar con super admin
-                if (user === 'marcelodanielcc@gmail.com' && password === '789') {
-                    processLoginResponse({
-                        success: true,
-                        user: {
-                            id: 'SUPER-ADMIN-001',
-                            email: 'marcelodanielcc@gmail.com',
-                            nombre: 'Marcelo Daniel Condori',
-                            role: 'super',
-                            empresa: 'Nexial Suite',
-                            empresa_id: 'global',
-                            activo: 'Sí'
-                        }
-                    });
-                    return;
-                }
-                
-                throw new Error('No se pudo conectar con el servidor');
-                
-            } catch (error) {
-                console.error('Error en login:', error);
                 hideLoading();
-                showAlert('loginAlert', 'error', 
-                    'Error de conexión. Por favor verifica tu internet o contacta a soporte.');
-            }
-        }
-        
-        // FUNCIÓN: Procesar respuesta de login
-        function processLoginResponse(result) {
-            hideLoading();
-            
-            if (result && result.success) {
-                // Guardar datos de usuario
-                localStorage.setItem('nexial_user', JSON.stringify(result.user));
                 
-                // Redirigir al dashboard
-                closeLoginModal();
-                window.location.href = 'dashboard.html';
-            } else {
-                // Probar con super admin como respaldo
-                const user = document.getElementById('loginUser').value.trim();
-                const password = document.getElementById('loginPass').value;
+                if (error) {
+                    console.error('Error de autenticación:', error);
+                    showAlert('loginAlert', 'error', error.message);
+                    return;
+                }
                 
-                if (user === 'marcelodanielcc@gmail.com' && password === '789') {
-                    localStorage.setItem('nexial_user', JSON.stringify({
-                        id: 'SUPER-ADMIN-001',
-                        email: 'marcelodanielcc@gmail.com',
-                        nombre: 'Marcelo Daniel Condori',
-                        role: 'super',
-                        empresa: 'Nexial Suite',
-                        empresa_id: 'global',
-                        activo: 'Sí'
-                    }));
+                if (data.user) {
+                    // Obtener información del usuario de tu tabla 'usuarios'
+                    const { data: userData, error: userError } = await supabase
+                        .from('usuarios')
+                        .select('*')
+                        .eq('email', email)
+                        .single();
+                    
+                    if (userError) {
+                        console.warn('No se encontró usuario en tabla usuarios, pero autenticación exitosa');
+                        // Crear objeto de usuario básico
+                        const userInfo = {
+                            id: data.user.id,
+                            email: data.user.email,
+                            nombre: data.user.email.split('@')[0],
+                            rol: 'admin_empresa',
+                            empresa_id: 1
+                        };
+                        localStorage.setItem('nexial_user', JSON.stringify(userInfo));
+                    } else {
+                        // Guardar información completa del usuario
+                        localStorage.setItem('nexial_user', JSON.stringify(userData));
+                    }
+                    
+                    // Redirigir al dashboard
                     closeLoginModal();
                     window.location.href = 'dashboard.html';
-                } else {
-                    showAlert('loginAlert', 'error', result?.error || 'Usuario o contraseña incorrectos');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Error en login:', error);
+                showAlert('loginAlert', 'error', 'Error de conexión. Por favor intenta nuevamente.');
+            }
+        }
+        
+        // =============================================
+        // MÓDULO: REGISTRO DE EMPRESA
+        // =============================================
+        
+        // FUNCIÓN: Procesar registro de empresa
+        async function registerCompany(event) {
+            event.preventDefault();
+            showLoading();
+            
+            // Validar contraseñas
+            const password = document.getElementById('adminPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showAlert('registerAlert', 'error', 'Las contraseñas no coinciden');
+                hideLoading();
+                return;
+            }
+            
+            if (password.length < 8) {
+                showAlert('registerAlert', 'error', 'La contraseña debe tener mínimo 8 caracteres');
+                hideLoading();
+                return;
+            }
+            
+            // Recopilar datos
+            const companyData = {
+                nombre: document.getElementById('companyName').value.trim(),
+                tipo_documento: document.getElementById('docType').value,
+                numero_documento: document.getElementById('companyDocNumber').value.trim(),
+                industria: document.getElementById('companyIndustry').value,
+                direccion: '',
+                telefono: document.getElementById('countryCode').value + ' ' + document.getElementById('companyPhone').value,
+                email: document.getElementById('companyEmail').value.trim().toLowerCase(),
+                activa: true
+            };
+            
+            const userData = {
+                nombres: document.getElementById('names').value.trim(),
+                primer_apellido: document.getElementById('firstLastName').value.trim(),
+                segundo_apellido: document.getElementById('secondLastName').value.trim(),
+                email: document.getElementById('companyEmail').value.trim().toLowerCase(),
+                password: password,
+                nombre: document.getElementById('names').value.trim() + ' ' + 
+                       document.getElementById('firstLastName').value.trim(),
+                rol: 'admin_empresa'
+            };
+            
+            // Validar campos requeridos
+            const requiredCompanyFields = ['nombre', 'tipo_documento', 'numero_documento', 'industria', 'email'];
+            const requiredUserFields = ['nombres', 'primer_apellido', 'email'];
+            
+            for (const field of requiredCompanyFields) {
+                if (!companyData[field]) {
+                    const fieldNames = {
+                        'nombre': 'Razón Social',
+                        'tipo_documento': 'Tipo de Documento',
+                        'numero_documento': 'Número de Documento',
+                        'industria': 'Tipo de Industria',
+                        'email': 'Email Corporativo'
+                    };
+                    showAlert('registerAlert', 'error', `Por favor complete el campo: ${fieldNames[field] || field}`);
+                    hideLoading();
+                    return;
+                }
+            }
+            
+            try {
+                // 1. Registrar usuario en Auth de Supabase
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: userData.email,
+                    password: userData.password,
+                    options: {
+                        data: {
+                            nombre: userData.nombre,
+                            primer_apellido: userData.primer_apellido
+                        }
+                    }
+                });
+                
+                if (authError) {
+                    throw new Error(authError.message);
+                }
+                
+                // 2. Insertar empresa en tabla empresas (el trigger generará el código automático)
+                const { data: empresaData, error: empresaError } = await supabase
+                    .from('empresas')
+                    .insert([companyData])
+                    .select()
+                    .single();
+                
+                if (empresaError) {
+                    throw new Error(`Error al crear empresa: ${empresaError.message}`);
+                }
+                
+                // 3. Insertar usuario admin en tabla usuarios (el trigger generará el código automático)
+                const { data: usuarioData, error: usuarioError } = await supabase
+                    .from('usuarios')
+                    .insert([{
+                        empresa_id: empresaData.id,
+                        email: userData.email,
+                        password_hash: userData.password, // En producción, deberías hashear esto
+                        nombre: userData.nombre,
+                        apellido: userData.primer_apellido + (userData.segundo_apellido ? ' ' + userData.segundo_apellido : ''),
+                        rol: 'admin_empresa',
+                        activo: true
+                    }])
+                    .select()
+                    .single();
+                
+                if (usuarioError) {
+                    throw new Error(`Error al crear usuario admin: ${usuarioError.message}`);
+                }
+                
+                hideLoading();
+                
+                // Mostrar mensaje de éxito
+                showAlert('registerAlert', 'success', 
+                    '✅ ¡Registro exitoso!<br><br>' +
+                    'Tu empresa ha sido registrada correctamente.<br><br>' +
+                    '<strong>Credenciales de acceso:</strong><br>' +
+                    '📧 Email: ' + userData.email + '<br>' +
+                    '🔑 Contraseña: La que ingresaste<br><br>' +
+                    'Puedes iniciar sesión ahora con estas credenciales.');
+                
+                // Limpiar formulario después de 5 segundos y redirigir al login
+                setTimeout(() => {
+                    document.getElementById('registerForm').reset();
+                    closeRegisterModal();
+                    openLoginModal();
+                    document.getElementById('loginEmail').value = userData.email;
+                    document.getElementById('loginPassword').focus();
+                }, 5000);
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Error en registro:', error);
+                showAlert('registerAlert', 'error', 
+                    'Error en el registro: ' + error.message + 
+                    '<br>Por favor contacta a soporte: marcelodanielcc@gmail.com');
+            }
+        }
+        
+        // =============================================
+        // MÓDULO: FUNCIONES AUXILIARES
+        // =============================================
+        
+        // FUNCIÓN: Recuperar contraseña
+        async function recoverPassword() {
+            const email = prompt('Ingrese su email para recuperar contraseña:');
+            if (email) {
+                try {
+                    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                        redirectTo: window.location.origin + '/reset-password.html'
+                    });
+                    
+                    if (error) {
+                        alert('Error al enviar enlace de recuperación: ' + error.message);
+                    } else {
+                        alert(`Se ha enviado un enlace de recuperación a: ${email}\n\nRevise su bandeja de entrada.`);
+                    }
+                } catch (error) {
+                    alert('Error de conexión. Por favor intenta nuevamente.');
                 }
             }
         }
         
-        // ============================================= */
-        // MÓDULO: FUNCIONES AUXILIARES */ 
-        // ============================================= */
-        
-        // FUNCIÓN: Recuperar contraseña
-        function recoverPassword() {
-            const email = prompt('Ingrese su email para recuperar contraseña:');
-            if (email) {
-                alert(`Se ha enviado un enlace de recuperación a: ${email}\n\nRevise su bandeja de entrada.`);
-            }
-        }
-        
-        // FUNCIÓN: Validar documento mientras se escribe
-        function setupDocumentValidation() {
-            const docInput = document.getElementById('companyDocNumber');
-            if (docInput) {
-                docInput.addEventListener('input', function(e) {
-                    // Permitir solo números, letras y guiones
-                    this.value = this.value.replace(/[^a-zA-Z0-9-]/g, '');
-                });
-            }
-        }
-        
-        // FUNCIÓN: Validar teléfono mientras se escribe
-        function setupPhoneValidation() {
-            const phoneInput = document.getElementById('companyPhone');
-            if (phoneInput) {
-                phoneInput.addEventListener('input', function(e) {
-                    // Permitir solo números
-                    this.value = this.value.replace(/\D/g, '');
-                });
-            }
-        }
-        
-        // ============================================= */
-        // EVENT LISTENERS */ 
-        // ============================================= */
+        // =============================================
+        // EVENT LISTENERS
+        // =============================================
         
         // Enter para login
-        document.getElementById('loginPass')?.addEventListener('keypress', function(e) {
+        document.getElementById('loginPassword')?.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') login();
         });
         
@@ -1647,35 +1569,33 @@
             }
         });
         
-        // ============================================= */
-        // INICIALIZACIÓN */ 
-        // ============================================= */
+        // =============================================
+        // INICIALIZACIÓN
+        // =============================================
         
         // FUNCIÓN: Inicializar aplicación
-        function initializeApp() {
+        async function initializeApp() {
             createParticles();
-            setupDocumentValidation();
-            setupPhoneValidation();
             
             console.log('🚀 Nexial Suite - Sistema Empresarial');
             console.log('📊 Versión: 3.5');
-            console.log('🔗 API URL:', API_URL);
-            console.log('📁 Google Sheets ID: 15lTP0GBO0RKeIKBvAmC-8UFijJKOcawYzjhO5CCndRo');
+            console.log('🔗 Supabase URL:', SUPABASE_URL);
             
-            // Verificar si hay usuario guardado
-            const savedUser = localStorage.getItem('nexial_user');
-            if (savedUser) {
-                console.log('👤 Usuario encontrado en sesión');
+            // Verificar sesión existente
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                console.log('👤 Sesión activa encontrada');
                 // Opcional: Redirigir automáticamente si ya está logueado
                 // window.location.href = 'dashboard.html';
             }
             
-            // Inicializar PWA si está disponible
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(reg => console.log('✅ Service Worker registrado:', reg))
-                    .catch(err => console.log('❌ Error Service Worker:', err));
-            }
+            // Escuchar cambios de autenticación
+            supabase.auth.onAuthStateChange((event, session) => {
+                console.log('Evento de autenticación:', event);
+                if (session) {
+                    console.log('Usuario autenticado:', session.user.email);
+                }
+            });
         }
         
         // EVENTO: Cargar página
