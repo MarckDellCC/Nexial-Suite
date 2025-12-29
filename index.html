@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexial Suite - Sistema Empresarial Integral</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* ============================================= */
@@ -825,9 +826,9 @@
             <a href="#inicio">Inicio</a>
             <a href="#caracteristicas">Sistema</a>
             <a href="#ventajas">Ventajas</a>
-            <a href="#" onclick="openRegisterModal()">Registro</a>
+            <a href="#" onclick="Nexial.openRegisterModal()">Registro</a>
         </nav>
-        <button class="cyber-btn" onclick="openLoginModal()">
+        <button class="cyber-btn" onclick="Nexial.openLoginModal()">
             <i class="fas fa-sign-in-alt"></i> Acceso
         </button>
     </header>
@@ -839,7 +840,7 @@
             Sistema integral multiempresa. Control total, máxima eficiencia.
             Apps para ventas, distribución y almacenes en tiempo real.
         </p>
-        <button class="cyber-btn" style="padding: 1.2rem 2.5rem; font-size: 1.1rem;" onclick="openRegisterModal()">
+        <button class="cyber-btn" style="padding: 1.2rem 2.5rem; font-size: 1.1rem;" onclick="Nexial.openRegisterModal()">
             <i class="fas fa-rocket"></i> COMENZAR PRUEBA GRATUITA
         </button>
     </section>
@@ -973,8 +974,8 @@
             <a href="#inicio" style="color: var(--secondary); text-decoration: none;">Inicio</a>
             <a href="#caracteristicas" style="color: var(--secondary); text-decoration: none;">Sistema</a>
             <a href="#ventajas" style="color: var(--secondary); text-decoration: none;">Ventajas</a>
-            <a href="#" onclick="openRegisterModal()" style="color: var(--secondary); text-decoration: none;">Registro</a>
-            <a href="#" onclick="openLoginModal()" style="color: var(--secondary); text-decoration: none;">Acceso</a>
+            <a href="#" onclick="Nexial.openRegisterModal()" style="color: var(--secondary); text-decoration: none;">Registro</a>
+            <a href="#" onclick="Nexial.openLoginModal()" style="color: var(--secondary); text-decoration: none;">Acceso</a>
         </div>
         
         <p>© 2025 Nexial Suite. Todos los derechos reservados.</p>
@@ -993,7 +994,7 @@
     <!-- MODAL: LOGIN -->
     <div class="cyber-modal" id="loginModal">
         <div class="modal-content">
-            <button class="close-modal" onclick="closeLoginModal()">×</button>
+            <button class="close-modal" onclick="Nexial.closeLoginModal()">×</button>
             
             <div class="modal-header">
                 <h2><i class="fas fa-sign-in-alt"></i> ACCESO AL SISTEMA</h2>
@@ -1011,25 +1012,25 @@
                 <label><i class="fas fa-key"></i> Contraseña</label>
                 <div class="password-wrapper">
                     <input type="password" id="loginPassword" placeholder="Tu contraseña">
-                    <button type="button" class="toggle-password" onclick="togglePassword('loginPassword')">
+                    <button type="button" class="toggle-password" onclick="Nexial.togglePassword('loginPassword')">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
             </div>
             
             <div style="text-align: right; margin: 1rem 0;">
-                <a href="#" onclick="recoverPassword()" style="color: var(--primary); text-decoration: none;">
+                <a href="#" onclick="Nexial.recoverPassword()" style="color: var(--primary); text-decoration: none;">
                     <i class="fas fa-unlock-alt"></i> ¿Olvidaste tu contraseña?
                 </a>
             </div>
             
-            <button class="cyber-btn" style="width: 100%; padding: 1rem; font-size: 1.1rem;" onclick="login()">
+            <button class="cyber-btn" style="width: 100%; padding: 1rem; font-size: 1.1rem;" onclick="Nexial.login()">
                 <i class="fas fa-sign-in-alt"></i> INGRESAR AL SISTEMA
             </button>
             
             <div style="text-align: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
                 <p style="color: rgba(255,255,255,0.7);">¿No tienes cuenta?</p>
-                <button class="cyber-btn btn-secondary" onclick="closeLoginModal(); openRegisterModal();" style="width: 100%; margin-top: 0.5rem;">
+                <button class="cyber-btn btn-secondary" onclick="Nexial.closeLoginModal(); Nexial.openRegisterModal();" style="width: 100%; margin-top: 0.5rem;">
                     <i class="fas fa-building"></i> REGISTRAR EMPRESA
                 </button>
             </div>
@@ -1039,7 +1040,7 @@
     <!-- MODAL: REGISTRO DE EMPRESA -->
     <div class="cyber-modal" id="registerModal">
         <div class="modal-content">
-            <button class="close-modal" onclick="closeRegisterModal()">×</button>
+            <button class="close-modal" onclick="Nexial.closeRegisterModal()">×</button>
             
             <div class="modal-header">
                 <h2><i class="fas fa-building"></i> REGISTRO DE EMPRESA</h2>
@@ -1053,7 +1054,7 @@
             
             <div class="alert" id="registerAlert"></div>
             
-            <form id="registerForm" onsubmit="registerCompany(event)">
+            <form id="registerForm" onsubmit="event.preventDefault(); Nexial.registerCompany(event);">
                 <div class="form-group">
                     <label><i class="fas fa-building"></i> Razón Social *</label>
                     <input type="text" id="companyName" required placeholder="Ej: Mi Empresa S.A.">
@@ -1150,7 +1151,7 @@
                     <label><i class="fas fa-key"></i> Contraseña Administrador *</label>
                     <div class="password-wrapper">
                         <input type="password" id="adminPassword" required minlength="8" placeholder="Mínimo 8 caracteres">
-                        <button type="button" class="toggle-password" onclick="togglePassword('adminPassword')">
+                        <button type="button" class="toggle-password" onclick="Nexial.togglePassword('adminPassword')">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
@@ -1160,7 +1161,7 @@
                     <label><i class="fas fa-key"></i> Confirmar Contraseña *</label>
                     <div class="password-wrapper">
                         <input type="password" id="confirmPassword" required minlength="8" placeholder="Repita su contraseña">
-                        <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')">
+                        <button type="button" class="toggle-password" onclick="Nexial.togglePassword('confirmPassword')">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
@@ -1169,12 +1170,12 @@
                 <div class="checkbox-container">
                     <input type="checkbox" id="termsCheckbox" required>
                     <label for="termsCheckbox">
-                        Acepto los <a href="#" onclick="showTerms()">términos y condiciones</a> del servicio y autorizo el tratamiento de mis datos según la normativa aplicable.
+                        Acepto los <a href="#" onclick="Nexial.showTerms()">términos y condiciones</a> del servicio y autorizo el tratamiento de mis datos según la normativa aplicable.
                     </label>
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" class="cyber-btn btn-secondary" onclick="closeRegisterModal()">
+                    <button type="button" class="cyber-btn btn-secondary" onclick="Nexial.closeRegisterModal()">
                         Cancelar
                     </button>
                     <button type="submit" class="cyber-btn">
@@ -1187,419 +1188,410 @@
 
     <script>
         // =============================================
-        // CONFIGURACIÓN SUPABASE
+        // OBJETO PRINCIPAL NEXIAL - Evita conflictos de variables
         // =============================================
-        const SUPABASE_URL = 'https://cmrysvcahpouziogzang.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_rj4q31YiBwxLcfuswCX21g_LxsxRc_n';
-        
-        // Inicializar Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // =============================================
-        // MÓDULO: UTILIDADES VISUALES
-        // =============================================
-        
-        // FUNCIÓN: Crear partículas de fondo
-        function createParticles() {
-            const particlesContainer = document.getElementById('particles');
-            for (let i = 0; i < 50; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                particle.style.width = Math.random() * 4 + 1 + 'px';
-                particle.style.height = particle.style.width;
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDuration = Math.random() * 20 + 10 + 's';
-                particle.style.animationDelay = Math.random() * 5 + 's';
-                particlesContainer.appendChild(particle);
-            }
-        }
-        
-        // FUNCIÓN: Mostrar loading
-        function showLoading() {
-            document.getElementById('globalLoading').style.display = 'flex';
-        }
-        
-        // FUNCIÓN: Ocultar loading
-        function hideLoading() {
-            document.getElementById('globalLoading').style.display = 'none';
-        }
-        
-        // FUNCIÓN: Mostrar alerta
-        function showAlert(elementId, type, message) {
-            const alertElement = document.getElementById(elementId);
-            alertElement.className = `alert alert-${type}`;
-            alertElement.innerHTML = message;
-            alertElement.style.display = 'block';
+        const Nexial = (function() {
+            // Variables privadas
+            const SUPABASE_URL = 'https://cmrysvcahpouziogzang.supabase.co';
+            const SUPABASE_ANON_KEY = 'sb_publishable_rj4q31YiBwxLcfuswCX21g_LxsxRc_n';
             
-            if (type === 'success') {
-                setTimeout(() => {
-                    alertElement.style.display = 'none';
-                }, 5000);
-            }
-        }
-        
-        // =============================================
-        // MÓDULO: MANEJO DE MODALES
-        // =============================================
-        
-        // FUNCIÓN: Abrir modal de login
-        function openLoginModal() {
-            closeAllModals();
-            document.getElementById('loginModal').style.display = 'flex';
-            document.getElementById('loginEmail').focus();
-            document.body.style.overflow = 'hidden';
-        }
-        
-        // FUNCIÓN: Cerrar modal de login
-        function closeLoginModal() {
-            document.getElementById('loginModal').style.display = 'none';
-            document.getElementById('loginAlert').style.display = 'none';
-            document.getElementById('loginEmail').value = '';
-            document.getElementById('loginPassword').value = '';
-            document.body.style.overflow = 'auto';
-        }
-        
-        // FUNCIÓN: Abrir modal de registro
-        function openRegisterModal() {
-            closeAllModals();
-            document.getElementById('registerModal').style.display = 'flex';
-            document.getElementById('companyName').focus();
-            document.body.style.overflow = 'hidden';
-        }
-        
-        // FUNCIÓN: Cerrar modal de registro
-        function closeRegisterModal() {
-            const modal = document.getElementById('registerModal');
-            if (modal.style.display === 'flex') {
-                modal.style.display = 'none';
-                document.getElementById('registerAlert').style.display = 'none';
-                document.getElementById('registerForm').reset();
-                document.body.style.overflow = 'auto';
-            }
-        }
-        
-        // FUNCIÓN: Cerrar todos los modales
-        function closeAllModals() {
-            const loginModal = document.getElementById('loginModal');
-            if (loginModal.style.display === 'flex') {
-                closeLoginModal();
-            }
-        }
-        
-        // =============================================
-        // MÓDULO: FUNCIONES DEL FORMULARIO
-        // =============================================
-        
-        // FUNCIÓN: Mostrar/ocultar contraseña
-        function togglePassword(fieldId) {
-            const field = document.getElementById(fieldId);
-            const button = field.parentElement.querySelector('.toggle-password');
-            const icon = button.querySelector('i');
+            // Inicializar Supabase UNA sola vez
+            let _supabase = null;
             
-            if (field.type === 'password') {
-                field.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                field.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
-        
-        // FUNCIÓN: Mostrar términos y condiciones
-        function showTerms() {
-            alert('TÉRMINOS Y CONDICIONES NEXIAL SUITE\n\n1. Uso exclusivo para empresas registradas\n2. Los datos serán tratados conforme a las leyes de protección de datos del país correspondiente\n3. Período de prueba gratuito de 30 días\n4. Cancelación en cualquier momento desde el panel de control\n5. Responsabilidad del usuario sobre la veracidad de los datos proporcionados\n6. Nexial Suite se reserva el derecho de suspender cuentas con información falsa\n\nPara ver los términos completos, contacte a soporte: marcelodanielcc@gmail.com');
-            return false;
-        }
-        
-        // =============================================
-        // MÓDULO: LOGIN CON SUPABASE
-        // =============================================
-        
-        // FUNCIÓN: Procesar login
-        async function login() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
+            // =============================================
+            // FUNCIONES PRIVADAS
+            // =============================================
             
-            if (!email || !password) {
-                showAlert('loginAlert', 'error', 'Por favor complete todos los campos');
-                return;
-            }
-            
-            showLoading();
-            
-            try {
-                // Autenticar con Supabase
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-                
-                hideLoading();
-                
-                if (error) {
-                    console.error('Error de autenticación:', error);
-                    showAlert('loginAlert', 'error', error.message);
-                    return;
+            function getSupabase() {
+                if (!_supabase) {
+                    _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 }
+                return _supabase;
+            }
+            
+            function createParticles() {
+                const particlesContainer = document.getElementById('particles');
+                if (!particlesContainer) return;
                 
-                if (data.user) {
-                    // Obtener información del usuario de tu tabla 'usuarios'
-                    const { data: userData, error: userError } = await supabase
-                        .from('usuarios')
-                        .select('*')
-                        .eq('email', email)
-                        .single();
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    particle.style.width = Math.random() * 4 + 1 + 'px';
+                    particle.style.height = particle.style.width;
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDuration = Math.random() * 20 + 10 + 's';
+                    particle.style.animationDelay = Math.random() * 5 + 's';
+                    particlesContainer.appendChild(particle);
+                }
+            }
+            
+            // =============================================
+            // FUNCIONES PÚBLICAS
+            // =============================================
+            
+            return {
+                // =============================================
+                // MANEJO DE MODALES
+                // =============================================
+                openLoginModal: function() {
+                    document.getElementById('registerModal').style.display = 'none';
+                    document.getElementById('loginModal').style.display = 'flex';
+                    document.getElementById('loginEmail').focus();
+                    document.body.style.overflow = 'hidden';
+                },
+                
+                closeLoginModal: function() {
+                    document.getElementById('loginModal').style.display = 'none';
+                    document.getElementById('loginAlert').style.display = 'none';
+                    document.getElementById('loginEmail').value = '';
+                    document.getElementById('loginPassword').value = '';
+                    document.body.style.overflow = 'auto';
+                },
+                
+                openRegisterModal: function() {
+                    document.getElementById('loginModal').style.display = 'none';
+                    document.getElementById('registerModal').style.display = 'flex';
+                    document.getElementById('companyName').focus();
+                    document.body.style.overflow = 'hidden';
+                },
+                
+                closeRegisterModal: function() {
+                    const modal = document.getElementById('registerModal');
+                    if (modal.style.display === 'flex') {
+                        modal.style.display = 'none';
+                        document.getElementById('registerAlert').style.display = 'none';
+                        document.getElementById('registerForm').reset();
+                        document.body.style.overflow = 'auto';
+                    }
+                },
+                
+                // =============================================
+                // FUNCIONES DEL FORMULARIO
+                // =============================================
+                togglePassword: function(fieldId) {
+                    const field = document.getElementById(fieldId);
+                    if (!field) return;
                     
-                    if (userError) {
-                        console.warn('No se encontró usuario en tabla usuarios, pero autenticación exitosa');
-                        // Crear objeto de usuario básico
-                        const userInfo = {
-                            id: data.user.id,
-                            email: data.user.email,
-                            nombre: data.user.email.split('@')[0],
-                            rol: 'admin_empresa',
-                            empresa_id: 1
-                        };
-                        localStorage.setItem('nexial_user', JSON.stringify(userInfo));
+                    const button = field.parentElement.querySelector('.toggle-password');
+                    const icon = button.querySelector('i');
+                    
+                    if (field.type === 'password') {
+                        field.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
                     } else {
-                        // Guardar información completa del usuario
-                        localStorage.setItem('nexial_user', JSON.stringify(userData));
+                        field.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                },
+                
+                showTerms: function() {
+                    alert('TÉRMINOS Y CONDICIONES NEXIAL SUITE\n\n1. Uso exclusivo para empresas registradas\n2. Los datos serán tratados conforme a las leyes de protección de datos del país correspondiente\n3. Período de prueba gratuito de 30 días\n4. Cancelación en cualquier momento desde el panel de control\n5. Responsabilidad del usuario sobre la veracidad de los datos proporcionados\n6. Nexial Suite se reserva el derecho de suspender cuentas con información falsa\n\nPara ver los términos completos, contacte a soporte: marcelodanielcc@gmail.com');
+                    return false;
+                },
+                
+                // =============================================
+                // LOGIN CON SUPABASE
+                // =============================================
+                login: async function() {
+                    const email = document.getElementById('loginEmail')?.value.trim();
+                    const password = document.getElementById('loginPassword')?.value;
+                    
+                    if (!email || !password) {
+                        this.showAlert('loginAlert', 'error', 'Por favor complete todos los campos');
+                        return;
                     }
                     
-                    // Redirigir al dashboard
-                    closeLoginModal();
-                    window.location.href = 'dashboard.html';
-                }
+                    this.showLoading();
+                    
+                    try {
+                        const supabase = getSupabase();
+                        const { data, error } = await supabase.auth.signInWithPassword({
+                            email: email,
+                            password: password
+                        });
+                        
+                        this.hideLoading();
+                        
+                        if (error) {
+                            console.error('Error de autenticación:', error);
+                            this.showAlert('loginAlert', 'error', 'Credenciales incorrectas o usuario no existe');
+                            return;
+                        }
+                        
+                        if (data.user) {
+                            // Obtener información del usuario de la tabla 'usuarios'
+                            const { data: userData, error: userError } = await supabase
+                                .from('usuarios')
+                                .select('*')
+                                .eq('email', email)
+                                .single();
+                            
+                            let userInfo;
+                            if (userError) {
+                                console.warn('No se encontró usuario en tabla usuarios, usando datos de auth');
+                                userInfo = {
+                                    id: data.user.id,
+                                    email: data.user.email,
+                                    nombre: data.user.email.split('@')[0],
+                                    rol: 'admin_empresa',
+                                    empresa_id: 1
+                                };
+                            } else {
+                                userInfo = userData;
+                            }
+                            
+                            localStorage.setItem('nexial_user', JSON.stringify(userInfo));
+                            
+                            // Redirigir al dashboard
+                            this.closeLoginModal();
+                            window.location.href = 'dashboard.html';
+                        }
+                        
+                    } catch (error) {
+                        this.hideLoading();
+                        console.error('Error en login:', error);
+                        this.showAlert('loginAlert', 'error', 'Error de conexión. Por favor intenta nuevamente.');
+                    }
+                },
                 
-            } catch (error) {
-                hideLoading();
-                console.error('Error en login:', error);
-                showAlert('loginAlert', 'error', 'Error de conexión. Por favor intenta nuevamente.');
-            }
-        }
-        
-        // =============================================
-        // MÓDULO: REGISTRO DE EMPRESA
-        // =============================================
-        
-        // FUNCIÓN: Procesar registro de empresa
-        async function registerCompany(event) {
-            event.preventDefault();
-            showLoading();
-            
-            // Validar contraseñas
-            const password = document.getElementById('adminPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (password !== confirmPassword) {
-                showAlert('registerAlert', 'error', 'Las contraseñas no coinciden');
-                hideLoading();
-                return;
-            }
-            
-            if (password.length < 8) {
-                showAlert('registerAlert', 'error', 'La contraseña debe tener mínimo 8 caracteres');
-                hideLoading();
-                return;
-            }
-            
-            // Recopilar datos
-            const companyData = {
-                nombre: document.getElementById('companyName').value.trim(),
-                tipo_documento: document.getElementById('docType').value,
-                numero_documento: document.getElementById('companyDocNumber').value.trim(),
-                industria: document.getElementById('companyIndustry').value,
-                direccion: '',
-                telefono: document.getElementById('countryCode').value + ' ' + document.getElementById('companyPhone').value,
-                email: document.getElementById('companyEmail').value.trim().toLowerCase(),
-                activa: true
-            };
-            
-            const userData = {
-                nombres: document.getElementById('names').value.trim(),
-                primer_apellido: document.getElementById('firstLastName').value.trim(),
-                segundo_apellido: document.getElementById('secondLastName').value.trim(),
-                email: document.getElementById('companyEmail').value.trim().toLowerCase(),
-                password: password,
-                nombre: document.getElementById('names').value.trim() + ' ' + 
-                       document.getElementById('firstLastName').value.trim(),
-                rol: 'admin_empresa'
-            };
-            
-            // Validar campos requeridos
-            const requiredCompanyFields = ['nombre', 'tipo_documento', 'numero_documento', 'industria', 'email'];
-            const requiredUserFields = ['nombres', 'primer_apellido', 'email'];
-            
-            for (const field of requiredCompanyFields) {
-                if (!companyData[field]) {
-                    const fieldNames = {
-                        'nombre': 'Razón Social',
-                        'tipo_documento': 'Tipo de Documento',
-                        'numero_documento': 'Número de Documento',
-                        'industria': 'Tipo de Industria',
-                        'email': 'Email Corporativo'
+                // =============================================
+                // REGISTRO DE EMPRESA
+                // =============================================
+                registerCompany: async function(event) {
+                    event.preventDefault();
+                    this.showLoading();
+                    
+                    // Validar contraseñas
+                    const password = document.getElementById('adminPassword')?.value;
+                    const confirmPassword = document.getElementById('confirmPassword')?.value;
+                    
+                    if (password !== confirmPassword) {
+                        this.showAlert('registerAlert', 'error', 'Las contraseñas no coinciden');
+                        this.hideLoading();
+                        return;
+                    }
+                    
+                    if (password.length < 8) {
+                        this.showAlert('registerAlert', 'error', 'La contraseña debe tener mínimo 8 caracteres');
+                        this.hideLoading();
+                        return;
+                    }
+                    
+                    // Recopilar datos
+                    const companyData = {
+                        nombre: document.getElementById('companyName')?.value.trim(),
+                        tipo_documento: document.getElementById('docType')?.value,
+                        numero_documento: document.getElementById('companyDocNumber')?.value.trim(),
+                        industria: document.getElementById('companyIndustry')?.value,
+                        direccion: '',
+                        telefono: (document.getElementById('countryCode')?.value || '+591') + ' ' + 
+                                 (document.getElementById('companyPhone')?.value || ''),
+                        email: document.getElementById('companyEmail')?.value.trim().toLowerCase(),
+                        activa: true
                     };
-                    showAlert('registerAlert', 'error', `Por favor complete el campo: ${fieldNames[field] || field}`);
-                    hideLoading();
-                    return;
-                }
-            }
-            
-            try {
-                // 1. Registrar usuario en Auth de Supabase
-                const { data: authData, error: authError } = await supabase.auth.signUp({
-                    email: userData.email,
-                    password: userData.password,
-                    options: {
-                        data: {
-                            nombre: userData.nombre,
-                            primer_apellido: userData.primer_apellido
+                    
+                    const userData = {
+                        nombres: document.getElementById('names')?.value.trim(),
+                        primer_apellido: document.getElementById('firstLastName')?.value.trim(),
+                        segundo_apellido: document.getElementById('secondLastName')?.value.trim() || '',
+                        email: document.getElementById('companyEmail')?.value.trim().toLowerCase(),
+                        password: password,
+                        nombre: (document.getElementById('names')?.value.trim() || '') + ' ' + 
+                               (document.getElementById('firstLastName')?.value.trim() || ''),
+                        rol: 'admin_empresa'
+                    };
+                    
+                    // Validar campos requeridos
+                    const requiredFields = ['nombre', 'tipo_documento', 'numero_documento', 'industria', 'email', 'nombres', 'primer_apellido'];
+                    for (const field of requiredFields) {
+                        const value = companyData[field] || userData[field];
+                        if (!value || value.trim() === '') {
+                            const fieldNames = {
+                                'nombre': 'Razón Social',
+                                'tipo_documento': 'Tipo de Documento',
+                                'numero_documento': 'Número de Documento',
+                                'industria': 'Tipo de Industria',
+                                'email': 'Email Corporativo',
+                                'nombres': 'Nombres',
+                                'primer_apellido': 'Primer Apellido'
+                            };
+                            this.showAlert('registerAlert', 'error', `Por favor complete: ${fieldNames[field] || field}`);
+                            this.hideLoading();
+                            return;
                         }
                     }
-                });
+                    
+                    try {
+                        const supabase = getSupabase();
+                        
+                        // 1. Registrar usuario en Auth
+                        const { data: authData, error: authError } = await supabase.auth.signUp({
+                            email: userData.email,
+                            password: userData.password,
+                            options: {
+                                data: {
+                                    nombre: userData.nombre,
+                                    primer_apellido: userData.primer_apellido
+                                }
+                            }
+                        });
+                        
+                        if (authError) throw new Error(authError.message);
+                        
+                        // 2. Crear empresa (trigger generará código automático)
+                        const { data: empresaData, error: empresaError } = await supabase
+                            .from('empresas')
+                            .insert([companyData])
+                            .select()
+                            .single();
+                        
+                        if (empresaError) throw new Error(`Error empresa: ${empresaError.message}`);
+                        
+                        // 3. Crear usuario admin (trigger generará código automático)
+                        const { data: usuarioData, error: usuarioError } = await supabase
+                            .from('usuarios')
+                            .insert([{
+                                empresa_id: empresaData.id,
+                                email: userData.email,
+                                password_hash: userData.password, // NOTA: En producción usar hash
+                                nombre: userData.nombre,
+                                apellido: userData.primer_apellido + (userData.segundo_apellido ? ' ' + userData.segundo_apellido : ''),
+                                rol: 'admin_empresa',
+                                activo: true
+                            }])
+                            .select()
+                            .single();
+                        
+                        if (usuarioError) throw new Error(`Error usuario: ${usuarioError.message}`);
+                        
+                        this.hideLoading();
+                        
+                        // Mostrar éxito
+                        this.showAlert('registerAlert', 'success', 
+                            '✅ ¡Registro exitoso!<br><br>' +
+                            'Tu empresa ha sido registrada.<br><br>' +
+                            '<strong>Credenciales:</strong><br>' +
+                            '📧 Email: ' + userData.email + '<br>' +
+                            '🔑 Contraseña: La que ingresaste<br><br>' +
+                            'Puedes iniciar sesión ahora.');
+                        
+                        // Redirigir después de 5 segundos
+                        setTimeout(() => {
+                            document.getElementById('registerForm').reset();
+                            this.closeRegisterModal();
+                            this.openLoginModal();
+                            document.getElementById('loginEmail').value = userData.email;
+                            document.getElementById('loginPassword').focus();
+                        }, 5000);
+                        
+                    } catch (error) {
+                        this.hideLoading();
+                        console.error('Error registro:', error);
+                        this.showAlert('registerAlert', 'error', 
+                            'Error: ' + error.message + 
+                            '<br>Contacta soporte: marcelodanielcc@gmail.com');
+                    }
+                },
                 
-                if (authError) {
-                    throw new Error(authError.message);
-                }
+                // =============================================
+                // FUNCIONES AUXILIARES
+                // =============================================
+                recoverPassword: async function() {
+                    const email = prompt('Ingrese su email para recuperar contraseña:');
+                    if (email) {
+                        try {
+                            const supabase = getSupabase();
+                            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                                redirectTo: window.location.origin + '/reset-password.html'
+                            });
+                            
+                            if (error) {
+                                alert('Error: ' + error.message);
+                            } else {
+                                alert(`Enlace enviado a: ${email}\nRevise su bandeja.`);
+                            }
+                        } catch (error) {
+                            alert('Error de conexión.');
+                        }
+                    }
+                },
                 
-                // 2. Insertar empresa en tabla empresas (el trigger generará el código automático)
-                const { data: empresaData, error: empresaError } = await supabase
-                    .from('empresas')
-                    .insert([companyData])
-                    .select()
-                    .single();
+                showLoading: function() {
+                    const loading = document.getElementById('globalLoading');
+                    if (loading) loading.style.display = 'flex';
+                },
                 
-                if (empresaError) {
-                    throw new Error(`Error al crear empresa: ${empresaError.message}`);
-                }
+                hideLoading: function() {
+                    const loading = document.getElementById('globalLoading');
+                    if (loading) loading.style.display = 'none';
+                },
                 
-                // 3. Insertar usuario admin en tabla usuarios (el trigger generará el código automático)
-                const { data: usuarioData, error: usuarioError } = await supabase
-                    .from('usuarios')
-                    .insert([{
-                        empresa_id: empresaData.id,
-                        email: userData.email,
-                        password_hash: userData.password, // En producción, deberías hashear esto
-                        nombre: userData.nombre,
-                        apellido: userData.primer_apellido + (userData.segundo_apellido ? ' ' + userData.segundo_apellido : ''),
-                        rol: 'admin_empresa',
-                        activo: true
-                    }])
-                    .select()
-                    .single();
+                showAlert: function(elementId, type, message) {
+                    const alertElement = document.getElementById(elementId);
+                    if (!alertElement) return;
+                    
+                    alertElement.className = `alert alert-${type}`;
+                    alertElement.innerHTML = message;
+                    alertElement.style.display = 'block';
+                    
+                    if (type === 'success') {
+                        setTimeout(() => {
+                            alertElement.style.display = 'none';
+                        }, 5000);
+                    }
+                },
                 
-                if (usuarioError) {
-                    throw new Error(`Error al crear usuario admin: ${usuarioError.message}`);
-                }
-                
-                hideLoading();
-                
-                // Mostrar mensaje de éxito
-                showAlert('registerAlert', 'success', 
-                    '✅ ¡Registro exitoso!<br><br>' +
-                    'Tu empresa ha sido registrada correctamente.<br><br>' +
-                    '<strong>Credenciales de acceso:</strong><br>' +
-                    '📧 Email: ' + userData.email + '<br>' +
-                    '🔑 Contraseña: La que ingresaste<br><br>' +
-                    'Puedes iniciar sesión ahora con estas credenciales.');
-                
-                // Limpiar formulario después de 5 segundos y redirigir al login
-                setTimeout(() => {
-                    document.getElementById('registerForm').reset();
-                    closeRegisterModal();
-                    openLoginModal();
-                    document.getElementById('loginEmail').value = userData.email;
-                    document.getElementById('loginPassword').focus();
-                }, 5000);
-                
-            } catch (error) {
-                hideLoading();
-                console.error('Error en registro:', error);
-                showAlert('registerAlert', 'error', 
-                    'Error en el registro: ' + error.message + 
-                    '<br>Por favor contacta a soporte: marcelodanielcc@gmail.com');
-            }
-        }
-        
-        // =============================================
-        // MÓDULO: FUNCIONES AUXILIARES
-        // =============================================
-        
-        // FUNCIÓN: Recuperar contraseña
-        async function recoverPassword() {
-            const email = prompt('Ingrese su email para recuperar contraseña:');
-            if (email) {
-                try {
-                    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                        redirectTo: window.location.origin + '/reset-password.html'
+                // =============================================
+                // INICIALIZACIÓN
+                // =============================================
+                initialize: async function() {
+                    createParticles();
+                    
+                    console.log('🚀 Nexial Suite v3.5');
+                    console.log('🔗 Supabase:', SUPABASE_URL);
+                    
+                    // Verificar sesión
+                    const supabase = getSupabase();
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session) {
+                        console.log('👤 Sesión activa:', session.user.email);
+                        // Opcional: auto-redirigir si ya está logueado
+                        // window.location.href = 'dashboard.html';
+                    }
+                    
+                    // Event listeners para modales
+                    document.getElementById('loginModal')?.addEventListener('click', (e) => {
+                        if (e.target === e.currentTarget) this.closeLoginModal();
                     });
                     
-                    if (error) {
-                        alert('Error al enviar enlace de recuperación: ' + error.message);
-                    } else {
-                        alert(`Se ha enviado un enlace de recuperación a: ${email}\n\nRevise su bandeja de entrada.`);
-                    }
-                } catch (error) {
-                    alert('Error de conexión. Por favor intenta nuevamente.');
+                    document.getElementById('registerModal')?.addEventListener('click', (e) => {
+                        if (e.target === e.currentTarget) this.closeRegisterModal();
+                    });
+                    
+                    // Enter en login
+                    document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.login();
+                    });
                 }
-            }
-        }
+            };
+        })();
         
         // =============================================
-        // EVENT LISTENERS
+        // INICIALIZAR AL CARGAR LA PÁGINA
         // =============================================
-        
-        // Enter para login
-        document.getElementById('loginPassword')?.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') login();
-        });
-        
-        // Permitir cierre de modales al hacer clic fuera
-        document.getElementById('loginModal')?.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeLoginModal();
-            }
-        });
-        
-        document.getElementById('registerModal')?.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeRegisterModal();
-            }
+        document.addEventListener('DOMContentLoaded', function() {
+            Nexial.initialize();
         });
         
         // =============================================
-        // INICIALIZACIÓN
+        // FUNCIONES GLOBALES PARA ONCLICK (backward compatibility)
         // =============================================
-        
-        // FUNCIÓN: Inicializar aplicación
-        async function initializeApp() {
-            createParticles();
-            
-            console.log('🚀 Nexial Suite - Sistema Empresarial');
-            console.log('📊 Versión: 3.5');
-            console.log('🔗 Supabase URL:', SUPABASE_URL);
-            
-            // Verificar sesión existente
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                console.log('👤 Sesión activa encontrada');
-                // Opcional: Redirigir automáticamente si ya está logueado
-                // window.location.href = 'dashboard.html';
-            }
-            
-            // Escuchar cambios de autenticación
-            supabase.auth.onAuthStateChange((event, session) => {
-                console.log('Evento de autenticación:', event);
-                if (session) {
-                    console.log('Usuario autenticado:', session.user.email);
-                }
-            });
-        }
-        
-        // EVENTO: Cargar página
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        window.openLoginModal = function() { Nexial.openLoginModal(); };
+        window.openRegisterModal = function() { Nexial.openRegisterModal(); };
+        window.closeLoginModal = function() { Nexial.closeLoginModal(); };
+        window.closeRegisterModal = function() { Nexial.closeRegisterModal(); };
     </script>
 </body>
 </html>
