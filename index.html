@@ -1413,7 +1413,7 @@
 
     <script>
         // =============================================
-        // OBJETO PRINCIPAL NEXIAL
+        // OBJETO PRINCIPAL NEXIAL - Versión Simplificada
         // =============================================
         const Nexial = (function() {
             // Variables privadas
@@ -1517,7 +1517,7 @@
                 },
                 
                 // =============================================
-                // LOGIN CON SUPABASE
+                // LOGIN SIMPLIFICADO - SOLO CON TABLA USUARIOS
                 // =============================================
                 login: async function() {
                     const email = document.getElementById('loginEmail')?.value.trim();
@@ -1532,46 +1532,37 @@
                     
                     try {
                         const supabase = getSupabase();
-                        const { data, error } = await supabase.auth.signInWithPassword({
-                            email: email,
-                            password: password
-                        });
+                        
+                        // Buscar usuario directamente en la tabla usuarios
+                        const { data: usuarios, error } = await supabase
+                            .from('usuarios')
+                            .select('*, empresas(*)')
+                            .eq('email', email)
+                            .eq('password_hash', password) // En producción usar hash seguro
+                            .single();
                         
                         this.hideLoading();
                         
-                        if (error) {
+                        if (error || !usuarios) {
                             console.error('Error de autenticación:', error);
-                            this.showAlert('loginAlert', 'error', 'Credenciales incorrectas o usuario no existe');
+                            this.showAlert('loginAlert', 'error', 'Credenciales incorrectas');
                             return;
                         }
                         
-                        if (data.user) {
-                            // Obtener información del usuario de la tabla 'usuarios'
-                            const { data: userData, error: userError } = await supabase
-                                .from('usuarios')
-                                .select('*')
-                                .eq('email', email)
-                                .single();
+                        if (usuarios) {
+                            // Guardar usuario en localStorage
+                            localStorage.setItem('nexial_user', JSON.stringify(usuarios));
                             
-                            let userInfo;
-                            if (userError) {
-                                console.warn('No se encontró usuario en tabla usuarios, usando datos de auth');
-                                userInfo = {
-                                    id: data.user.id,
-                                    email: data.user.email,
-                                    nombre: data.user.email.split('@')[0],
-                                    rol: 'admin_empresa',
-                                    empresa_id: 1
-                                };
-                            } else {
-                                userInfo = userData;
-                            }
+                            // Crear sesión simple
+                            localStorage.setItem('nexial_session', 'true');
                             
-                            localStorage.setItem('nexial_user', JSON.stringify(userInfo));
+                            this.showAlert('loginAlert', 'success', '✅ Login exitoso! Redirigiendo...');
                             
-                            // Redirigir al dashboard
-                            this.closeLoginModal();
-                            window.location.href = 'dashboard.html';
+                            // Redirigir después de 2 segundos
+                            setTimeout(() => {
+                                this.closeLoginModal();
+                                window.location.href = 'dashboard.html';
+                            }, 2000);
                         }
                         
                     } catch (error) {
@@ -1582,7 +1573,7 @@
                 },
                 
                 // =============================================
-                // REGISTRO DE EMPRESA
+                // REGISTRO DE EMPRESA SIMPLIFICADO
                 // =============================================
                 registerCompany: async function(event) {
                     event.preventDefault();
@@ -1608,12 +1599,12 @@
                     const companyData = {
                         nombre: document.getElementById('companyName')?.value.trim(),
                         tipo_documento: document.getElementById('docType')?.value,
-                        numero_documento: document.getElementById('companyDocNumber')?.value.trim(),
-                        industria: document.getElementById('companyIndustry')?.value,
+                        nit: document.getElementById('companyDocNumber')?.value.trim(),
+                        email: document.getElementById('companyEmail')?.value.trim().toLowerCase(),
                         telefono: (document.getElementById('countryCode')?.value || '+591') + ' ' + 
                                  (document.getElementById('companyPhone')?.value || ''),
-                        email: document.getElementById('companyEmail')?.value.trim().toLowerCase(),
-                        activa: true
+                        activa: true,
+                        creado_en: new Date().toISOString()
                     };
                     
                     const userData = {
@@ -1622,21 +1613,20 @@
                         segundo_apellido: document.getElementById('secondLastName')?.value.trim() || '',
                         email: document.getElementById('companyEmail')?.value.trim().toLowerCase(),
                         password: password,
-                        nombre: (document.getElementById('names')?.value.trim() || '') + ' ' + 
-                               (document.getElementById('firstLastName')?.value.trim() || ''),
+                        nombre_completo: (document.getElementById('names')?.value.trim() || '') + ' ' + 
+                                       (document.getElementById('firstLastName')?.value.trim() || ''),
                         rol: 'admin_empresa'
                     };
                     
                     // Validar campos requeridos
-                    const requiredFields = ['nombre', 'tipo_documento', 'numero_documento', 'industria', 'email', 'nombres', 'primer_apellido'];
+                    const requiredFields = ['nombre', 'tipo_documento', 'nit', 'email', 'nombres', 'primer_apellido'];
                     for (const field of requiredFields) {
                         const value = companyData[field] || userData[field];
                         if (!value || value.trim() === '') {
                             const fieldNames = {
                                 'nombre': 'Razón Social',
                                 'tipo_documento': 'Tipo de Documento',
-                                'numero_documento': 'Número de Documento',
-                                'industria': 'Tipo de Industria',
+                                'nit': 'Número de Documento',
                                 'email': 'Email Corporativo',
                                 'nombres': 'Nombres',
                                 'primer_apellido': 'Primer Apellido'
@@ -1650,19 +1640,16 @@
                     try {
                         const supabase = getSupabase();
                         
-                        // 1. Registrar usuario en Auth
-                        const { data: authData, error: authError } = await supabase.auth.signUp({
-                            email: userData.email,
-                            password: userData.password,
-                            options: {
-                                data: {
-                                    nombre: userData.nombre,
-                                    primer_apellido: userData.primer_apellido
-                                }
-                            }
-                        });
+                        // 1. Verificar si el email ya existe
+                        const { data: existingUser } = await supabase
+                            .from('usuarios')
+                            .select('id')
+                            .eq('email', userData.email)
+                            .single();
                         
-                        if (authError) throw new Error(authError.message);
+                        if (existingUser) {
+                            throw new Error('El email ya está registrado en el sistema');
+                        }
                         
                         // 2. Crear empresa (trigger generará código automático)
                         const { data: empresaData, error: empresaError } = await supabase
@@ -1671,20 +1658,41 @@
                             .select()
                             .single();
                         
-                        if (empresaError) throw new Error(`Error empresa: ${empresaError.message}`);
+                        if (empresaError) {
+                            // Si ya existe la empresa por NIT
+                            if (empresaError.code === '23505') {
+                                // Intentar obtener la empresa existente
+                                const { data: existingEmpresa } = await supabase
+                                    .from('empresas')
+                                    .select('*')
+                                    .eq('nit', companyData.nit)
+                                    .single();
+                                
+                                if (existingEmpresa) {
+                                    empresaData = existingEmpresa;
+                                } else {
+                                    throw new Error('Empresa ya registrada');
+                                }
+                            } else {
+                                throw new Error(`Error empresa: ${empresaError.message}`);
+                            }
+                        }
                         
                         // 3. Crear usuario admin (trigger generará código automático)
+                        const usuarioInsert = {
+                            empresa_id: empresaData.id,
+                            email: userData.email,
+                            password_hash: userData.password, // En producción, usar bcrypt
+                            nombre: userData.nombre_completo,
+                            apellido: userData.primer_apellido + (userData.segundo_apellido ? ' ' + userData.segundo_apellido : ''),
+                            rol: 'admin_empresa',
+                            activo: true,
+                            creado_en: new Date().toISOString()
+                        };
+                        
                         const { data: usuarioData, error: usuarioError } = await supabase
                             .from('usuarios')
-                            .insert([{
-                                empresa_id: empresaData.id,
-                                email: userData.email,
-                                password_hash: userData.password,
-                                nombre: userData.nombre,
-                                apellido: userData.primer_apellido + (userData.segundo_apellido ? ' ' + userData.segundo_apellido : ''),
-                                rol: 'admin_empresa',
-                                activo: true
-                            }])
+                            .insert([usuarioInsert])
                             .select()
                             .single();
                         
@@ -1696,20 +1704,21 @@
                         this.showAlert('registerAlert', 'success', 
                             '✅ ¡Registro exitoso!<br><br>' +
                             'Tu empresa ha sido registrada en PostgreSQL.<br><br>' +
-                            '<strong>Credenciales:</strong><br>' +
+                            '<strong>Credenciales de acceso:</strong><br>' +
                             '📧 Email: ' + userData.email + '<br>' +
-                            '🔑 Contraseña: La que ingresaste<br>' +
+                            '🔑 Contraseña: ' + userData.password + '<br>' +
                             '🏢 Código Empresa: Se generará automáticamente<br><br>' +
                             'Puedes iniciar sesión ahora.');
                         
-                        // Redirigir después de 5 segundos
+                        // Autocompletar login y cerrar después de 3 segundos
                         setTimeout(() => {
                             document.getElementById('registerForm').reset();
                             this.closeRegisterModal();
                             this.openLoginModal();
                             document.getElementById('loginEmail').value = userData.email;
+                            document.getElementById('loginPassword').value = userData.password;
                             document.getElementById('loginPassword').focus();
-                        }, 5000);
+                        }, 3000);
                         
                     } catch (error) {
                         this.hideLoading();
@@ -1728,15 +1737,22 @@
                     if (email) {
                         try {
                             const supabase = getSupabase();
-                            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                                redirectTo: window.location.origin + '/reset-password.html'
-                            });
                             
-                            if (error) {
-                                alert('Error: ' + error.message);
+                            // Buscar usuario
+                            const { data: usuario } = await supabase
+                                .from('usuarios')
+                                .select('*')
+                                .eq('email', email)
+                                .single();
+                            
+                            if (usuario) {
+                                // En un sistema real, aquí enviarías un email
+                                // Por ahora, mostramos la contraseña (solo para desarrollo)
+                                alert(`Usuario encontrado:\nEmail: ${usuario.email}\n\nEn un sistema real, se enviaría un enlace de recuperación.`);
                             } else {
-                                alert(`Enlace enviado a: ${email}\nRevise su bandeja.`);
+                                alert('Usuario no encontrado');
                             }
+                            
                         } catch (error) {
                             alert('Error de conexión.');
                         }
@@ -1774,16 +1790,18 @@
                 initialize: async function() {
                     createParticles();
                     
-                    console.log('🚀 Nexial Suite v4.0 - Supabase Edition');
+                    console.log('🚀 Nexial Suite v4.1 - Simplified Auth');
                     console.log('🔗 Supabase:', SUPABASE_URL);
                     console.log('📊 PostgreSQL con triggers automáticos');
-                    console.log('🔒 Row Level Security activado');
+                    console.log('🔒 Autenticación simplificada con tabla usuarios');
                     
-                    // Verificar sesión
-                    const supabase = getSupabase();
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (session) {
-                        console.log('👤 Sesión activa:', session.user.email);
+                    // Verificar si ya hay sesión
+                    const session = localStorage.getItem('nexial_session');
+                    if (session === 'true') {
+                        const user = localStorage.getItem('nexial_user');
+                        if (user) {
+                            console.log('👤 Sesión activa:', JSON.parse(user).email);
+                        }
                     }
                     
                     // Event listeners para modales
