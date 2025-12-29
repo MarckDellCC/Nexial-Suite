@@ -792,13 +792,22 @@
 
     <script>
         // =============================================
-        // CONFIGURACIÓN SUPABASE
+        // CONFIGURACIÓN SUPABASE (SINGLETON PATTERN)
         // =============================================
         const SUPABASE_URL = 'https://cmrysvcahpouziogzang.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_rj4q31YiBwxLcfuswCX21g_LxsxRc_n';
         
-        // Inicializar Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Verificar si ya existe una instancia de Supabase
+        let supabase;
+        if (typeof window.supabase !== 'undefined' && window.supabase) {
+            supabase = window.supabase;
+        } else {
+            // Crear nueva instancia solo si no existe
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            window.supabase = supabase; // Asignar a window para uso global
+        }
+        
+        console.log('✅ Supabase inicializado:', !!supabase);
         
         // =============================================
         // VARIABLES GLOBALES
@@ -834,19 +843,26 @@
         // =============================================
         async function checkSession() {
             try {
+                console.log('🔍 Verificando sesión...');
                 const { data: { session }, error } = await supabase.auth.getSession();
                 
-                if (error) throw error;
+                if (error) {
+                    console.error('Error en sesión:', error);
+                    throw error;
+                }
                 
                 if (!session) {
+                    console.log('⚠️ No hay sesión activa, redirigiendo...');
                     window.location.href = 'index.html';
                     return null;
                 }
                 
                 currentSession = session;
+                console.log('✅ Sesión activa encontrada');
                 return session;
             } catch (error) {
                 console.error('Error checking session:', error);
+                showNotification('error', 'Error de sesión', 'No se pudo verificar la sesión');
                 window.location.href = 'index.html';
                 return null;
             }
@@ -856,7 +872,7 @@
             if (!currentSession) return null;
             
             try {
-                // Obtener usuario de la tabla usuarios basado en el email
+                console.log('👤 Cargando datos del usuario...');
                 const { data: usuarioData, error } = await supabase
                     .from('usuarios')
                     .select('*')
@@ -865,6 +881,7 @@
                 
                 if (error) {
                     console.error('Error loading user:', error);
+                    showNotification('error', 'Error', 'No se encontró el usuario en la base de datos');
                     return null;
                 }
                 
@@ -878,9 +895,11 @@
                     activo: usuarioData.activo
                 };
                 
+                console.log('✅ Usuario cargado:', currentUser.nombre);
                 return currentUser;
             } catch (error) {
                 console.error('Error loading user data:', error);
+                showNotification('error', 'Error', 'Error cargando datos del usuario');
                 return null;
             }
         }
@@ -890,9 +909,9 @@
         // =============================================
         async function loadEmpresas() {
             try {
+                console.log('🏢 Cargando empresas...');
                 let query = supabase.from('empresas').select('*');
                 
-                // Superadmin ve todas, otros solo ven su empresa
                 if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
                     query = query.eq('id', currentUser.empresa_id);
                 }
@@ -901,6 +920,7 @@
                 
                 if (error) throw error;
                 database.empresas = data || [];
+                console.log(`✅ ${database.empresas.length} empresas cargadas`);
                 return database.empresas;
             } catch (error) {
                 console.error('Error loading empresas:', error);
@@ -909,26 +929,22 @@
             }
         }
         
-        async function loadUsuarios(empresaId = null) {
+        async function loadUsuarios() {
             try {
+                console.log('👥 Cargando usuarios...');
                 let query = supabase.from('usuarios').select('*');
                 
-                // Filtrar según rol
                 if (currentUser.rol === 'superadmin') {
                     // Superadmin ve todos los usuarios
                 } else if (currentUser.rol === 'admin_empresa') {
-                    // Jefe ve todos los usuarios de su empresa
                     query = query.eq('empresa_id', currentUser.empresa_id);
                 } else if (currentUser.rol === 'gerente') {
-                    // Gerente ve vendedores, distribuidores, almacenero de su empresa
                     query = query.eq('empresa_id', currentUser.empresa_id)
                                  .in('rol', ['vendedor', 'distribuidor', 'almacenero']);
                 } else if (currentUser.rol === 'contador') {
-                    // Contador ve todos menos superadmin de su empresa
                     query = query.eq('empresa_id', currentUser.empresa_id)
                                  .neq('rol', 'superadmin');
-                } else if (currentUser.rol === 'vendedor' || currentUser.rol === 'distribuidor' || currentUser.rol === 'almacenero') {
-                    // Operativos solo se ven a sí mismos
+                } else if (['vendedor', 'distribuidor', 'almacenero'].includes(currentUser.rol)) {
                     query = query.eq('id', currentUser.id);
                 }
                 
@@ -936,6 +952,7 @@
                 
                 if (error) throw error;
                 database.usuarios = data || [];
+                console.log(`✅ ${database.usuarios.length} usuarios cargados`);
                 return database.usuarios;
             } catch (error) {
                 console.error('Error loading usuarios:', error);
@@ -1025,7 +1042,6 @@
                 let query = supabase.from('rutas_distribucion').select('*');
                 
                 if (currentUser.rol === 'distribuidor') {
-                    // Distribuidor ve solo sus rutas
                     query = query.eq('distribuidor_id', currentUser.id);
                 } else if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
                     query = query.eq('empresa_id', currentUser.empresa_id);
@@ -1045,6 +1061,7 @@
         async function loadAllData() {
             showLoading();
             try {
+                console.log('📊 Cargando todos los datos...');
                 await Promise.all([
                     loadEmpresas(),
                     loadUsuarios(),
@@ -1054,11 +1071,11 @@
                     loadAlmacenes(),
                     loadRutas()
                 ]);
-                console.log('✅ Datos cargados desde Supabase');
+                console.log('✅ Todos los datos cargados correctamente');
                 return true;
             } catch (error) {
                 console.error('Error cargando datos:', error);
-                showNotification('error', 'Error', 'Error cargando datos');
+                showNotification('error', 'Error', 'Error cargando datos desde Supabase');
                 return false;
             } finally {
                 hideLoading();
@@ -1069,6 +1086,11 @@
         // MÓDULO: CONFIGURACIÓN DE INTERFAZ POR ROL
         // =============================================
         function configureInterface() {
+            if (!currentUser) {
+                console.error('❌ No hay usuario actual');
+                return;
+            }
+            
             console.log('🎨 Configurando interfaz para rol:', currentUser.rol);
             
             const roleConfigs = {
@@ -1601,7 +1623,7 @@
                                                     <button class="action-btn edit" onclick="editarUsuario('${usuario.id}')" title="Editar">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
-                                                    <button class="action-btn delete" onclick="eliminarUsuario('${usuario.id}')" title="Eliminar">
+                                                    <button class="action-btn delete" onclick="eliminarUsuario('${usuario.id}', '${usuario.nombre}')" title="Eliminar">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </div>
@@ -1872,7 +1894,7 @@
                                 <tbody>
                                     ${misRutas.slice(0, 5).map(ruta => `
                                         <tr>
-                                            <td>${ruta.codigo}</td>
+                                            <td>${ruta.codigo || 'N/A'}</td>
                                             <td>${formatDate(ruta.fecha)}</td>
                                             <td>${ruta.clientes_orden ? JSON.parse(ruta.clientes_orden).length : 0}</td>
                                             <td>${ruta.distancia_total_km || 0} km</td>
@@ -3269,12 +3291,67 @@
                 }
             });
             
-            initializeDashboard();
+            // Esperar un momento para asegurar que todo esté cargado
+            setTimeout(() => {
+                initializeDashboard();
+            }, 100);
             
             console.log('🚀 Nexial Suite - Supabase Edition');
             console.log('📊 Sistema Corporativo Multiempresa v4.0');
             console.log('🔗 Supabase URL:', SUPABASE_URL);
         });
+        
+        // =============================================
+        // FUNCIONES ADICIONALES PARA OTROS MÓDULOS
+        // =============================================
+        function verRutaDetalle(rutaId) {
+            const ruta = database.rutas.find(r => r.id === rutaId);
+            if (!ruta) {
+                showNotification('error', 'Error', 'Ruta no encontrada');
+                return;
+            }
+            
+            showModal(`Detalle de Ruta: ${ruta.codigo}`, `
+                <div style="max-width: 600px;">
+                    <div style="padding: 1rem;">
+                        <p><strong>Código:</strong> ${ruta.codigo}</p>
+                        <p><strong>Fecha:</strong> ${formatDate(ruta.fecha)}</p>
+                        <p><strong>Estado:</strong> <span class="status-badge ${getStatusClass(ruta.estado)}">${getStatusName(ruta.estado)}</span></p>
+                        <p><strong>Distancia Total:</strong> ${ruta.distancia_total_km || 0} km</p>
+                        <p><strong>Observaciones:</strong> ${ruta.observaciones || 'Sin observaciones'}</p>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function iniciarRuta(rutaId) {
+            showConfirmation(
+                'Iniciar Ruta',
+                '¿Estás seguro de iniciar esta ruta?',
+                async () => {
+                    showLoading();
+                    try {
+                        const { error } = await supabase
+                            .from('rutas_distribucion')
+                            .update({ estado: 'en_ruta' })
+                            .eq('id', rutaId);
+                        
+                        if (error) throw error;
+                        
+                        showNotification('success', 'Éxito', 'Ruta iniciada correctamente');
+                        
+                        // Recargar datos
+                        await loadRutas();
+                        loadDistribuidorDashboard();
+                    } catch (error) {
+                        console.error('Error iniciando ruta:', error);
+                        showNotification('error', 'Error', 'No se pudo iniciar la ruta');
+                    } finally {
+                        hideLoading();
+                    }
+                }
+            );
+        }
     </script>
 </body>
 </html>
