@@ -792,22 +792,27 @@
 
     <script>
         // =============================================
-        // CONFIGURACIÓN SUPABASE (SINGLETON PATTERN)
+        // CONFIGURACIÓN SUPABASE (VERSIÓN CORREGIDA)
         // =============================================
         const SUPABASE_URL = 'https://cmrysvcahpouziogzang.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_rj4q31YiBwxLcfuswCX21g_LxsxRc_n';
         
-        // Verificar si ya existe una instancia de Supabase
-        let supabase;
-        if (typeof window.supabase !== 'undefined' && window.supabase) {
-            supabase = window.supabase;
-        } else {
-            // Crear nueva instancia solo si no existe
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            window.supabase = supabase; // Asignar a window para uso global
-        }
+        // SOLUCIÓN DEFINITIVA: Verificar si ya existe y usarla, si no crear nueva
+        (function() {
+            // Verificar si ya existe una instancia global de Supabase
+            if (window.supabaseClient && typeof window.supabaseClient === 'object') {
+                console.log('✅ Usando instancia existente de Supabase');
+                window.supabase = window.supabaseClient;
+            } else {
+                // Crear nueva instancia
+                console.log('🔄 Creando nueva instancia de Supabase');
+                window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                window.supabaseClient = window.supabase; // Guardar referencia
+            }
+        })();
         
-        console.log('✅ Supabase inicializado:', !!supabase);
+        // Ahora usamos window.supabase globalmente
+        const supabase = window.supabase;
         
         // =============================================
         // VARIABLES GLOBALES
@@ -1676,275 +1681,6 @@
             `;
             
             document.getElementById('pageTitle').textContent = `Dashboard - ${empresa.nombre}`;
-        }
-        
-        // =============================================
-        // MÓDULO: DASHBOARD GERENTE (COMERCIAL)
-        // =============================================
-        async function loadGerenteDashboard() {
-            const empresaId = currentUser.empresa_id;
-            const empresa = database.empresas.find(e => e.id === empresaId);
-            
-            // Filtrar por roles comerciales
-            const vendedores = database.usuarios.filter(u => 
-                u.empresa_id === empresaId && u.rol === 'vendedor'
-            );
-            
-            const distribuidores = database.usuarios.filter(u => 
-                u.empresa_id === empresaId && u.rol === 'distribuidor'
-            );
-            
-            const almaceneros = database.usuarios.filter(u => 
-                u.empresa_id === empresaId && u.rol === 'almacenero'
-            );
-            
-            document.getElementById('viewGerente').innerHTML = `
-                <div class="stats-grid fade-in">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Vendedores</div>
-                            <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
-                        </div>
-                        <div class="stat-value">${vendedores.length}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-user-check"></i> Activos
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Distribuidores</div>
-                            <div class="stat-icon"><i class="fas fa-truck"></i></div>
-                        </div>
-                        <div class="stat-value">${distribuidores.length}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-route"></i> En ruta
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Almacenes</div>
-                            <div class="stat-icon"><i class="fas fa-warehouse"></i></div>
-                        </div>
-                        <div class="stat-value">${almaceneros.length}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-box"></i> Operativos
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Empresa</div>
-                            <div class="stat-icon"><i class="fas fa-building"></i></div>
-                        </div>
-                        <div class="stat-value" style="font-size: 1.5rem;">${empresa?.nombre || 'Mi Empresa'}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-chart-line"></i> Comercial
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 2rem; text-align: center;">
-                    <div class="table-card">
-                        <div class="table-header">
-                            <h3 class="table-title">Equipo Comercial</h3>
-                        </div>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; padding: 1rem;">
-                            <div>
-                                <h4 style="color: var(--vendedor); margin-bottom: 1rem;">Vendedores</h4>
-                                ${vendedores.map(v => `
-                                    <div style="background: rgba(124,58,237,0.1); padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem;">
-                                        <strong>${v.nombre}</strong>
-                                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">${v.email}</div>
-                                        <span class="status-badge ${v.activo ? 'status-active' : 'status-inactive'}" style="font-size: 0.7rem;">
-                                            ${v.activo ? 'Activo' : 'Inactivo'}
-                                        </span>
-                                    </div>
-                                `).join('')}
-                                ${vendedores.length === 0 ? '<p style="color: rgba(255,255,255,0.5); text-align: center;">No hay vendedores</p>' : ''}
-                            </div>
-                            
-                            <div>
-                                <h4 style="color: var(--distribuidor); margin-bottom: 1rem;">Distribuidores</h4>
-                                ${distribuidores.map(d => `
-                                    <div style="background: rgba(255,0,255,0.1); padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem;">
-                                        <strong>${d.nombre}</strong>
-                                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">${d.email}</div>
-                                        <span class="status-badge ${d.activo ? 'status-active' : 'status-inactive'}" style="font-size: 0.7rem;">
-                                            ${d.activo ? 'Activo' : 'Inactivo'}
-                                        </span>
-                                    </div>
-                                `).join('')}
-                                ${distribuidores.length === 0 ? '<p style="color: rgba(255,255,255,0.5); text-align: center;">No hay distribuidores</p>' : ''}
-                            </div>
-                            
-                            <div>
-                                <h4 style="color: var(--almacenero); margin-bottom: 1rem;">Almaceneros</h4>
-                                ${almaceneros.map(a => `
-                                    <div style="background: rgba(255,85,0,0.1); padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem;">
-                                        <strong>${a.nombre}</strong>
-                                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">${a.email}</div>
-                                        <span class="status-badge ${a.activo ? 'status-active' : 'status-inactive'}" style="font-size: 0.7rem;">
-                                            ${a.activo ? 'Activo' : 'Inactivo'}
-                                        </span>
-                                    </div>
-                                `).join('')}
-                                ${almaceneros.length === 0 ? '<p style="color: rgba(255,255,255,0.5); text-align: center;">No hay almaceneros</p>' : ''}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 2rem; text-align: center;">
-                    <button class="btn btn-primary" onclick="loadGestionVendedores()" style="margin-right: 1rem;">
-                        <i class="fas fa-user-tie"></i> Gestionar Vendedores
-                    </button>
-                    <button class="btn btn-primary" onclick="loadGestionDistribuidores()" style="margin-right: 1rem;">
-                        <i class="fas fa-truck"></i> Gestionar Distribuidores
-                    </button>
-                    <button class="btn btn-primary" onclick="loadGestionAlmacenes()">
-                        <i class="fas fa-warehouse"></i> Gestionar Almacenes
-                    </button>
-                </div>
-            `;
-            
-            document.getElementById('pageTitle').textContent = `Dashboard Comercial - ${empresa?.nombre || 'Mi Empresa'}`;
-        }
-        
-        // =============================================
-        // MÓDULO: DASHBOARD DISTRIBUIDOR
-        // =============================================
-        async function loadDistribuidorDashboard() {
-            const misRutas = database.rutas.filter(r => r.distribuidor_id === currentUser.id);
-            const rutasHoy = misRutas.filter(r => new Date(r.fecha).toDateString() === new Date().toDateString());
-            const rutasPendientes = misRutas.filter(r => r.estado === 'pendiente');
-            const rutasCompletadas = misRutas.filter(r => r.estado === 'completada');
-            
-            document.getElementById('viewDistribuidor').innerHTML = `
-                <div class="stats-grid fade-in">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Rutas Hoy</div>
-                            <div class="stat-icon"><i class="fas fa-route"></i></div>
-                        </div>
-                        <div class="stat-value">${rutasHoy.length}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-calendar-day"></i> Programadas
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Pendientes</div>
-                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                        </div>
-                        <div class="stat-value">${rutasPendientes.length}</div>
-                        <div class="stat-change ${rutasPendientes.length > 0 ? 'negative' : 'positive'}">
-                            <i class="fas ${rutasPendientes.length > 0 ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
-                            ${rutasPendientes.length > 0 ? 'Por realizar' : 'Al día'}
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Completadas</div>
-                            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                        </div>
-                        <div class="stat-value">${rutasCompletadas.length}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-trophy"></i> Finalizadas
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Total Rutas</div>
-                            <div class="stat-icon"><i class="fas fa-map-marked-alt"></i></div>
-                        </div>
-                        <div class="stat-value">${misRutas.length}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-chart-line"></i> Asignadas
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 2rem;">
-                    <div class="table-card">
-                        <div class="table-header">
-                            <h3 class="table-title">Mis Rutas Recientes</h3>
-                            <div class="table-actions">
-                                <button class="btn btn-primary" onclick="loadMisRutas()">
-                                    <i class="fas fa-list"></i> Ver Todas
-                                </button>
-                            </div>
-                        </div>
-                        <div class="table-wrapper">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Fecha</th>
-                                        <th>Clientes</th>
-                                        <th>Distancia</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${misRutas.slice(0, 5).map(ruta => `
-                                        <tr>
-                                            <td>${ruta.codigo || 'N/A'}</td>
-                                            <td>${formatDate(ruta.fecha)}</td>
-                                            <td>${ruta.clientes_orden ? JSON.parse(ruta.clientes_orden).length : 0}</td>
-                                            <td>${ruta.distancia_total_km || 0} km</td>
-                                            <td>
-                                                <span class="status-badge ${getStatusClass(ruta.estado)}">
-                                                    ${getStatusName(ruta.estado)}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="action-btn view" onclick="verRutaDetalle('${ruta.id}')" title="Ver">
-                                                        <i class="fas fa-eye"></i>
-                                                    </button>
-                                                    ${ruta.estado === 'pendiente' ? `
-                                                        <button class="action-btn edit" onclick="iniciarRuta('${ruta.id}')" title="Iniciar">
-                                                            <i class="fas fa-play"></i>
-                                                        </button>
-                                                    ` : ''}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                    ${misRutas.length === 0 ? `
-                                        <tr>
-                                            <td colspan="6" style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.5);">
-                                                <i class="fas fa-route" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                                                No tienes rutas asignadas
-                                            </td>
-                                        </tr>
-                                    ` : ''}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 2rem; text-align: center;">
-                    <button class="btn btn-primary" onclick="loadMisRutas()" style="margin-right: 1rem;">
-                        <i class="fas fa-route"></i> Mis Rutas
-                    </button>
-                    <button class="btn btn-primary" onclick="loadMisVisitas()" style="margin-right: 1rem;">
-                        <i class="fas fa-map-marker-alt"></i> Mis Visitas
-                    </button>
-                    <button class="btn btn-secondary" onclick="cargarMiUbicacion()">
-                        <i class="fas fa-map-pin"></i> Compartir Ubicación
-                    </button>
-                </div>
-            `;
-            
-            document.getElementById('pageTitle').textContent = `Dashboard Distribuidor - ${currentUser.nombre}`;
         }
         
         // =============================================
@@ -3351,6 +3087,139 @@
                     }
                 }
             );
+        }
+        
+        // =============================================
+        // DASHBOARDS RESTANTES (MÍNIMOS)
+        // =============================================
+        function loadGerenteDashboard() {
+            const empresaId = currentUser.empresa_id;
+            const empresa = database.empresas.find(e => e.id === empresaId);
+            
+            document.getElementById('viewGerente').innerHTML = `
+                <div class="stats-grid fade-in">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Vendedores Activos</div>
+                            <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
+                        </div>
+                        <div class="stat-value">${database.usuarios.filter(u => u.empresa_id === empresaId && u.rol === 'vendedor').length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-user-check"></i> En tu empresa
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Distribuidores</div>
+                            <div class="stat-icon"><i class="fas fa-truck"></i></div>
+                        </div>
+                        <div class="stat-value">${database.usuarios.filter(u => u.empresa_id === empresaId && u.rol === 'distribuidor').length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-route"></i> En ruta
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Almacenes</div>
+                            <div class="stat-icon"><i class="fas fa-warehouse"></i></div>
+                        </div>
+                        <div class="stat-value">${database.usuarios.filter(u => u.empresa_id === empresaId && u.rol === 'almacenero').length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-box"></i> Operativos
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Empresa</div>
+                            <div class="stat-icon"><i class="fas fa-building"></i></div>
+                        </div>
+                        <div class="stat-value" style="font-size: 1.5rem;">${empresa?.nombre || 'Mi Empresa'}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-chart-line"></i> Comercial
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button class="btn btn-primary" onclick="loadGestionVendedores()" style="margin-right: 1rem;">
+                        <i class="fas fa-user-tie"></i> Gestionar Vendedores
+                    </button>
+                    <button class="btn btn-primary" onclick="loadGestionDistribuidores()" style="margin-right: 1rem;">
+                        <i class="fas fa-truck"></i> Gestionar Distribuidores
+                    </button>
+                    <button class="btn btn-primary" onclick="loadGestionAlmacenes()">
+                        <i class="fas fa-warehouse"></i> Gestionar Almacenes
+                    </button>
+                </div>
+            `;
+        }
+        
+        function loadDistribuidorDashboard() {
+            const misRutas = database.rutas.filter(r => r.distribuidor_id === currentUser.id);
+            
+            document.getElementById('viewDistribuidor').innerHTML = `
+                <div class="stats-grid fade-in">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Total Rutas</div>
+                            <div class="stat-icon"><i class="fas fa-map-marked-alt"></i></div>
+                        </div>
+                        <div class="stat-value">${misRutas.length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-chart-line"></i> Asignadas
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Pendientes</div>
+                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        </div>
+                        <div class="stat-value">${misRutas.filter(r => r.estado === 'pendiente').length}</div>
+                        <div class="stat-change ${misRutas.filter(r => r.estado === 'pendiente').length > 0 ? 'negative' : 'positive'}">
+                            <i class="fas ${misRutas.filter(r => r.estado === 'pendiente').length > 0 ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
+                            ${misRutas.filter(r => r.estado === 'pendiente').length > 0 ? 'Por realizar' : 'Al día'}
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">Completadas</div>
+                            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                        </div>
+                        <div class="stat-value">${misRutas.filter(r => r.estado === 'completada').length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-trophy"></i> Finalizadas
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">En Ruta</div>
+                            <div class="stat-icon"><i class="fas fa-route"></i></div>
+                        </div>
+                        <div class="stat-value">${misRutas.filter(r => r.estado === 'en_ruta').length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-calendar-day"></i> En progreso
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button class="btn btn-primary" onclick="loadMisRutas()" style="margin-right: 1rem;">
+                        <i class="fas fa-route"></i> Mis Rutas
+                    </button>
+                    <button class="btn btn-primary" onclick="loadMisVisitas()" style="margin-right: 1rem;">
+                        <i class="fas fa-map-marker-alt"></i> Mis Visitas
+                    </button>
+                    <button class="btn btn-secondary" onclick="cargarMiUbicacion()">
+                        <i class="fas fa-map-pin"></i> Compartir Ubicación
+                    </button>
+                </div>
+            `;
         }
     </script>
 </body>
