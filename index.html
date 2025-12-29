@@ -3,1290 +3,1837 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexial Suite - Sistema de Gestión Empresarial</title>
+    <title>Nexial Suite - Sistema Empresarial Integral</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* ============================================= */
+        /* REGIÓN: VARIABLES GLOBALES */
+        /* ============================================= */
         :root {
-            --primary: #4361ee;
-            --primary-dark: #3a56d4;
-            --secondary: #7209b7;
-            --success: #4cc9f0;
-            --warning: #f72585;
-            --danger: #ef233c;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --gray: #6c757d;
-            --light-gray: #e9ecef;
-            --border-radius: 12px;
-            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
-            --gradient-primary: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
-            --gradient-secondary: linear-gradient(135deg, #7209b7 0%, #480ca8 100%);
+            --primary: #7c3aed;
+            --primary-glow: #9d5bff;
+            --secondary: #00f5ff;
+            --accent: #ffd700;
+            --success: #00ff41;
+            --danger: #ff0055;
+            --warning: #ffaa00;
+            --info: #00aaff;
+            
+            --dark: #0f0f23;
+            --darker: #070710;
+            --card-bg: rgba(15, 15, 35, 0.8);
+            --glass: rgba(255, 255, 255, 0.05);
+            
+            --neon-shadow: 0 0 15px;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
+        
+        /* ============================================= */
+        /* MÓDULO: RESET Y BASE */
+        /* ============================================= */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            color: var(--dark);
-            padding: 20px;
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--darker);
+            color: #f0f0ff;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(124, 58, 237, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 245, 255, 0.1) 0%, transparent 20%);
             overflow-x: hidden;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Header */
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 20px;
-            background: var(--gradient-primary);
-            color: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            animation: fadeInDown 0.8s ease;
-        }
-
-        .header h1 {
-            font-size: 2.8rem;
-            margin-bottom: 10px;
+        
+        /* ============================================= */
+        /* COMPONENTE: HEADER CYBERPUNK */
+        /* ============================================= */
+        .cyber-header {
+            background: rgba(15, 15, 35, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+            padding: 1rem 2rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            gap: 15px;
+            animation: slideDown 0.8s ease-out;
         }
-
-        .header h1 i {
-            color: var(--success);
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .tagline {
-            font-style: italic;
-            margin-top: 10px;
-            font-size: 1rem;
-            opacity: 0.8;
-        }
-
-        /* Main Content */
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        @media (max-width: 900px) {
-            .main-content {
-                grid-template-columns: 1fr;
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
             }
         }
-
-        /* Cards */
-        .card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 30px;
-            box-shadow: var(--box-shadow);
-            transition: var(--transition);
-            animation: fadeInUp 0.8s ease;
-            border-top: 5px solid var(--primary);
-        }
-
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .card h2 {
-            color: var(--primary);
-            margin-bottom: 20px;
+        
+        .cyber-logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 1.8rem;
+            animation: glow 2s ease-in-out infinite alternate;
         }
-
-        .card h2 i {
-            color: var(--secondary);
+        
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px rgba(124, 58, 237, 0.5),
+                             0 0 20px rgba(124, 58, 237, 0.3);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(124, 58, 237, 0.8),
+                             0 0 30px rgba(124, 58, 237, 0.6),
+                             0 0 40px rgba(124, 58, 237, 0.4);
+            }
         }
-
-        /* Forms */
-        .form-group {
-            margin-bottom: 20px;
+        
+        .cyber-nav { 
+            display: flex; 
+            gap: 2rem; 
         }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark);
+        
+        .cyber-nav a {
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
         }
-
-        .form-control {
+        
+        .cyber-nav a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
             width: 100%;
-            padding: 14px;
-            border: 2px solid var(--light-gray);
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: var(--transition);
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.2), transparent);
+            transition: 0.5s;
         }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        
+        .cyber-nav a:hover::before { left: 100%; }
+        .cyber-nav a:hover {
+            background: rgba(124, 58, 237, 0.2);
+            color: var(--secondary);
+            transform: translateY(-2px);
         }
-
-        .btn {
-            display: inline-block;
-            background: var(--gradient-primary);
+        
+        /* ============================================= */
+        /* COMPONENTE: BOTONES CYBERPUNK */
+        /* ============================================= */
+        .cyber-btn {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
             color: white;
             border: none;
-            padding: 14px 28px;
+            padding: 0.8rem 1.5rem;
             border-radius: 8px;
-            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: var(--transition);
-            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cyber-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
             width: 100%;
-            margin-top: 10px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
         }
-
-        .btn:hover {
-            background: var(--gradient-secondary);
-            transform: translateY(-3px);
-            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.1);
+        
+        .cyber-btn:hover::before { left: 100%; }
+        .cyber-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--neon-shadow) rgba(124, 58, 237, 0.5);
         }
-
-        .btn:active {
-            transform: translateY(0);
+        
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
         }
-
+        
         .btn-secondary {
-            background: var(--gray);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
         }
-
-        .btn-secondary:hover {
-            background: #5a6268;
+        
+        /* ============================================= */
+        /* SECCIÓN: HERO PRINCIPAL */
+        /* ============================================= */
+        .cyber-hero {
+            padding: 12rem 2rem 6rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-
-        .btn-success {
-            background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+        
+        .cyber-hero::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            animation: pulse 4s ease-in-out infinite;
         }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #f72585 0%, #7209b7 100%);
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.3;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 0.6;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
         }
-
-        /* Sistema de Áreas */
-        .areas-grid {
+        
+        .cyber-hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(124, 58, 237, 0.3);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .cyber-subtitle {
+            font-size: 1.3rem;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* ============================================= */
+        /* MÓDULO: TARJETAS DE CARACTERÍSTICAS */
+        /* ============================================= */
+        .cyber-features {
+            padding: 6rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
         }
-
-        .area-card {
-            background: var(--light);
-            padding: 20px;
+        
+        .cyber-card {
+            background: rgba(15, 15, 35, 0.8);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        .cyber-card:nth-child(1) { animation-delay: 0.1s; }
+        .cyber-card:nth-child(2) { animation-delay: 0.2s; }
+        .cyber-card:nth-child(3) { animation-delay: 0.3s; }
+        .cyber-card:nth-child(4) { animation-delay: 0.4s; }
+        
+        .cyber-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.1), transparent);
+            transition: 0.5s;
+        }
+        
+        .cyber-card:hover::before { left: 100%; }
+        .cyber-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 30px rgba(124, 58, 237, 0.2),
+                        0 0 50px rgba(124, 58, 237, 0.1);
+        }
+        
+        .cyber-card h3 {
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .cyber-card ul {
+            margin-top: 1rem;
+            padding-left: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .cyber-card li {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* ============================================= */
+        /* SECCIÓN: SISTEMA DE CÓDIGOS AUTOMÁTICOS */
+        /* ============================================= */
+        .coding-system {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6rem 2rem;
+            border-top: 1px solid rgba(124, 58, 237, 0.2);
+            border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+        }
+        
+        .code-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+        
+        .code-item {
+            background: rgba(15, 15, 35, 0.6);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s;
+        }
+        
+        .code-item:hover {
+            transform: translateY(-5px);
+            background: rgba(124, 58, 237, 0.1);
+            border-left-color: var(--secondary);
+        }
+        
+        .code-prefix {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            color: var(--accent);
+            display: inline-block;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        /* ============================================= */
+        /* SECCIÓN: SISTEMA DE ROLES */
+        /* ============================================= */
+        .roles-system {
+            padding: 6rem 2rem;
+        }
+        
+        .roles-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .role-badge {
+            background: rgba(124, 58, 237, 0.1);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            padding: 1rem;
             border-radius: 10px;
             text-align: center;
-            transition: var(--transition);
-            cursor: pointer;
-            border-left: 4px solid var(--primary);
+            transition: all 0.3s;
         }
-
-        .area-card:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-5px);
+        
+        .role-badge:hover {
+            transform: scale(1.05);
+            background: rgba(124, 58, 237, 0.2);
+            border-color: var(--primary);
         }
-
-        .area-card i {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            color: var(--primary);
-        }
-
-        .area-card:hover i {
-            color: white;
-        }
-
-        .area-card h3 {
-            font-size: 1.2rem;
-            margin-bottom: 5px;
-        }
-
-        /* Roles y Permisos */
-        .roles-container {
-            margin-top: 20px;
-        }
-
-        .role-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            margin-bottom: 10px;
-            background: var(--light-gray);
-            border-radius: 8px;
-            transition: var(--transition);
-        }
-
-        .role-item:hover {
-            background: var(--light);
-        }
-
+        
         .role-icon {
+            font-size: 2rem;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* ============================================= */
+        /* SECCIÓN: FORMULARIOS */
+        /* ============================================= */
+        .cyber-form {
+            background: rgba(15, 15, 35, 0.8);
+            padding: 2.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            max-width: 500px;
+            margin: 0 auto;
+            animation: scaleIn 0.6s ease-out;
+        }
+        
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+        
+        .form-group input, 
+        .form-group select {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 12px;
+            padding-right: 2.5rem;
+            cursor: pointer;
+        }
+        
+        .form-group input {
+            background-image: none;
+            padding-right: 1rem;
+            cursor: text;
+        }
+        
+        /* Estilos específicos para select */
+        .form-group select option {
+            background: rgba(15, 15, 35, 1) !important;
+            color: white !important;
+            padding: 12px !important;
+            font-size: 1rem !important;
+            border-bottom: 1px solid rgba(124, 58, 237, 0.3) !important;
+        }
+        
+        .form-group select option:hover,
+        .form-group select option:focus,
+        .form-group select option:checked {
+            background: rgba(124, 58, 237, 0.4) !important;
+            color: var(--secondary) !important;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(124, 58, 237, 0.3),
+                        0 0 20px rgba(124, 58, 237, 0.1);
+        }
+        
+        /* Firefox */
+        @-moz-document url-prefix() {
+            .form-group select {
+                color: white !important;
+                text-shadow: 0 0 0 white;
+            }
+            .form-group select option {
+                background: rgba(15, 15, 35, 1) !important;
+                color: white !important;
+            }
+        }
+        
+        .password-wrapper {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 2;
+        }
+        
+        .toggle-password:hover {
+            color: var(--primary);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        /* ============================================= */
+        /* COMPONENTE: BANNERS DE INFORMACIÓN */
+        /* ============================================= */
+        .info-banner {
+            background: rgba(0, 245, 255, 0.1);
+            border: 1px solid var(--secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+            animation: neonGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes neonGlow {
+            from {
+                box-shadow: 0 0 10px rgba(0, 245, 255, 0.3),
+                            inset 0 0 10px rgba(0, 245, 255, 0.1);
+            }
+            to {
+                box-shadow: 0 0 20px rgba(0, 245, 255, 0.6),
+                            inset 0 0 20px rgba(0, 245, 255, 0.2);
+            }
+        }
+        
+        .protection-banner {
+            background: rgba(0, 255, 65, 0.1);
+            border: 2px solid var(--success);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            text-align: center;
+            animation: successPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes successPulse {
+            0%, 100% {
+                border-color: var(--success);
+                box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+            }
+            50% {
+                border-color: #00ffaa;
+                box-shadow: 0 0 25px rgba(0, 255, 65, 0.4);
+            }
+        }
+        
+        /* ============================================= */
+        /* SECCIÓN: FOOTER */
+        /* ============================================= */
+        .cyber-footer {
+            background: rgba(7, 7, 16, 0.95);
+            padding: 4rem 2rem 2rem;
+            border-top: 1px solid rgba(124, 58, 237, 0.3);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cyber-footer::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            animation: scanline 3s linear infinite;
+        }
+        
+        @keyframes scanline {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        /* ============================================= */
+        /* MÓDULO: MODALES CYBERPUNK */
+        /* ============================================= */
+        .cyber-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(7, 7, 16, 0.98);
+            backdrop-filter: blur(10px);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 2rem;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                backdrop-filter: blur(0);
+            }
+            to {
+                opacity: 1;
+                backdrop-filter: blur(10px);
+            }
+        }
+        
+        .modal-content {
+            background: rgba(15, 15, 35, 0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            border: 1px solid rgba(124, 58, 237, 0.4);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5),
+                        0 0 100px rgba(124, 58, 237, 0.1);
+            animation: modalSlideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.7;
+            z-index: 10;
+            transition: all 0.3s;
             width: 40px;
             height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 15px;
-            font-size: 1.2rem;
-            color: white;
         }
-
-        .role-superadmin { background-color: #ef233c; }
-        .role-admin { background-color: #4361ee; }
-        .role-gerente { background-color: #7209b7; }
-        .role-vendedor { background-color: #4cc9f0; }
-        .role-distribuidor { background-color: #f72585; }
-        .role-almacenero { background-color: #ff9e00; }
-        .role-contador { background-color: #06d6a0; }
-        .role-supervisor { background-color: #3a86ff; }
-
-        /* Estado del Sistema */
-        .status-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+        
+        .close-modal:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(90deg);
         }
-
-        .status-item {
+        
+        .modal-header {
             text-align: center;
-            padding: 15px;
-            border-radius: 10px;
-            background: var(--light);
-            transition: var(--transition);
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+            position: relative;
         }
-
-        .status-item:hover {
-            transform: scale(1.05);
+        
+        .modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 25%;
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
         }
-
-        .status-item i {
+        
+        .modal-header h2 {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             font-size: 2rem;
-            margin-bottom: 10px;
+            margin-bottom: 0.5rem;
         }
-
-        .status-item.active {
-            background: rgba(76, 201, 240, 0.2);
-            border: 2px solid var(--success);
-        }
-
-        .status-item.inactive {
-            background: rgba(239, 35, 60, 0.1);
-            border: 2px solid var(--danger);
-        }
-
-        /* Conexión Supabase */
-        .supabase-status {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            background: var(--light);
+        
+        .form-actions {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
         }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        
+        /* ============================================= */
+        /* COMPONENTE: PARTÍCULAS DE FONDO */
+        /* ============================================= */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
         }
-
-        .status-dot {
-            width: 12px;
-            height: 12px;
+        
+        .particle {
+            position: absolute;
+            background: rgba(124, 58, 237, 0.2);
             border-radius: 50%;
+            animation: floatParticle 20s infinite linear;
         }
-
-        .status-dot.connected {
-            background-color: #06d6a0;
-            animation: pulse 2s infinite;
+        
+        @keyframes floatParticle {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
         }
-
-        .status-dot.disconnected {
-            background-color: #ef233c;
-        }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            padding: 30px;
-            margin-top: 50px;
-            border-top: 1px solid var(--light-gray);
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-
-        .footer-links {
+        
+        /* Estilos para el contenedor de teléfono con código de país */
+        .phone-container {
             display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 15px;
+            gap: 0.5rem;
         }
-
-        .footer-links a {
-            color: var(--primary);
-            text-decoration: none;
-            transition: var(--transition);
+        
+        .country-code {
+            flex: 0 0 100px;
         }
-
-        .footer-links a:hover {
+        
+        .phone-number {
+            flex: 1;
+        }
+        
+        /* Estilos para grid de 2 columnas */
+        .name-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        /* Estilos para checkbox mejorado */
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .checkbox-container:hover {
+            background: rgba(124, 58, 237, 0.05);
+            border-color: rgba(124, 58, 237, 0.4);
+        }
+        
+        .checkbox-container input[type="checkbox"] {
+            margin-top: 0.25rem;
+            min-width: 18px;
+            min-height: 18px;
+            accent-color: var(--primary);
+        }
+        
+        .checkbox-container label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin: 0;
+            cursor: pointer;
+        }
+        
+        .checkbox-container label a {
             color: var(--secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .checkbox-container label a:hover {
+            color: var(--primary);
             text-decoration: underline;
         }
-
-        /* Animaciones */
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        /* Responsive */
+        
+        /* ============================================= */
+        /* MEDIA QUERIES - RESPONSIVE */
+        /* ============================================= */
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2.2rem;
-            }
-            
-            .card {
-                padding: 20px;
-            }
-            
-            .areas-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
+            .cyber-hero h1 { font-size: 2.5rem; }
+            .cyber-nav { display: none; }
+            .features-grid { grid-template-columns: 1fr; }
+            .modal-content { padding: 1.5rem; }
+            .form-actions { flex-direction: column; }
+            .phone-container { flex-direction: column; }
+            .country-code { flex: 1; }
+            .checkbox-container { flex-direction: column; }
+            .name-grid { grid-template-columns: 1fr; }
+            .code-grid { grid-template-columns: 1fr; }
+            .roles-container { grid-template-columns: repeat(2, 1fr); }
         }
-
-        /* Mensajes */
-        .message {
-            padding: 15px;
+        
+        @media (max-width: 480px) {
+            .cyber-header { padding: 1rem; }
+            .cyber-hero { padding: 8rem 1rem 4rem; }
+            .cyber-features { padding: 3rem 1rem; }
+            .roles-container { grid-template-columns: 1fr; }
+        }
+        
+        /* Estilos para loading */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(7, 7, 16, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(124, 58, 237, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Mensajes de alerta */
+        .alert {
+            padding: 1rem;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin: 1rem 0;
             display: none;
         }
-
-        .message.success {
-            background: rgba(6, 214, 160, 0.2);
-            border: 2px solid #06d6a0;
-            color: #055a43;
+        
+        .alert-success {
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
         }
-
-        .message.error {
-            background: rgba(239, 35, 60, 0.1);
-            border: 2px solid #ef233c;
-            color: #a3152a;
+        
+        .alert-error {
+            background: rgba(255, 0, 85, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
         }
-
-        .message.warning {
-            background: rgba(247, 37, 133, 0.1);
-            border: 2px solid #f72585;
-            color: #8a0b4b;
+        
+        /* ============================================= */
+        /* NUEVOS COMPONENTES: TECNOLOGÍA STACK */
+        /* ============================================= */
+        .tech-stack {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 4rem 2rem;
+            margin: 2rem 0;
         }
-
-        /* Tabs */
-        .tabs {
+        
+        .tech-icons {
             display: flex;
-            gap: 5px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--light-gray);
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
         }
-
-        .tab {
-            padding: 12px 24px;
-            background: none;
-            border: none;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: var(--transition);
-            border-bottom: 3px solid transparent;
-            color: var(--gray);
-            font-weight: 600;
+        
+        .tech-icon {
+            text-align: center;
+            transition: all 0.3s;
         }
-
-        .tab:hover {
-            color: var(--primary);
+        
+        .tech-icon:hover {
+            transform: translateY(-10px);
         }
-
-        .tab.active {
-            color: var(--primary);
-            border-bottom: 3px solid var(--primary);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-            animation: fadeInUp 0.5s ease;
+        
+        .tech-icon i {
+            font-size: 3rem;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1><i class="fas fa-rocket"></i> Nexial Suite</h1>
-            <p>Sistema integral de gestión empresarial con estructura de roles, áreas de trabajo y códigos automáticos</p>
-            <p class="tagline">Migrado completamente a Supabase • Códigos automáticos • Multi-empresa</p>
+    <!-- BLOQUE: PARTÍCULAS DE FONDO -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- BLOQUE: LOADING GLOBAL -->
+    <div class="loading" id="globalLoading">
+        <div class="spinner"></div>
+        <p style="margin-top: 1rem; color: var(--secondary);">Procesando...</p>
+    </div>
+    
+    <!-- BLOQUE: HEADER PRINCIPAL -->
+    <header class="cyber-header">
+        <div class="cyber-logo">
+            <i class="fas fa-brain"></i>
+            NEXIAL SUITE
         </div>
+        <nav class="cyber-nav">
+            <a href="#inicio">Inicio</a>
+            <a href="#caracteristicas">Sistema</a>
+            <a href="#codigos">Códigos</a>
+            <a href="#roles">Roles</a>
+            <a href="#tecnologia">Tecnología</a>
+            <a href="#" onclick="Nexial.openRegisterModal()">Registro</a>
+        </nav>
+        <button class="cyber-btn" onclick="Nexial.openLoginModal()">
+            <i class="fas fa-sign-in-alt"></i> Acceso
+        </button>
+    </header>
 
-        <!-- Mensajes de estado -->
-        <div id="message" class="message"></div>
+    <!-- BLOQUE: SECCIÓN HERO -->
+    <section class="cyber-hero" id="inicio">
+        <h1>Sistema Empresarial 100% Supabase</h1>
+        <p class="cyber-subtitle">
+            Arquitectura moderna con PostgreSQL, RLS, y triggers automáticos.
+            Códigos únicos por empresa, separación total de datos, y máxima seguridad.
+        </p>
+        <button class="cyber-btn" style="padding: 1.2rem 2.5rem; font-size: 1.1rem;" onclick="Nexial.openRegisterModal()">
+            <i class="fas fa-database"></i> REGISTRAR EMPRESA GRATIS
+        </button>
+    </section>
 
-        <!-- Tabs principales -->
-        <div class="tabs">
-            <button class="tab active" onclick="showTab('registro')">Registro</button>
-            <button class="tab" onclick="showTab('estructura')">Estructura</button>
-            <button class="tab" onclick="showTab('conexion')">Conexión</button>
-            <button class="tab" onclick="showTab('sistema')">Sistema</button>
+    <!-- BLOQUE: CARACTERÍSTICAS DEL SISTEMA -->
+    <section class="cyber-features" id="caracteristicas">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h2 style="color: var(--secondary); font-size: 2.5rem; animation: fadeInUp 1s ease-out;">SISTEMA POR ÁREAS ESPECIALIZADAS</h2>
+            <p style="opacity: 0.8;">Cada área con funciones específicas y control total</p>
         </div>
+        
+        <div class="features-grid">
+            <div class="cyber-card">
+                <h3><i class="fas fa-crown"></i> DIRECCIÓN EJECUTIVA</h3>
+                <p>Control total de su empresa. Panel ejecutivo completo con visibilidad de todas las áreas.</p>
+                <ul>
+                    <li>Supervisión todas las áreas</li>
+                    <li>Reportes consolidados en tiempo real</li>
+                    <li>Gestión estratégica y toma de decisiones</li>
+                    <li>Control financiero completo</li>
+                    <li>Monitoreo de producción y ventas</li>
+                </ul>
+            </div>
+            
+            <div class="cyber-card">
+                <h3><i class="fas fa-chart-line"></i> DIRECCIÓN COMERCIAL</h3>
+                <p>Ventas, inventario, rutas y gestión comercial especializada con apps móviles.</p>
+                <ul>
+                    <li>Asignación de zonas geográficas a vendedores</li>
+                    <li>Control de inventario en tiempo real</li>
+                    <li>Optimización de rutas de distribución</li>
+                    <li>Seguimiento de pedidos GPS</li>
+                    <li>Mapas y geolocalización avanzada</li>
+                    <li>Asignación de productos a vendedores</li>
+                    <li>Aprobación de clientes y pedidos</li>
+                </ul>
+            </div>
+            
+            <div class="cyber-card">
+                <h3><i class="fas fa-calculator"></i> ADMINISTRACIÓN & FINANZAS</h3>
+                <p>Contabilidad, nómina, facturación y gestión financiera completa.</p>
+                <ul>
+                    <li>Gestión de usuarios y empleados</li>
+                    <li>Recursos humanos completo</li>
+                    <li>Contabilidad automatizada</li>
+                    <li>Facturación electrónica</li>
+                    <li>Cálculo de comisiones y sueldos</li>
+                    <li>Gestión de proveedores</li>
+                    <li>Reportes financieros detallados</li>
+                </ul>
+            </div>
+            
+            <div class="cyber-card">
+                <h3><i class="fas fa-mobile-alt"></i> APPS ESPECIALIZADAS</h3>
+                <p>Aplicaciones móviles para cada función operativa.</p>
+                <ul>
+                    <li>App Vendedor: Pedidos en campo</li>
+                    <li>App Almacén: Control de inventario</li>
+                    <li>App Distribuidor: Rutas y entregas</li>
+                    <li>Trabajo offline con sincronización</li>
+                    <li>Notificaciones push en tiempo real</li>
+                    <li>Fotos y firmas digitales</li>
+                </ul>
+            </div>
+        </div>
+    </section>
 
-        <!-- Contenido principal -->
-        <div class="main-content">
-            <!-- Tab de Registro -->
-            <div id="registro" class="tab-content active">
-                <div class="card">
-                    <h2><i class="fas fa-user-plus"></i> Registro de Empresa</h2>
-                    <p>Crea tu empresa en el sistema Nexial Suite. Se generará automáticamente un código único para tu empresa.</p>
-                    
-                    <div class="form-group">
-                        <label for="nombreEmpresa">Nombre de la Empresa *</label>
-                        <input type="text" id="nombreEmpresa" class="form-control" placeholder="Ej: Mi Negocio S.A." required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="nitEmpresa">NIT *</label>
-                        <input type="text" id="nitEmpresa" class="form-control" placeholder="Ej: 123456789" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="emailEmpresa">Email de contacto *</label>
-                        <input type="email" id="emailEmpresa" class="form-control" placeholder="empresa@ejemplo.com" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="telefonoEmpresa">Teléfono</label>
-                        <input type="tel" id="telefonoEmpresa" class="form-control" placeholder="+591 70000000">
-                    </div>
-                    
-                    <button class="btn" onclick="registrarEmpresa()">
-                        <i class="fas fa-plus-circle"></i> Registrar Empresa
-                    </button>
-                </div>
+    <!-- BLOQUE: SISTEMA DE CÓDIGOS AUTOMÁTICOS -->
+    <section class="coding-system" id="codigos">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h2 style="color: var(--accent); font-size: 2.5rem;">SISTEMA DE CÓDIGOS AUTOMÁTICOS</h2>
+            <p style="opacity: 0.8;">Triggers PostgreSQL generan códigos únicos automáticamente</p>
+        </div>
+        
+        <div class="code-grid">
+            <div class="code-item">
+                <div class="code-prefix">EMPR-XXXX-001</div>
+                <p><strong>Empresas:</strong> Prefijo + 4 letras nombre + secuencia</p>
+            </div>
+            <div class="code-item">
+                <div class="code-prefix">USR-EMPR-001</div>
+                <p><strong>Usuarios:</strong> USR + código empresa + secuencia</p>
+            </div>
+            <div class="code-item">
+                <div class="code-prefix">CLI-EMPR-2024-0001</div>
+                <p><strong>Clientes:</strong> CLI + empresa + año + secuencia</p>
+            </div>
+            <div class="code-item">
+                <div class="code-prefix">EMP-EMPR-001</div>
+                <p><strong>Empleados:</strong> EMP + empresa + secuencia</p>
+            </div>
+            <div class="code-item">
+                <div class="code-prefix">ALM-EMPR-CIU-001</div>
+                <p><strong>Almacenes:</strong> ALM + empresa + ciudad + secuencia</p>
+            </div>
+            <div class="code-item">
+                <div class="code-prefix">PROD-EMPR-CAT-001</div>
+                <p><strong>Productos:</strong> PROD + empresa + categoría + secuencia</p>
+            </div>
+            <div class="code-item">
+                <div class="code-prefix">VTA-EMPR-2024-00001</div>
+                <p><strong>Ventas:</strong> VTA + empresa + año + secuencia (5 dígitos)</p>
+            </div>
+            <div class="code-item">
+                <div class="code-prefix">PAG-EMPR-2024-0001</div>
+                <p><strong>Pagos:</strong> PAG + empresa + año + secuencia</p>
+            </div>
+        </div>
+    </section>
 
-                <div class="card">
-                    <h2><i class="fas fa-user-cog"></i> Registro de Usuario</h2>
-                    <p>Registra usuarios para tu empresa. El sistema generará automáticamente un código único basado en el rol y la empresa.</p>
-                    
-                    <div class="form-group">
-                        <label for="nombreUsuario">Nombre completo *</label>
-                        <input type="text" id="nombreUsuario" class="form-control" placeholder="Ej: Juan Pérez" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="emailUsuario">Email *</label>
-                        <input type="email" id="emailUsuario" class="form-control" placeholder="usuario@empresa.com" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="rolUsuario">Rol *</label>
-                        <select id="rolUsuario" class="form-control" required>
-                            <option value="">Seleccionar rol...</option>
-                            <option value="superadmin">Super Administrador</option>
-                            <option value="admin_empresa">Administrador de Empresa</option>
-                            <option value="gerente">Gerente</option>
-                            <option value="vendedor">Vendedor</option>
-                            <option value="distribuidor">Distribuidor</option>
-                            <option value="almacenero">Almacenero</option>
-                            <option value="contador">Contador</option>
-                            <option value="supervisor">Supervisor</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="empresaUsuario">Empresa *</label>
-                        <select id="empresaUsuario" class="form-control" required>
-                            <option value="">Seleccionar empresa...</option>
-                        </select>
-                    </div>
-                    
-                    <button class="btn btn-success" onclick="registrarUsuario()">
-                        <i class="fas fa-user-plus"></i> Registrar Usuario
+    <!-- BLOQUE: SISTEMA DE ROLES -->
+    <section class="roles-system" id="roles">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h2 style="color: var(--primary); font-size: 2.5rem;">SISTEMA COMPLETO DE ROLES</h2>
+            <p style="opacity: 0.8;">Permisos granulares y separación por empresa con RLS</p>
+        </div>
+        
+        <div class="roles-container">
+            <div class="role-badge">
+                <div class="role-icon"><i class="fas fa-user-shield"></i></div>
+                <h4>superadmin</h4>
+                <p>Acceso total a todas las empresas</p>
+            </div>
+            <div class="role-badge">
+                <div class="role-icon"><i class="fas fa-building"></i></div>
+                <h4>admin_empresa</h4>
+                <p>Administrador completo de una empresa</p>
+            </div>
+            <div class="role-badge">
+                <div class="role-icon"><i class="fas fa-chart-line"></i></div>
+                <h4>gerente</h4>
+                <p>Gestión comercial y operativa</p>
+            </div>
+            <div class="role-badge">
+                <div class="role-icon"><i class="fas fa-user-tie"></i></div>
+                <h4>vendedor</h4>
+                <p>Ventas y visitas a clientes</p>
+            </div>
+            <div class="role-badge">
+                <div class="role-icon"><i class="fas fa-truck"></i></div>
+                <h4>distribuidor</h4>
+                <p>Distribución y entregas</p>
+            </div>
+            <div class="role-badge">
+                <div class="role-icon"><i class="fas fa-boxes"></i></div>
+                <h4>almacenero</h4>
+                <p>Gestión de inventario</p>
+            </div>
+            <div class="role-badge">
+                <div class="role-icon"><i class="fas fa-calculator"></i></div>
+                <h4>contador</h4>
+                <p>Gestión financiera</p>
+            </div>
+            <div class="role-badge">
+                <div class="role-icon"><i class="fas fa-clipboard-check"></i></div>
+                <h4>supervisor</h4>
+                <p>Supervisión de equipos</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOQUE: TECNOLOGÍA -->
+    <section class="tech-stack" id="tecnologia">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h2 style="color: var(--secondary); font-size: 2.5rem;">ARQUITECTURA TECNOLÓGICA</h2>
+            <p style="opacity: 0.8;">Stack moderno para máxima seguridad y rendimiento</p>
+        </div>
+        
+        <div class="tech-icons">
+            <div class="tech-icon">
+                <i class="fab fa-github"></i>
+                <p>GitHub Pages</p>
+                <small>Hosting estático</small>
+            </div>
+            <div class="tech-icon">
+                <i class="fas fa-database"></i>
+                <p>Supabase</p>
+                <small>PostgreSQL + Auth</small>
+            </div>
+            <div class="tech-icon">
+                <i class="fab fa-js"></i>
+                <p>JavaScript</p>
+                <small>Frontend dinámico</small>
+            </div>
+            <div class="tech-icon">
+                <i class="fas fa-code"></i>
+                <p>HTML5 + CSS3</p>
+                <small>Interfaz moderna</small>
+            </div>
+            <div class="tech-icon">
+                <i class="fas fa-shield-alt"></i>
+                <p>Row Level Security</p>
+                <small>Separación de datos</small>
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOQUE: VENTAJAS DEL SISTEMA -->
+    <section class="cyber-features" id="ventajas" style="background: var(--dark);">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h2 style="color: var(--accent); font-size: 2.5rem;">VENTAJAS DEL SISTEMA SUPABASE</h2>
+            <p style="opacity: 0.8;">Todo lo que necesitas en una sola plataforma</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="cyber-card">
+                <h3><i class="fas fa-sync-alt"></i> TIEMPO REAL</h3>
+                <p>Todas las áreas actualizadas al instante. Lo que ve el vendedor en campo lo ve el jefe en su oficina.</p>
+                <ul>
+                    <li>Ventas registradas al instante</li>
+                    <li>Stock actualizado en tiempo real</li>
+                    <li>Ubicación de distribuidores en vivo</li>
+                    <li>Notificaciones inmediatas</li>
+                </ul>
+            </div>
+            
+            <div class="cyber-card">
+                <h3><i class="fas fa-shield-alt"></i> SEGURIDAD TOTAL</h3>
+                <p>Datos protegidos con encriptación de extremo a extremo. Cada empresa solo ve su información.</p>
+                <ul>
+                    <li>Separación de datos por empresa</li>
+                    <li>Roles y permisos granulares</li>
+                    <li>Backup automático diario</li>
+                    <li>Cumplimiento normativo boliviano</li>
+                </ul>
+            </div>
+            
+            <div class="cyber-card">
+                <h3><i class="fas fa-chart-bar"></i> REPORTES AVANZADOS</h3>
+                <p>Análisis detallado de cada aspecto del negocio. Toma decisiones basadas en datos reales.</p>
+                <ul>
+                    <li>Panel ejecutivo personalizable</li>
+                    <li>Reportes financieros automáticos</li>
+                    <li>Análisis de ventas por zona</li>
+                    <li>Proyecciones y tendencias</li>
+                </ul>
+            </div>
+            
+            <div class="cyber-card">
+                <h3><i class="fas fa-cogs"></i> INTEGRACIÓN COMPLETA</h3>
+                <p>Todas las áreas conectadas entre sí. Finanzas ve lo de ventas, ventas ve lo de almacén.</p>
+                <ul>
+                    <li>Flujo de trabajo automatizado</li>
+                    <li>Aprobaciones electrónicas</li>
+                    <li>Comunicación entre áreas</li>
+                    <li>Historial completo de operaciones</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOQUE: FOOTER -->
+    <footer class="cyber-footer">
+        <div class="cyber-logo" style="justify-content: center; margin-bottom: 1rem;">
+            <i class="fas fa-brain"></i>
+            NEXIAL SUITE
+        </div>
+        <p style="opacity: 0.8; margin-bottom: 2rem;">Sistema de Gestión Empresarial Integral con PostgreSQL y Supabase</p>
+        
+        <div style="display: flex; justify-content: center; gap: 2rem; margin: 2rem 0; flex-wrap: wrap;">
+            <a href="#inicio" style="color: var(--secondary); text-decoration: none;">Inicio</a>
+            <a href="#caracteristicas" style="color: var(--secondary); text-decoration: none;">Sistema</a>
+            <a href="#codigos" style="color: var(--secondary); text-decoration: none;">Códigos</a>
+            <a href="#roles" style="color: var(--secondary); text-decoration: none;">Roles</a>
+            <a href="#tecnologia" style="color: var(--secondary); text-decoration: none;">Tecnología</a>
+            <a href="#" onclick="Nexial.openRegisterModal()" style="color: var(--secondary); text-decoration: none;">Registro</a>
+            <a href="#" onclick="Nexial.openLoginModal()" style="color: var(--secondary); text-decoration: none;">Acceso</a>
+        </div>
+        
+        <p>© 2025 Nexial Suite. Todos los derechos reservados.</p>
+        <p style="margin-top: 1rem; opacity: 0.7;">
+            <i class="fas fa-envelope"></i> marcelodanielcc@gmail.com
+        </p>
+        <p style="margin-top: 0.5rem; opacity: 0.6; font-size: 0.9rem;">
+            Powered by Supabase - PostgreSQL Database | Triggers automáticos | RLS Security
+        </p>
+    </footer>
+
+    <!-- ============================================= -->
+    <!-- MODALES DEL SISTEMA -->
+    <!-- ============================================= -->
+
+    <!-- MODAL: LOGIN -->
+    <div class="cyber-modal" id="loginModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="Nexial.closeLoginModal()">×</button>
+            
+            <div class="modal-header">
+                <h2><i class="fas fa-sign-in-alt"></i> ACCESO AL SISTEMA</h2>
+                <p style="color: rgba(255,255,255,0.7);">Ingresa con tus credenciales</p>
+            </div>
+            
+            <div class="alert" id="loginAlert"></div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-user"></i> Email</label>
+                <input type="email" id="loginEmail" placeholder="usuario@empresa.com" autofocus>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-key"></i> Contraseña</label>
+                <div class="password-wrapper">
+                    <input type="password" id="loginPassword" placeholder="Tu contraseña">
+                    <button type="button" class="toggle-password" onclick="Nexial.togglePassword('loginPassword')">
+                        <i class="fas fa-eye"></i>
                     </button>
                 </div>
             </div>
-
-            <!-- Tab de Estructura -->
-            <div id="estructura" class="tab-content">
-                <div class="card">
-                    <h2><i class="fas fa-sitemap"></i> Áreas de Trabajo</h2>
-                    <p>Sistema modular de áreas especializadas para cada función empresarial.</p>
-                    
-                    <div class="areas-grid">
-                        <div class="area-card" onclick="mostrarArea('ventas')">
-                            <i class="fas fa-shopping-cart"></i>
-                            <h3>Ventas</h3>
-                            <p>Gestión comercial</p>
-                        </div>
-                        
-                        <div class="area-card" onclick="mostrarArea('inventario')">
-                            <i class="fas fa-warehouse"></i>
-                            <h3>Inventario</h3>
-                            <p>Control de stock</p>
-                        </div>
-                        
-                        <div class="area-card" onclick="mostrarArea('distribucion')">
-                            <i class="fas fa-truck"></i>
-                            <h3>Distribución</h3>
-                            <p>Logística y rutas</p>
-                        </div>
-                        
-                        <div class="area-card" onclick="mostrarArea('clientes')">
-                            <i class="fas fa-users"></i>
-                            <h3>Clientes</h3>
-                            <p>CRM y seguimiento</p>
-                        </div>
-                        
-                        <div class="area-card" onclick="mostrarArea('reportes')">
-                            <i class="fas fa-chart-bar"></i>
-                            <h3>Reportes</h3>
-                            <p>Análisis y datos</p>
-                        </div>
-                        
-                        <div class="area-card" onclick="mostrarArea('configuracion')">
-                            <i class="fas fa-cogs"></i>
-                            <h3>Configuración</h3>
-                            <p>Ajustes del sistema</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2><i class="fas fa-user-tag"></i> Estructura de Roles</h2>
-                    <p>Sistema jerárquico de permisos y responsabilidades.</p>
-                    
-                    <div class="roles-container">
-                        <div class="role-item">
-                            <div class="role-icon role-superadmin">
-                                <i class="fas fa-crown"></i>
-                            </div>
-                            <div>
-                                <h3>Super Administrador</h3>
-                                <p>Acceso completo a todo el sistema</p>
-                            </div>
-                        </div>
-                        
-                        <div class="role-item">
-                            <div class="role-icon role-admin">
-                                <i class="fas fa-user-shield"></i>
-                            </div>
-                            <div>
-                                <h3>Administrador de Empresa</h3>
-                                <p>Gestión completa de una empresa</p>
-                            </div>
-                        </div>
-                        
-                        <div class="role-item">
-                            <div class="role-icon role-gerente">
-                                <i class="fas fa-user-tie"></i>
-                            </div>
-                            <div>
-                                <h3>Gerente</h3>
-                                <p>Supervisión de áreas específicas</p>
-                            </div>
-                        </div>
-                        
-                        <div class="role-item">
-                            <div class="role-icon role-vendedor">
-                                <i class="fas fa-shopping-bag"></i>
-                            </div>
-                            <div>
-                                <h3>Vendedor</h3>
-                                <p>Gestión de ventas y clientes</p>
-                            </div>
-                        </div>
-                        
-                        <div class="role-item">
-                            <div class="role-icon role-distribuidor">
-                                <i class="fas fa-truck-loading"></i>
-                            </div>
-                            <div>
-                                <h3>Distribuidor</h3>
-                                <p>Gestión de rutas y entregas</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            
+            <div style="text-align: right; margin: 1rem 0;">
+                <a href="#" onclick="Nexial.recoverPassword()" style="color: var(--primary); text-decoration: none;">
+                    <i class="fas fa-unlock-alt"></i> ¿Olvidaste tu contraseña?
+                </a>
             </div>
+            
+            <button class="cyber-btn" style="width: 100%; padding: 1rem; font-size: 1.1rem;" onclick="Nexial.login()">
+                <i class="fas fa-sign-in-alt"></i> INGRESAR AL SISTEMA
+            </button>
+            
+            <div style="text-align: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <p style="color: rgba(255,255,255,0.7);">¿No tienes cuenta?</p>
+                <button class="cyber-btn btn-secondary" onclick="Nexial.closeLoginModal(); Nexial.openRegisterModal();" style="width: 100%; margin-top: 0.5rem;">
+                    <i class="fas fa-building"></i> REGISTRAR EMPRESA
+                </button>
+            </div>
+        </div>
+    </div>
 
-            <!-- Tab de Conexión -->
-            <div id="conexion" class="tab-content">
-                <div class="card">
-                    <h2><i class="fas fa-database"></i> Conexión Supabase</h2>
-                    <p>Estado de conexión con la base de datos en la nube.</p>
-                    
-                    <div class="supabase-status">
-                        <div class="status-indicator">
-                            <div id="statusDot" class="status-dot disconnected"></div>
-                            <span id="statusText">Desconectado de Supabase</span>
+    <!-- MODAL: REGISTRO DE EMPRESA -->
+    <div class="cyber-modal" id="registerModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="Nexial.closeRegisterModal()">×</button>
+            
+            <div class="modal-header">
+                <h2><i class="fas fa-building"></i> REGISTRO DE EMPRESA</h2>
+                <p style="color: rgba(255,255,255,0.7);">Completa los datos de tu empresa</p>
+            </div>
+            
+            <div class="info-banner">
+                <h3><i class="fas fa-gift"></i> 30 DÍAS DE PRUEBA GRATUITA</h3>
+                <p>Regístrate hoy y obtén acceso completo por 30 días sin costo</p>
+            </div>
+            
+            <div class="alert" id="registerAlert"></div>
+            
+            <form id="registerForm" onsubmit="event.preventDefault(); Nexial.registerCompany(event);">
+                <div class="form-group">
+                    <label><i class="fas fa-building"></i> Razón Social *</label>
+                    <input type="text" id="companyName" required placeholder="Ej: Mi Empresa S.A.">
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-id-card"></i> Documento de Identificación *</label>
+                    <select id="docType" required>
+                        <option value="">Seleccionar tipo</option>
+                        <option value="NIT">NIT (Bolivia)</option>
+                        <option value="RUC">RUC (Perú)</option>
+                        <option value="RUT">RUT (Chile)</option>
+                        <option value="CUIT">CUIT/CUIL (Argentina)</option>
+                        <option value="CNPJ">CNPJ (Brasil)</option>
+                        <option value="NIE">NIE/DNI (España)</option>
+                        <option value="RFC">RFC (México)</option>
+                        <option value="RIF">RIF (Venezuela)</option>
+                        <option value="NIT">NIT (Colombia)</option>
+                        <option value="EIN">EIN (EE.UU.)</option>
+                        <option value="OTRO">Otro</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-hashtag"></i> Número de Documento *</label>
+                    <input type="text" id="companyDocNumber" required placeholder="Ingrese el número de documento">
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-industry"></i> Tipo de Industria *</label>
+                    <select id="companyIndustry" required>
+                        <option value="">Seleccionar industria</option>
+                        <option value="Tecnología">Tecnología</option>
+                        <option value="Comercio">Comercio</option>
+                        <option value="Manufactura">Manufactura</option>
+                        <option value="Servicios">Servicios</option>
+                        <option value="Alimentos">Alimentos</option>
+                        <option value="Construcción">Construcción</option>
+                        <option value="Mineria">Minería</option>
+                        <option value="Agricultura">Agricultura</option>
+                        <option value="Turismo">Turismo</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Nombres *</label>
+                    <input type="text" id="names" required placeholder="Ingrese sus nombres completos">
+                </div>
+                
+                <div class="name-grid">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Primer Apellido *</label>
+                        <input type="text" id="firstLastName" required placeholder="Apellido paterno">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Segundo Apellido</label>
+                        <input type="text" id="secondLastName" placeholder="Apellido materno">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> Email Corporativo *</label>
+                    <input type="email" id="companyEmail" required placeholder="contacto@empresa.com">
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-phone"></i> Teléfono/Celular *</label>
+                    <div class="phone-container">
+                        <div class="form-group country-code">
+                            <select id="countryCode" required>
+                                <option value="+591">+591 (BO)</option>
+                                <option value="+51">+51 (PE)</option>
+                                <option value="+56">+56 (CL)</option>
+                                <option value="+54">+54 (AR)</option>
+                                <option value="+55">+55 (BR)</option>
+                                <option value="+57">+57 (CO)</option>
+                                <option value="+58">+58 (VE)</option>
+                                <option value="+52">+52 (MX)</option>
+                                <option value="+1">+1 (US/CA)</option>
+                                <option value="+34">+34 (ES)</option>
+                                <option value="+49">+49 (DE)</option>
+                                <option value="+33">+33 (FR)</option>
+                                <option value="+44">+44 (UK)</option>
+                            </select>
                         </div>
-                        <button class="btn btn-secondary" onclick="probarConexion()">
-                            <i class="fas fa-sync-alt"></i> Probar Conexión
+                        <div class="form-group phone-number">
+                            <input type="tel" id="companyPhone" required placeholder="60000000">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-key"></i> Contraseña Administrador *</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="adminPassword" required minlength="8" placeholder="Mínimo 8 caracteres">
+                        <button type="button" class="toggle-password" onclick="Nexial.togglePassword('adminPassword')">
+                            <i class="fas fa-eye"></i>
                         </button>
                     </div>
-                    
-                    <div class="form-group" style="margin-top: 20px;">
-                        <label for="supabaseUrl">URL de Supabase</label>
-                        <input type="text" id="supabaseUrl" class="form-control" value="https://cmrysvcahpouziogzang.supabase.co" readonly>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="supabaseKey">Clave Pública Anónima</label>
-                        <input type="text" id="supabaseKey" class="form-control" value="sb_publishable_rj4q31YiBwxLcfuswCX21g_LxsxRc_n" readonly>
-                    </div>
-                    
-                    <div class="status-container">
-                        <div class="status-item active">
-                            <i class="fas fa-database" style="color: #06d6a0;"></i>
-                            <h3>PostgreSQL</h3>
-                            <p>Base de datos</p>
-                        </div>
-                        
-                        <div class="status-item active">
-                            <i class="fas fa-bolt" style="color: #4cc9f0;"></i>
-                            <h3>Realtime</h3>
-                            <p>Suscripciones en vivo</p>
-                        </div>
-                        
-                        <div class="status-item active">
-                            <i class="fas fa-lock" style="color: #7209b7;"></i>
-                            <h3>Auth</h3>
-                            <p>Autenticación</p>
-                        </div>
-                        
-                        <div class="status-item active">
-                            <i class="fas fa-hdd" style="color: #ff9e00;"></i>
-                            <h3>Storage</h3>
-                            <p>Almacenamiento</p>
-                        </div>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-key"></i> Confirmar Contraseña *</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="confirmPassword" required minlength="8" placeholder="Repita su contraseña">
+                        <button type="button" class="toggle-password" onclick="Nexial.togglePassword('confirmPassword')">
+                            <i class="fas fa-eye"></i>
+                        </button>
                     </div>
                 </div>
-
-                <div class="card">
-                    <h2><i class="fas fa-code"></i> Sistema de Códigos Automáticos</h2>
-                    <p>El sistema genera automáticamente códigos únicos para todos los registros.</p>
-                    
-                    <div class="form-group">
-                        <label>Ejemplos de códigos generados:</label>
-                        <div style="background: var(--light-gray); padding: 15px; border-radius: 8px; margin-top: 10px;">
-                            <p><strong>Empresa:</strong> NOMB-001</p>
-                            <p><strong>Usuario:</strong> USR-NOMB-001</p>
-                            <p><strong>Cliente:</strong> CLI-NOMB-2023-0001</p>
-                            <p><strong>Venta:</strong> VTA-NOMB-2023-00001</p>
-                            <p><strong>Producto:</strong> PROD-NOMB-ALI-001</p>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Estructura de códigos:</label>
-                        <ul style="padding-left: 20px; margin-top: 10px;">
-                            <li>Prefijo según tipo (EMP, USR, CLI, VTA, etc.)</li>
-                            <li>Código de empresa (4 letras)</li>
-                            <li>Año o categoría según el caso</li>
-                            <li>Secuencia numérica automática</li>
-                        </ul>
-                    </div>
-                    
-                    <button class="btn btn-warning" onclick="generarEjemploCodigo()">
-                        <i class="fas fa-barcode"></i> Generar Código de Ejemplo
+                
+                <div class="checkbox-container">
+                    <input type="checkbox" id="termsCheckbox" required>
+                    <label for="termsCheckbox">
+                        Acepto los <a href="#" onclick="Nexial.showTerms()">términos y condiciones</a> del servicio y autorizo el tratamiento de mis datos según la normativa aplicable.
+                    </label>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="cyber-btn btn-secondary" onclick="Nexial.closeRegisterModal()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="cyber-btn">
+                        <i class="fas fa-check-circle"></i> REGISTRAR EMPRESA
                     </button>
                 </div>
-            </div>
-
-            <!-- Tab de Sistema -->
-            <div id="sistema" class="tab-content">
-                <div class="card">
-                    <h2><i class="fas fa-info-circle"></i> Estado del Sistema</h2>
-                    <p>Información general y estadísticas del sistema Nexial Suite.</p>
-                    
-                    <div class="status-container">
-                        <div class="status-item">
-                            <i class="fas fa-building" style="color: #4361ee;"></i>
-                            <h3 id="empresasCount">0</h3>
-                            <p>Empresas</p>
-                        </div>
-                        
-                        <div class="status-item">
-                            <i class="fas fa-users" style="color: #7209b7;"></i>
-                            <h3 id="usuariosCount">0</h3>
-                            <p>Usuarios</p>
-                        </div>
-                        
-                        <div class="status-item">
-                            <i class="fas fa-shopping-cart" style="color: #4cc9f0;"></i>
-                            <h3 id="ventasCount">0</h3>
-                            <p>Ventas</p>
-                        </div>
-                        
-                        <div class="status-item">
-                            <i class="fas fa-boxes" style="color: #06d6a0;"></i>
-                            <h3 id="productosCount">0</h3>
-                            <p>Productos</p>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--light-gray);">
-                        <h3 style="margin-bottom: 15px; color: var(--primary);">Características principales:</h3>
-                        <ul style="padding-left: 20px;">
-                            <li>Sistema multi-empresa con aislamiento de datos</li>
-                            <li>Generación automática de códigos únicos</li>
-                            <li>Estructura completa de roles y permisos</li>
-                            <li>Áreas de trabajo especializadas</li>
-                            <li>Integración completa con Supabase</li>
-                            <li>Interfaz moderna con animaciones</li>
-                            <li>Sistema de notificaciones en tiempo real</li>
-                            <li>Reportes y estadísticas avanzadas</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2><i class="fas fa-cogs"></i> Configuración</h2>
-                    <p>Ajustes y configuración del sistema Nexial Suite.</p>
-                    
-                    <div class="form-group">
-                        <label for="temaSistema">Tema de colores</label>
-                        <select id="temaSistema" class="form-control" onchange="cambiarTema()">
-                            <option value="default">Azul (Predeterminado)</option>
-                            <option value="purple">Morado</option>
-                            <option value="green">Verde</option>
-                            <option value="red">Rojo</option>
-                            <option value="dark">Oscuro</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="animaciones">Animaciones</label>
-                        <select id="animaciones" class="form-control" onchange="cambiarAnimaciones()">
-                            <option value="activadas">Activadas</option>
-                            <option value="desactivadas">Desactivadas</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Acciones del sistema:</label>
-                        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
-                            <button class="btn btn-secondary" onclick="cargarDatosIniciales()">
-                                <i class="fas fa-download"></i> Cargar Datos Iniciales
-                            </button>
-                            
-                            <button class="btn btn-secondary" onclick="resetearSistema()">
-                                <i class="fas fa-redo"></i> Reiniciar Sistema
-                            </button>
-                            
-                            <button class="btn btn-warning" onclick="exportarConfiguracion()">
-                                <i class="fas fa-file-export"></i> Exportar Configuración
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <p>Nexial Suite v2.0 • Sistema de Gestión Empresarial • Migrado completamente a Supabase</p>
-            <p>Desarrollado con PostgreSQL, JavaScript y Supabase • Códigos automáticos • Multi-empresa</p>
-            
-            <div class="footer-links">
-                <a href="https://github.com/MarckdellCC/Nexial-Suite" target="_blank">
-                    <i class="fab fa-github"></i> GitHub
-                </a>
-                <a href="https://marckdellcc.github.io/Nexial-Suite/" target="_blank">
-                    <i class="fas fa-external-link-alt"></i> Demo
-                </a>
-                <a href="#" onclick="mostrarCreditos()">
-                    <i class="fas fa-heart"></i> Créditos
-                </a>
-            </div>
-            
-            <p style="margin-top: 15px; font-size: 0.8rem; opacity: 0.7;">
-                © 2023 Nexial Suite. Todos los derechos reservados.
-            </p>
+            </form>
         </div>
     </div>
 
     <script>
-        // Configuración de Supabase
-        const supabaseUrl = 'https://cmrysvcahpouziogzang.supabase.co';
-        const supabaseKey = 'sb_publishable_rj4q31YiBwxLcfuswCX21g_LxsxRc_n';
-        
-        // Inicializar Supabase
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-        
-        // Variables globales
-        let sistemaConfigurado = false;
-        
-        // Función para probar conexión con Supabase
-        async function probarConexion() {
-            mostrarMensaje('Probando conexión con Supabase...', 'warning');
+        // =============================================
+        // OBJETO PRINCIPAL NEXIAL
+        // =============================================
+        const Nexial = (function() {
+            // Variables privadas
+            const SUPABASE_URL = 'https://cmrysvcahpouziogzang.supabase.co';
+            const SUPABASE_ANON_KEY = 'sb_publishable_rj4q31YiBwxLcfuswCX21g_LxsxRc_n';
             
-            try {
-                // Intentar una consulta simple a la tabla de empresas
-                const { data, error } = await supabase
-                    .from('empresas')
-                    .select('count')
-                    .limit(1);
-                
-                if (error) {
-                    throw error;
+            // Inicializar Supabase UNA sola vez
+            let _supabase = null;
+            
+            // =============================================
+            // FUNCIONES PRIVADAS
+            // =============================================
+            
+            function getSupabase() {
+                if (!_supabase) {
+                    _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 }
-                
-                // Actualizar estado de conexión
-                document.getElementById('statusDot').className = 'status-dot connected';
-                document.getElementById('statusText').textContent = 'Conectado a Supabase';
-                
-                mostrarMensaje('✅ Conexión exitosa con Supabase. Sistema listo para usar.', 'success');
-                sistemaConfigurado = true;
-                
-                // Cargar datos iniciales
-                cargarEmpresas();
-                actualizarEstadisticas();
-                
-            } catch (error) {
-                console.error('Error de conexión:', error);
-                document.getElementById('statusDot').className = 'status-dot disconnected';
-                document.getElementById('statusText').textContent = 'Error de conexión';
-                
-                mostrarMensaje('❌ Error de conexión con Supabase: ' + error.message, 'error');
-            }
-        }
-        
-        // Función para registrar una nueva empresa
-        async function registrarEmpresa() {
-            const nombre = document.getElementById('nombreEmpresa').value;
-            const nit = document.getElementById('nitEmpresa').value;
-            const email = document.getElementById('emailEmpresa').value;
-            const telefono = document.getElementById('telefonoEmpresa').value;
-            
-            // Validación básica
-            if (!nombre || !nit || !email) {
-                mostrarMensaje('❌ Por favor complete todos los campos obligatorios.', 'error');
-                return;
+                return _supabase;
             }
             
-            mostrarMensaje('Registrando empresa...', 'warning');
+            function createParticles() {
+                const particlesContainer = document.getElementById('particles');
+                if (!particlesContainer) return;
+                
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    particle.style.width = Math.random() * 4 + 1 + 'px';
+                    particle.style.height = particle.style.width;
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDuration = Math.random() * 20 + 10 + 's';
+                    particle.style.animationDelay = Math.random() * 5 + 's';
+                    particlesContainer.appendChild(particle);
+                }
+            }
             
-            try {
-                // El trigger en la base de datos generará automáticamente el código
-                const { data, error } = await supabase
-                    .from('empresas')
-                    .insert([
-                        {
-                            nombre: nombre,
-                            nit: nit,
+            // =============================================
+            // FUNCIONES PÚBLICAS
+            // =============================================
+            
+            return {
+                // =============================================
+                // MANEJO DE MODALES
+                // =============================================
+                openLoginModal: function() {
+                    document.getElementById('registerModal').style.display = 'none';
+                    document.getElementById('loginModal').style.display = 'flex';
+                    document.getElementById('loginEmail').focus();
+                    document.body.style.overflow = 'hidden';
+                },
+                
+                closeLoginModal: function() {
+                    document.getElementById('loginModal').style.display = 'none';
+                    document.getElementById('loginAlert').style.display = 'none';
+                    document.getElementById('loginEmail').value = '';
+                    document.getElementById('loginPassword').value = '';
+                    document.body.style.overflow = 'auto';
+                },
+                
+                openRegisterModal: function() {
+                    document.getElementById('loginModal').style.display = 'none';
+                    document.getElementById('registerModal').style.display = 'flex';
+                    document.getElementById('companyName').focus();
+                    document.body.style.overflow = 'hidden';
+                },
+                
+                closeRegisterModal: function() {
+                    const modal = document.getElementById('registerModal');
+                    if (modal.style.display === 'flex') {
+                        modal.style.display = 'none';
+                        document.getElementById('registerAlert').style.display = 'none';
+                        document.getElementById('registerForm').reset();
+                        document.body.style.overflow = 'auto';
+                    }
+                },
+                
+                // =============================================
+                // FUNCIONES DEL FORMULARIO
+                // =============================================
+                togglePassword: function(fieldId) {
+                    const field = document.getElementById(fieldId);
+                    if (!field) return;
+                    
+                    const button = field.parentElement.querySelector('.toggle-password');
+                    const icon = button.querySelector('i');
+                    
+                    if (field.type === 'password') {
+                        field.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        field.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                },
+                
+                showTerms: function() {
+                    alert('TÉRMINOS Y CONDICIONES NEXIAL SUITE\n\n1. Sistema basado en Supabase y PostgreSQL\n2. Triggers automáticos para códigos únicos\n3. Separación de datos por empresa con RLS\n4. Período de prueba gratuito de 30 días\n5. Cancelación en cualquier momento desde el panel\n6. Los datos son propiedad de cada empresa\n7. Nexial Suite solo provee la plataforma\n\nTecnología: GitHub Pages + Supabase + PostgreSQL');
+                    return false;
+                },
+                
+                // =============================================
+                // LOGIN CON SUPABASE
+                // =============================================
+                login: async function() {
+                    const email = document.getElementById('loginEmail')?.value.trim();
+                    const password = document.getElementById('loginPassword')?.value;
+                    
+                    if (!email || !password) {
+                        this.showAlert('loginAlert', 'error', 'Por favor complete todos los campos');
+                        return;
+                    }
+                    
+                    this.showLoading();
+                    
+                    try {
+                        const supabase = getSupabase();
+                        const { data, error } = await supabase.auth.signInWithPassword({
                             email: email,
-                            telefono: telefono,
-                            direccion: 'Por definir',
-                            activa: true
+                            password: password
+                        });
+                        
+                        this.hideLoading();
+                        
+                        if (error) {
+                            console.error('Error de autenticación:', error);
+                            this.showAlert('loginAlert', 'error', 'Credenciales incorrectas o usuario no existe');
+                            return;
                         }
-                    ])
-                    .select();
-                
-                if (error) {
-                    throw error;
-                }
-                
-                if (data && data.length > 0) {
-                    const empresa = data[0];
-                    mostrarMensaje(`✅ Empresa "${empresa.nombre}" registrada exitosamente. Código: ${empresa.codigo}`, 'success');
-                    
-                    // Limpiar formulario
-                    document.getElementById('nombreEmpresa').value = '';
-                    document.getElementById('nitEmpresa').value = '';
-                    document.getElementById('emailEmpresa').value = '';
-                    document.getElementById('telefonoEmpresa').value = '';
-                    
-                    // Actualizar lista de empresas
-                    cargarEmpresas();
-                    actualizarEstadisticas();
-                }
-                
-            } catch (error) {
-                console.error('Error al registrar empresa:', error);
-                mostrarMensaje('❌ Error al registrar empresa: ' + error.message, 'error');
-            }
-        }
-        
-        // Función para registrar un nuevo usuario
-        async function registrarUsuario() {
-            const nombre = document.getElementById('nombreUsuario').value;
-            const email = document.getElementById('emailUsuario').value;
-            const rol = document.getElementById('rolUsuario').value;
-            const empresaId = document.getElementById('empresaUsuario').value;
-            
-            // Validación básica
-            if (!nombre || !email || !rol || !empresaId) {
-                mostrarMensaje('❌ Por favor complete todos los campos obligatorios.', 'error');
-                return;
-            }
-            
-            mostrarMensaje('Registrando usuario...', 'warning');
-            
-            try {
-                // El trigger en la base de datos generará automáticamente el código
-                const { data, error } = await supabase
-                    .from('usuarios')
-                    .insert([
-                        {
-                            nombre: nombre,
-                            email: email,
-                            rol: rol,
-                            empresa_id: empresaId,
-                            activo: true
+                        
+                        if (data.user) {
+                            // Obtener información del usuario de la tabla 'usuarios'
+                            const { data: userData, error: userError } = await supabase
+                                .from('usuarios')
+                                .select('*')
+                                .eq('email', email)
+                                .single();
+                            
+                            let userInfo;
+                            if (userError) {
+                                console.warn('No se encontró usuario en tabla usuarios, usando datos de auth');
+                                userInfo = {
+                                    id: data.user.id,
+                                    email: data.user.email,
+                                    nombre: data.user.email.split('@')[0],
+                                    rol: 'admin_empresa',
+                                    empresa_id: 1
+                                };
+                            } else {
+                                userInfo = userData;
+                            }
+                            
+                            localStorage.setItem('nexial_user', JSON.stringify(userInfo));
+                            
+                            // Redirigir al dashboard
+                            this.closeLoginModal();
+                            window.location.href = 'dashboard.html';
                         }
-                    ])
-                    .select();
+                        
+                    } catch (error) {
+                        this.hideLoading();
+                        console.error('Error en login:', error);
+                        this.showAlert('loginAlert', 'error', 'Error de conexión. Por favor intenta nuevamente.');
+                    }
+                },
                 
-                if (error) {
-                    throw error;
-                }
-                
-                if (data && data.length > 0) {
-                    const usuario = data[0];
-                    mostrarMensaje(`✅ Usuario "${usuario.nombre}" registrado exitosamente. Código: ${usuario.codigo}`, 'success');
+                // =============================================
+                // REGISTRO DE EMPRESA
+                // =============================================
+                registerCompany: async function(event) {
+                    event.preventDefault();
+                    this.showLoading();
                     
-                    // Limpiar formulario
-                    document.getElementById('nombreUsuario').value = '';
-                    document.getElementById('emailUsuario').value = '';
-                    document.getElementById('rolUsuario').value = '';
+                    // Validar contraseñas
+                    const password = document.getElementById('adminPassword')?.value;
+                    const confirmPassword = document.getElementById('confirmPassword')?.value;
                     
-                    // Actualizar estadísticas
-                    actualizarEstadisticas();
-                }
+                    if (password !== confirmPassword) {
+                        this.showAlert('registerAlert', 'error', 'Las contraseñas no coinciden');
+                        this.hideLoading();
+                        return;
+                    }
+                    
+                    if (password.length < 8) {
+                        this.showAlert('registerAlert', 'error', 'La contraseña debe tener mínimo 8 caracteres');
+                        this.hideLoading();
+                        return;
+                    }
+                    
+                    // Recopilar datos
+                    const companyData = {
+                        nombre: document.getElementById('companyName')?.value.trim(),
+                        tipo_documento: document.getElementById('docType')?.value,
+                        numero_documento: document.getElementById('companyDocNumber')?.value.trim(),
+                        industria: document.getElementById('companyIndustry')?.value,
+                        telefono: (document.getElementById('countryCode')?.value || '+591') + ' ' + 
+                                 (document.getElementById('companyPhone')?.value || ''),
+                        email: document.getElementById('companyEmail')?.value.trim().toLowerCase(),
+                        activa: true
+                    };
+                    
+                    const userData = {
+                        nombres: document.getElementById('names')?.value.trim(),
+                        primer_apellido: document.getElementById('firstLastName')?.value.trim(),
+                        segundo_apellido: document.getElementById('secondLastName')?.value.trim() || '',
+                        email: document.getElementById('companyEmail')?.value.trim().toLowerCase(),
+                        password: password,
+                        nombre: (document.getElementById('names')?.value.trim() || '') + ' ' + 
+                               (document.getElementById('firstLastName')?.value.trim() || ''),
+                        rol: 'admin_empresa'
+                    };
+                    
+                    // Validar campos requeridos
+                    const requiredFields = ['nombre', 'tipo_documento', 'numero_documento', 'industria', 'email', 'nombres', 'primer_apellido'];
+                    for (const field of requiredFields) {
+                        const value = companyData[field] || userData[field];
+                        if (!value || value.trim() === '') {
+                            const fieldNames = {
+                                'nombre': 'Razón Social',
+                                'tipo_documento': 'Tipo de Documento',
+                                'numero_documento': 'Número de Documento',
+                                'industria': 'Tipo de Industria',
+                                'email': 'Email Corporativo',
+                                'nombres': 'Nombres',
+                                'primer_apellido': 'Primer Apellido'
+                            };
+                            this.showAlert('registerAlert', 'error', `Por favor complete: ${fieldNames[field] || field}`);
+                            this.hideLoading();
+                            return;
+                        }
+                    }
+                    
+                    try {
+                        const supabase = getSupabase();
+                        
+                        // 1. Registrar usuario en Auth
+                        const { data: authData, error: authError } = await supabase.auth.signUp({
+                            email: userData.email,
+                            password: userData.password,
+                            options: {
+                                data: {
+                                    nombre: userData.nombre,
+                                    primer_apellido: userData.primer_apellido
+                                }
+                            }
+                        });
+                        
+                        if (authError) throw new Error(authError.message);
+                        
+                        // 2. Crear empresa (trigger generará código automático)
+                        const { data: empresaData, error: empresaError } = await supabase
+                            .from('empresas')
+                            .insert([companyData])
+                            .select()
+                            .single();
+                        
+                        if (empresaError) throw new Error(`Error empresa: ${empresaError.message}`);
+                        
+                        // 3. Crear usuario admin (trigger generará código automático)
+                        const { data: usuarioData, error: usuarioError } = await supabase
+                            .from('usuarios')
+                            .insert([{
+                                empresa_id: empresaData.id,
+                                email: userData.email,
+                                password_hash: userData.password,
+                                nombre: userData.nombre,
+                                apellido: userData.primer_apellido + (userData.segundo_apellido ? ' ' + userData.segundo_apellido : ''),
+                                rol: 'admin_empresa',
+                                activo: true
+                            }])
+                            .select()
+                            .single();
+                        
+                        if (usuarioError) throw new Error(`Error usuario: ${usuarioError.message}`);
+                        
+                        this.hideLoading();
+                        
+                        // Mostrar éxito
+                        this.showAlert('registerAlert', 'success', 
+                            '✅ ¡Registro exitoso!<br><br>' +
+                            'Tu empresa ha sido registrada en PostgreSQL.<br><br>' +
+                            '<strong>Credenciales:</strong><br>' +
+                            '📧 Email: ' + userData.email + '<br>' +
+                            '🔑 Contraseña: La que ingresaste<br>' +
+                            '🏢 Código Empresa: Se generará automáticamente<br><br>' +
+                            'Puedes iniciar sesión ahora.');
+                        
+                        // Redirigir después de 5 segundos
+                        setTimeout(() => {
+                            document.getElementById('registerForm').reset();
+                            this.closeRegisterModal();
+                            this.openLoginModal();
+                            document.getElementById('loginEmail').value = userData.email;
+                            document.getElementById('loginPassword').focus();
+                        }, 5000);
+                        
+                    } catch (error) {
+                        this.hideLoading();
+                        console.error('Error registro:', error);
+                        this.showAlert('registerAlert', 'error', 
+                            'Error: ' + error.message + 
+                            '<br>Contacta soporte: marcelodanielcc@gmail.com');
+                    }
+                },
                 
-            } catch (error) {
-                console.error('Error al registrar usuario:', error);
-                mostrarMensaje('❌ Error al registrar usuario: ' + error.message, 'error');
-            }
-        }
-        
-        // Función para cargar empresas en el select
-        async function cargarEmpresas() {
-            try {
-                const { data, error } = await supabase
-                    .from('empresas')
-                    .select('id, nombre, codigo')
-                    .order('nombre');
+                // =============================================
+                // FUNCIONES AUXILIARES
+                // =============================================
+                recoverPassword: async function() {
+                    const email = prompt('Ingrese su email para recuperar contraseña:');
+                    if (email) {
+                        try {
+                            const supabase = getSupabase();
+                            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                                redirectTo: window.location.origin + '/reset-password.html'
+                            });
+                            
+                            if (error) {
+                                alert('Error: ' + error.message);
+                            } else {
+                                alert(`Enlace enviado a: ${email}\nRevise su bandeja.`);
+                            }
+                        } catch (error) {
+                            alert('Error de conexión.');
+                        }
+                    }
+                },
                 
-                if (error) {
-                    throw error;
-                }
+                showLoading: function() {
+                    const loading = document.getElementById('globalLoading');
+                    if (loading) loading.style.display = 'flex';
+                },
                 
-                const select = document.getElementById('empresaUsuario');
-                select.innerHTML = '<option value="">Seleccionar empresa...</option>';
+                hideLoading: function() {
+                    const loading = document.getElementById('globalLoading');
+                    if (loading) loading.style.display = 'none';
+                },
                 
-                if (data && data.length > 0) {
-                    data.forEach(empresa => {
-                        const option = document.createElement('option');
-                        option.value = empresa.id;
-                        option.textContent = `${empresa.nombre} (${empresa.codigo})`;
-                        select.appendChild(option);
+                showAlert: function(elementId, type, message) {
+                    const alertElement = document.getElementById(elementId);
+                    if (!alertElement) return;
+                    
+                    alertElement.className = `alert alert-${type}`;
+                    alertElement.innerHTML = message;
+                    alertElement.style.display = 'block';
+                    
+                    if (type === 'success') {
+                        setTimeout(() => {
+                            alertElement.style.display = 'none';
+                        }, 5000);
+                    }
+                },
+                
+                // =============================================
+                // INICIALIZACIÓN
+                // =============================================
+                initialize: async function() {
+                    createParticles();
+                    
+                    console.log('🚀 Nexial Suite v4.0 - Supabase Edition');
+                    console.log('🔗 Supabase:', SUPABASE_URL);
+                    console.log('📊 PostgreSQL con triggers automáticos');
+                    console.log('🔒 Row Level Security activado');
+                    
+                    // Verificar sesión
+                    const supabase = getSupabase();
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session) {
+                        console.log('👤 Sesión activa:', session.user.email);
+                    }
+                    
+                    // Event listeners para modales
+                    document.getElementById('loginModal')?.addEventListener('click', (e) => {
+                        if (e.target === e.currentTarget) this.closeLoginModal();
+                    });
+                    
+                    document.getElementById('registerModal')?.addEventListener('click', (e) => {
+                        if (e.target === e.currentTarget) this.closeRegisterModal();
+                    });
+                    
+                    // Enter en login
+                    document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.login();
+                    });
+                    
+                    // Scroll suave
+                    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                        anchor.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            const targetId = this.getAttribute('href');
+                            if (targetId === '#') return;
+                            
+                            const targetElement = document.querySelector(targetId);
+                            if (targetElement) {
+                                window.scrollTo({
+                                    top: targetElement.offsetTop - 80,
+                                    behavior: 'smooth'
+                                });
+                            }
+                        });
                     });
                 }
-                
-            } catch (error) {
-                console.error('Error al cargar empresas:', error);
-            }
-        }
-        
-        // Función para actualizar estadísticas del sistema
-        async function actualizarEstadisticas() {
-            try {
-                // Contar empresas
-                const { count: empresasCount } = await supabase
-                    .from('empresas')
-                    .select('*', { count: 'exact', head: true });
-                
-                // Contar usuarios
-                const { count: usuariosCount } = await supabase
-                    .from('usuarios')
-                    .select('*', { count: 'exact', head: true });
-                
-                // Contar ventas (si la tabla existe)
-                let ventasCount = 0;
-                try {
-                    const { count } = await supabase
-                        .from('ventas')
-                        .select('*', { count: 'exact', head: true });
-                    ventasCount = count || 0;
-                } catch (e) {
-                    console.log('Tabla ventas no disponible aún');
-                }
-                
-                // Contar productos (si la tabla existe)
-                let productosCount = 0;
-                try {
-                    const { count } = await supabase
-                        .from('productos')
-                        .select('*', { count: 'exact', head: true });
-                    productosCount = count || 0;
-                } catch (e) {
-                    console.log('Tabla productos no disponible aún');
-                }
-                
-                // Actualizar UI
-                document.getElementById('empresasCount').textContent = empresasCount || 0;
-                document.getElementById('usuariosCount').textContent = usuariosCount || 0;
-                document.getElementById('ventasCount').textContent = ventasCount;
-                document.getElementById('productosCount').textContent = productosCount;
-                
-            } catch (error) {
-                console.error('Error al actualizar estadísticas:', error);
-            }
-        }
-        
-        // Función para mostrar/ocultar pestañas
-        function showTab(tabName) {
-            // Ocultar todas las pestañas
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Desactivar todos los botones de pestaña
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Mostrar la pestaña seleccionada
-            document.getElementById(tabName).classList.add('active');
-            
-            // Activar el botón de la pestaña seleccionada
-            event.target.classList.add('active');
-        }
-        
-        // Función para mostrar un área específica
-        function mostrarArea(area) {
-            const areas = {
-                'ventas': 'Sistema de Ventas - Gestión comercial completa',
-                'inventario': 'Control de Inventario - Seguimiento de stock',
-                'distribucion': 'Distribución y Logística - Gestión de rutas',
-                'clientes': 'CRM - Gestión de relaciones con clientes',
-                'reportes': 'Sistema de Reportes - Análisis y estadísticas',
-                'configuracion': 'Configuración del Sistema - Ajustes y preferencias'
             };
-            
-            mostrarMensaje(`🔍 Abriendo área: ${areas[area]}`, 'success');
-        }
+        })();
         
-        // Función para mostrar mensajes
-        function mostrarMensaje(texto, tipo) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = texto;
-            messageDiv.className = `message ${tipo}`;
-            messageDiv.style.display = 'block';
-            
-            // Ocultar mensaje después de 5 segundos
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 5000);
-        }
-        
-        // Función para generar un código de ejemplo
-        function generarEjemploCodigo() {
-            const prefijos = ['EMP', 'USR', 'CLI', 'VTA', 'PROD', 'ALM', 'PAG', 'RUT'];
-            const empresas = ['NEXI', 'TECH', 'CORP', 'INDU', 'SERV'];
-            const numeros = Math.floor(100 + Math.random() * 900);
-            const año = new Date().getFullYear();
-            
-            const prefijo = prefijos[Math.floor(Math.random() * prefijos.length)];
-            const empresa = empresas[Math.floor(Math.random() * empresas.length)];
-            
-            let codigo;
-            if (prefijo === 'CLI' || prefijo === 'VTA' || prefijo === 'PAG') {
-                codigo = `${prefijo}-${empresa}-${año}-${numeros.toString().padStart(4, '0')}`;
-            } else if (prefijo === 'PROD') {
-                const categorias = ['ALI', 'BEB', 'LAC', 'CON', 'MED'];
-                const categoria = categorias[Math.floor(Math.random() * categorias.length)];
-                codigo = `${prefijo}-${empresa}-${categoria}-${numeros.toString().padStart(3, '0')}`;
-            } else {
-                codigo = `${prefijo}-${empresa}-${numeros.toString().padStart(3, '0')}`;
-            }
-            
-            mostrarMensaje(`📦 Código de ejemplo generado: <strong>${codigo}</strong>`, 'success');
-        }
-        
-        // Función para cambiar tema de colores
-        function cambiarTema() {
-            const tema = document.getElementById('temaSistema').value;
-            const root = document.documentElement;
-            
-            switch(tema) {
-                case 'purple':
-                    root.style.setProperty('--primary', '#7209b7');
-                    root.style.setProperty('--primary-dark', '#5a08a0');
-                    break;
-                case 'green':
-                    root.style.setProperty('--primary', '#06d6a0');
-                    root.style.setProperty('--primary-dark', '#05b586');
-                    break;
-                case 'red':
-                    root.style.setProperty('--primary', '#ef233c');
-                    root.style.setProperty('--primary-dark', '#d20c25');
-                    break;
-                case 'dark':
-                    root.style.setProperty('--primary', '#212529');
-                    root.style.setProperty('--primary-dark', '#121416');
-                    break;
-                default: // azul
-                    root.style.setProperty('--primary', '#4361ee');
-                    root.style.setProperty('--primary-dark', '#3a56d4');
-            }
-            
-            mostrarMensaje(`🎨 Tema cambiado a: ${document.getElementById('temaSistema').options[document.getElementById('temaSistema').selectedIndex].text}`, 'success');
-        }
-        
-        // Función para cambiar animaciones
-        function cambiarAnimaciones() {
-            const animaciones = document.getElementById('animaciones').value;
-            
-            if (animaciones === 'desactivadas') {
-                document.querySelectorAll('*').forEach(el => {
-                    el.style.animation = 'none';
-                    el.style.transition = 'none';
-                });
-                mostrarMensaje('⚡ Animaciones desactivadas', 'warning');
-            } else {
-                location.reload(); // Recargar para restaurar animaciones
-            }
-        }
-        
-        // Función para cargar datos iniciales
-        function cargarDatosIniciales() {
-            mostrarMensaje('📥 Cargando datos iniciales del sistema...', 'warning');
-            
-            // Simular carga de datos
-            setTimeout(() => {
-                mostrarMensaje('✅ Datos iniciales cargados correctamente', 'success');
-                actualizarEstadisticas();
-            }, 1500);
-        }
-        
-        // Función para resetear sistema
-        function resetearSistema() {
-            if (confirm('¿Está seguro de que desea reiniciar el sistema? Esto limpiará todos los datos en memoria.')) {
-                mostrarMensaje('🔄 Reiniciando sistema...', 'warning');
-                
-                // Simular reinicio
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-            }
-        }
-        
-        // Función para exportar configuración
-        function exportarConfiguracion() {
-            const config = {
-                sistema: 'Nexial Suite',
-                version: '2.0',
-                fecha: new Date().toISOString(),
-                supabaseUrl: supabaseUrl,
-                caracteristicas: [
-                    'Sistema multi-empresa',
-                    'Códigos automáticos',
-                    'Estructura de roles completa',
-                    'Áreas de trabajo',
-                    'Integración Supabase'
-                ]
-            };
-            
-            const configStr = JSON.stringify(config, null, 2);
-            const blob = new Blob([configStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `nexial-config-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            
-            mostrarMensaje('📁 Configuración exportada correctamente', 'success');
-        }
-        
-        // Función para mostrar créditos
-        function mostrarCreditos() {
-            alert('Nexial Suite v2.0\n\nDesarrollado por: MarckdellCC\nTecnologías: HTML, CSS, JavaScript, Supabase, PostgreSQL\n\nCaracterísticas:\n• Sistema multi-empresa\n• Códigos automáticos\n• Estructura completa de roles\n• Integración Supabase\n• Interfaz moderna con animaciones');
-        }
-        
-        // Inicializar sistema al cargar la página
+        // =============================================
+        // INICIALIZAR AL CARGAR LA PÁGINA
+        // =============================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Probar conexión automáticamente
-            setTimeout(probarConexion, 1000);
-            
-            // Mostrar notificación de bienvenida
-            setTimeout(() => {
-                mostrarMensaje('🚀 Bienvenido a Nexial Suite v2.0 - Sistema migrado completamente a Supabase', 'success');
-            }, 1500);
+            Nexial.initialize();
         });
+        
+        // =============================================
+        // FUNCIONES GLOBALES PARA ONCLICK
+        // =============================================
+        window.openLoginModal = function() { Nexial.openLoginModal(); };
+        window.openRegisterModal = function() { Nexial.openRegisterModal(); };
+        window.closeLoginModal = function() { Nexial.closeLoginModal(); };
+        window.closeRegisterModal = function() { Nexial.closeRegisterModal(); };
     </script>
 </body>
 </html>
