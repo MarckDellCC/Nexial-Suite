@@ -308,83 +308,6 @@
         }
         
         /* ============================================= */
-        /* SECCIÓN: SISTEMA DE CÓDIGOS AUTOMÁTICOS */
-        /* ============================================= */
-        .coding-system {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 6rem 2rem;
-            border-top: 1px solid rgba(124, 58, 237, 0.2);
-            border-bottom: 1px solid rgba(124, 58, 237, 0.2);
-        }
-        
-        .code-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-top: 3rem;
-        }
-        
-        .code-item {
-            background: rgba(15, 15, 35, 0.6);
-            padding: 1.5rem;
-            border-radius: 10px;
-            border-left: 4px solid var(--primary);
-            transition: all 0.3s;
-        }
-        
-        .code-item:hover {
-            transform: translateY(-5px);
-            background: rgba(124, 58, 237, 0.1);
-            border-left-color: var(--secondary);
-        }
-        
-        .code-prefix {
-            font-family: 'Courier New', monospace;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            color: var(--accent);
-            display: inline-block;
-            margin-bottom: 0.5rem;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-        }
-        
-        /* ============================================= */
-        /* SECCIÓN: SISTEMA DE ROLES */
-        /* ============================================= */
-        .roles-system {
-            padding: 6rem 2rem;
-        }
-        
-        .roles-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-        
-        .role-badge {
-            background: rgba(124, 58, 237, 0.1);
-            border: 1px solid rgba(124, 58, 237, 0.3);
-            padding: 1rem;
-            border-radius: 10px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-        
-        .role-badge:hover {
-            transform: scale(1.05);
-            background: rgba(124, 58, 237, 0.2);
-            border-color: var(--primary);
-        }
-        
-        .role-icon {
-            font-size: 2rem;
-            color: var(--secondary);
-            margin-bottom: 0.5rem;
-        }
-        
-        /* ============================================= */
         /* SECCIÓN: FORMULARIOS */
         /* ============================================= */
         .cyber-form {
@@ -804,15 +727,12 @@
             .country-code { flex: 1; }
             .checkbox-container { flex-direction: column; }
             .name-grid { grid-template-columns: 1fr; }
-            .code-grid { grid-template-columns: 1fr; }
-            .roles-container { grid-template-columns: repeat(2, 1fr); }
         }
         
         @media (max-width: 480px) {
             .cyber-header { padding: 1rem; }
             .cyber-hero { padding: 8rem 1rem 4rem; }
             .cyber-features { padding: 3rem 1rem; }
-            .roles-container { grid-template-columns: 1fr; }
         }
         
         /* Estilos para loading */
@@ -863,38 +783,6 @@
             border: 1px solid var(--danger);
             color: var(--danger);
         }
-        
-        /* ============================================= */
-        /* NUEVOS COMPONENTES: TECNOLOGÍA STACK */
-        /* ============================================= */
-        .tech-stack {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 4rem 2rem;
-            margin: 2rem 0;
-        }
-        
-        .tech-icons {
-            display: flex;
-            justify-content: center;
-            gap: 3rem;
-            flex-wrap: wrap;
-            margin-top: 2rem;
-        }
-        
-        .tech-icon {
-            text-align: center;
-            transition: all 0.3s;
-        }
-        
-        .tech-icon:hover {
-            transform: translateY(-10px);
-        }
-        
-        .tech-icon i {
-            font-size: 3rem;
-            color: var(--secondary);
-            margin-bottom: 0.5rem;
-        }
     </style>
 </head>
 <body>
@@ -916,9 +804,7 @@
         <nav class="cyber-nav">
             <a href="#inicio">Inicio</a>
             <a href="#caracteristicas">Sistema</a>
-            <a href="#codigos">Códigos</a>
-            <a href="#roles">Roles</a>
-            <a href="#tecnologia">Tecnología</a>
+            <a href="#ventajas">Ventajas</a>
             <a href="#" onclick="Nexial.openRegisterModal()">Registro</a>
         </nav>
         <button class="cyber-btn" onclick="Nexial.openLoginModal()">
@@ -1001,136 +887,6 @@
         </div>
     </section>
 
-    <!-- BLOQUE: SISTEMA DE CÓDIGOS AUTOMÁTICOS -->
-    <section class="coding-system" id="codigos">
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <h2 style="color: var(--accent); font-size: 2.5rem;">SISTEMA DE CÓDIGOS AUTOMÁTICOS</h2>
-            <p style="opacity: 0.8;">Triggers PostgreSQL generan códigos únicos automáticamente</p>
-        </div>
-        
-        <div class="code-grid">
-            <div class="code-item">
-                <div class="code-prefix">EMPR-XXXX-001</div>
-                <p><strong>Empresas:</strong> Prefijo + 4 letras nombre + secuencia</p>
-            </div>
-            <div class="code-item">
-                <div class="code-prefix">USR-EMPR-001</div>
-                <p><strong>Usuarios:</strong> USR + código empresa + secuencia</p>
-            </div>
-            <div class="code-item">
-                <div class="code-prefix">CLI-EMPR-2024-0001</div>
-                <p><strong>Clientes:</strong> CLI + empresa + año + secuencia</p>
-            </div>
-            <div class="code-item">
-                <div class="code-prefix">EMP-EMPR-001</div>
-                <p><strong>Empleados:</strong> EMP + empresa + secuencia</p>
-            </div>
-            <div class="code-item">
-                <div class="code-prefix">ALM-EMPR-CIU-001</div>
-                <p><strong>Almacenes:</strong> ALM + empresa + ciudad + secuencia</p>
-            </div>
-            <div class="code-item">
-                <div class="code-prefix">PROD-EMPR-CAT-001</div>
-                <p><strong>Productos:</strong> PROD + empresa + categoría + secuencia</p>
-            </div>
-            <div class="code-item">
-                <div class="code-prefix">VTA-EMPR-2024-00001</div>
-                <p><strong>Ventas:</strong> VTA + empresa + año + secuencia (5 dígitos)</p>
-            </div>
-            <div class="code-item">
-                <div class="code-prefix">PAG-EMPR-2024-0001</div>
-                <p><strong>Pagos:</strong> PAG + empresa + año + secuencia</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- BLOQUE: SISTEMA DE ROLES -->
-    <section class="roles-system" id="roles">
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <h2 style="color: var(--primary); font-size: 2.5rem;">SISTEMA COMPLETO DE ROLES</h2>
-            <p style="opacity: 0.8;">Permisos granulares y separación por empresa con RLS</p>
-        </div>
-        
-        <div class="roles-container">
-            <div class="role-badge">
-                <div class="role-icon"><i class="fas fa-user-shield"></i></div>
-                <h4>superadmin</h4>
-                <p>Acceso total a todas las empresas</p>
-            </div>
-            <div class="role-badge">
-                <div class="role-icon"><i class="fas fa-building"></i></div>
-                <h4>admin_empresa</h4>
-                <p>Administrador completo de una empresa</p>
-            </div>
-            <div class="role-badge">
-                <div class="role-icon"><i class="fas fa-chart-line"></i></div>
-                <h4>gerente</h4>
-                <p>Gestión comercial y operativa</p>
-            </div>
-            <div class="role-badge">
-                <div class="role-icon"><i class="fas fa-user-tie"></i></div>
-                <h4>vendedor</h4>
-                <p>Ventas y visitas a clientes</p>
-            </div>
-            <div class="role-badge">
-                <div class="role-icon"><i class="fas fa-truck"></i></div>
-                <h4>distribuidor</h4>
-                <p>Distribución y entregas</p>
-            </div>
-            <div class="role-badge">
-                <div class="role-icon"><i class="fas fa-boxes"></i></div>
-                <h4>almacenero</h4>
-                <p>Gestión de inventario</p>
-            </div>
-            <div class="role-badge">
-                <div class="role-icon"><i class="fas fa-calculator"></i></div>
-                <h4>contador</h4>
-                <p>Gestión financiera</p>
-            </div>
-            <div class="role-badge">
-                <div class="role-icon"><i class="fas fa-clipboard-check"></i></div>
-                <h4>supervisor</h4>
-                <p>Supervisión de equipos</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- BLOQUE: TECNOLOGÍA -->
-    <section class="tech-stack" id="tecnologia">
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <h2 style="color: var(--secondary); font-size: 2.5rem;">ARQUITECTURA TECNOLÓGICA</h2>
-            <p style="opacity: 0.8;">Stack moderno para máxima seguridad y rendimiento</p>
-        </div>
-        
-        <div class="tech-icons">
-            <div class="tech-icon">
-                <i class="fab fa-github"></i>
-                <p>GitHub Pages</p>
-                <small>Hosting estático</small>
-            </div>
-            <div class="tech-icon">
-                <i class="fas fa-database"></i>
-                <p>Supabase</p>
-                <small>PostgreSQL + Auth</small>
-            </div>
-            <div class="tech-icon">
-                <i class="fab fa-js"></i>
-                <p>JavaScript</p>
-                <small>Frontend dinámico</small>
-            </div>
-            <div class="tech-icon">
-                <i class="fas fa-code"></i>
-                <p>HTML5 + CSS3</p>
-                <small>Interfaz moderna</small>
-            </div>
-            <div class="tech-icon">
-                <i class="fas fa-shield-alt"></i>
-                <p>Row Level Security</p>
-                <small>Separación de datos</small>
-            </div>
-        </div>
-    </section>
-
     <!-- BLOQUE: VENTAJAS DEL SISTEMA -->
     <section class="cyber-features" id="ventajas" style="background: var(--dark);">
         <div style="text-align: center; margin-bottom: 3rem;">
@@ -1196,9 +952,7 @@
         <div style="display: flex; justify-content: center; gap: 2rem; margin: 2rem 0; flex-wrap: wrap;">
             <a href="#inicio" style="color: var(--secondary); text-decoration: none;">Inicio</a>
             <a href="#caracteristicas" style="color: var(--secondary); text-decoration: none;">Sistema</a>
-            <a href="#codigos" style="color: var(--secondary); text-decoration: none;">Códigos</a>
-            <a href="#roles" style="color: var(--secondary); text-decoration: none;">Roles</a>
-            <a href="#tecnologia" style="color: var(--secondary); text-decoration: none;">Tecnología</a>
+            <a href="#ventajas" style="color: var(--secondary); text-decoration: none;">Ventajas</a>
             <a href="#" onclick="Nexial.openRegisterModal()" style="color: var(--secondary); text-decoration: none;">Registro</a>
             <a href="#" onclick="Nexial.openLoginModal()" style="color: var(--secondary); text-decoration: none;">Acceso</a>
         </div>
