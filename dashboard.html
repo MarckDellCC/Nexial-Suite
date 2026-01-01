@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexial Suite - Panel de Control</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4/dist/umd/supabase.min.js"></script>
     <style>
         /* ============================================= */
         /* VARIABLES CSS */
@@ -26,7 +26,7 @@
             
             /* Colores por rol */
             --superadmin: #ff0055;
-            --jefe: #00ff41;
+            --admin-empresa: #00ff41;
             --gerente: #ffaa00;
             --contador: #00aaff;
             --vendedor: #7c3aed;
@@ -52,32 +52,31 @@
         }
         
         /* ============================================= */
-        /* ANIMACIONES SIMPLES */
+        /* ANIMACIONES */
         /* ============================================= */
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .fade-in {
-            animation: fadeIn 0.3s ease-out;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
         /* ============================================= */
         /* ESTRUCTURA PRINCIPAL */
         /* ============================================= */
-        #dashboardScreen {
-            display: block;
-            min-height: 100vh;
-        }
-        
         .dashboard-container {
             display: flex;
             min-height: 100vh;
         }
         
         /* ============================================= */
-        /* COMPONENTE: SIDEBAR */
+        /* SIDEBAR */
         /* ============================================= */
         .sidebar {
             width: 280px;
@@ -116,10 +115,11 @@
             font-size: 0.8rem;
             font-weight: 600;
             margin-bottom: 1rem;
+            background: var(--primary);
         }
         
         .user-badge.superadmin { background: var(--superadmin); }
-        .user-badge.jefe { background: var(--jefe); }
+        .user-badge.admin_empresa { background: var(--admin-empresa); }
         .user-badge.gerente { background: var(--gerente); }
         .user-badge.contador { background: var(--contador); }
         .user-badge.vendedor { background: var(--vendedor); }
@@ -209,7 +209,7 @@
         }
         
         /* ============================================= */
-        /* COMPONENTE: CONTENIDO PRINCIPAL */
+        /* CONTENIDO PRINCIPAL */
         /* ============================================= */
         .main-content {
             flex: 1;
@@ -253,7 +253,7 @@
         }
         
         /* ============================================= */
-        /* COMPONENTE: TARJETAS DE ESTADÍSTICAS */
+        /* TARJETAS DE ESTADÍSTICAS */
         /* ============================================= */
         .stats-grid {
             display: grid;
@@ -320,7 +320,7 @@
         .stat-change.negative { color: var(--danger); }
         
         /* ============================================= */
-        /* COMPONENTE: TABLAS DE DATOS */
+        /* TABLAS DE DATOS */
         /* ============================================= */
         .table-card {
             background: var(--card-bg);
@@ -409,7 +409,7 @@
         .action-btn.view { background: rgba(0, 255, 65, 0.1); color: var(--success); }
         
         /* ============================================= */
-        /* COMPONENTE: MODALES */
+        /* MODALES */
         /* ============================================= */
         .modal-overlay {
             position: fixed;
@@ -458,7 +458,7 @@
         }
         
         /* ============================================= */
-        /* COMPONENTE: VISTAS POR ROL */
+        /* VISTAS POR ROL */
         /* ============================================= */
         .role-view {
             display: none;
@@ -469,7 +469,7 @@
         }
         
         /* ============================================= */
-        /* COMPONENTE: DIÁLOGO DE CONFIRMACIÓN */
+        /* DIÁLOGO DE CONFIRMACIÓN */
         /* ============================================= */
         .confirmation-dialog {
             position: fixed;
@@ -502,19 +502,21 @@
         }
         
         /* ============================================= */
-        /* COMPONENTE: LOADING SPINNER */
+        /* LOADING SPINNER */
         /* ============================================= */
         .loading-spinner {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
             background: rgba(7, 7, 16, 0.95);
+            display: none;
             align-items: center;
             justify-content: center;
             z-index: 2000;
+            flex-direction: column;
+            gap: 1rem;
         }
         
         .spinner {
@@ -526,12 +528,8 @@
             animation: spin 1s ease-in-out infinite;
         }
         
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
         /* ============================================= */
-        /* UTILIDADES DE FORMULARIO */
+        /* FORMULARIOS */
         /* ============================================= */
         .form-group {
             margin-bottom: 1.5rem;
@@ -581,6 +579,11 @@
             color: white;
         }
         
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+        }
+        
         .btn-secondary {
             background: rgba(255, 255, 255, 0.05);
             color: white;
@@ -588,7 +591,45 @@
         }
         
         /* ============================================= */
-        /* RESPONSIVE DESIGN */
+        /* NOTIFICACIONES */
+        /* ============================================= */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            z-index: 10000;
+            max-width: 400px;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .notification.success {
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid var(--success);
+            color: white;
+        }
+        
+        .notification.error {
+            background: rgba(255, 0, 85, 0.1);
+            border: 1px solid var(--danger);
+            color: white;
+        }
+        
+        .notification.info {
+            background: rgba(0, 170, 255, 0.1);
+            border: 1px solid var(--info);
+            color: white;
+        }
+        
+        .notification.warning {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid var(--warning);
+            color: white;
+        }
+        
+        /* ============================================= */
+        /* RESPONSIVE */
         /* ============================================= */
         @media (max-width: 1200px) {
             .sidebar {
@@ -668,100 +709,69 @@
     <!-- ============================================= -->
     <!-- ESTRUCTURA PRINCIPAL DEL DASHBOARD -->
     <!-- ============================================= -->
-    <div id="dashboardScreen">
-        <div class="dashboard-container">
-            <!-- BLOQUE: SIDEBAR -->
-            <aside class="sidebar" id="sidebar">
-                <div class="sidebar-header">
-                    <div class="company-logo">
-                        <i class="fas fa-brain"></i>
-                        <span id="sidebarCompanyName">NEXIAL SUITE</span>
-                    </div>
+    <div class="dashboard-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="company-logo">
+                    <i class="fas fa-brain"></i>
+                    <span id="sidebarCompanyName">NEXIAL SUITE</span>
                 </div>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-badge" id="userBadge">CARGANDO...</div>
+                <div class="user-name" id="userName">Cargando...</div>
+                <div class="user-role" id="userRole">Cargando rol...</div>
+            </div>
+            
+            <nav class="nav-menu" id="navMenu">
+                <!-- Menú dinámico por rol -->
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="main-content">
+            <!-- BARRA SUPERIOR -->
+            <div class="top-bar">
+                <h1 class="page-title" id="pageTitle">Panel de Control</h1>
                 
-                <div class="user-info">
-                    <div class="user-badge" id="userBadge">CARGANDO...</div>
-                    <div class="user-name" id="userName">Cargando...</div>
-                    <div class="user-role" id="userRole">Cargando rol...</div>
-                </div>
-                
-                <nav class="nav-menu" id="navMenu">
-                    <!-- Menú dinámico por rol -->
-                </nav>
-                
-                <div class="sidebar-footer">
-                    <button class="logout-btn" onclick="showLogoutConfirmation()">
-                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                <div class="top-actions">
+                    <button class="refresh-btn" onclick="refreshData()" title="Actualizar datos">
+                        <i class="fas fa-sync-alt"></i>
                     </button>
                 </div>
-            </aside>
+            </div>
 
-            <!-- BLOQUE: CONTENIDO PRINCIPAL -->
-            <main class="main-content">
-                <!-- BLOQUE: BARRA SUPERIOR -->
-                <div class="top-bar">
-                    <h1 class="page-title" id="pageTitle">Panel de Control</h1>
-                    
-                    <div class="top-actions">
-                        <button class="refresh-btn" onclick="refreshData()" title="Actualizar datos">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- BLOQUE: VISTA SUPER ADMIN -->
-                <div id="viewSuperadmin" class="role-view">
-                    <!-- Contenido dinámico para Super Admin -->
-                </div>
-
-                <!-- BLOQUE: VISTA JEFE EMPRESA -->
-                <div id="viewAdminEmpresa" class="role-view">
-                    <!-- Contenido dinámico para Jefe de Empresa -->
-                </div>
-
-                <!-- BLOQUE: VISTA GERENTE (DIRECCIÓN COMERCIAL) -->
-                <div id="viewGerente" class="role-view">
-                    <!-- Contenido dinámico para Gerente/Comercial -->
-                </div>
-
-                <!-- BLOQUE: VISTA CONTADOR (ADMINISTRACIÓN Y FINANZAS) -->
-                <div id="viewContador" class="role-view">
-                    <!-- Contenido dinámico para Contador/Finanzas -->
-                </div>
-
-                <!-- BLOQUE: VISTA VENDEDOR -->
-                <div id="viewVendedor" class="role-view">
-                    <!-- Contenido dinámico para Vendedor -->
-                </div>
-
-                <!-- BLOQUE: VISTA DISTRIBUIDOR -->
-                <div id="viewDistribuidor" class="role-view">
-                    <!-- Contenido dinámico para Distribuidor -->
-                </div>
-
-                <!-- BLOQUE: VISTA ALMACENERO -->
-                <div id="viewAlmacenero" class="role-view">
-                    <!-- Contenido dinámico para Almacenero -->
-                </div>
-
-                <!-- BLOQUE: VISTA SUPERVISOR -->
-                <div id="viewSupervisor" class="role-view">
-                    <!-- Contenido dinámico para Supervisor -->
-                </div>
-            </main>
-        </div>
+            <!-- VISTAS POR ROL -->
+            <div id="viewSuperadmin" class="role-view"></div>
+            <div id="viewAdminEmpresa" class="role-view"></div>
+            <div id="viewGerente" class="role-view"></div>
+            <div id="viewContador" class="role-view"></div>
+            <div id="viewVendedor" class="role-view"></div>
+            <div id="viewDistribuidor" class="role-view"></div>
+            <div id="viewAlmacenero" class="role-view"></div>
+            <div id="viewSupervisor" class="role-view"></div>
+        </main>
     </div>
 
     <!-- ============================================= -->
     <!-- COMPONENTES GLOBALES -->
     <!-- ============================================= -->
 
-    <!-- COMPONENTE: LOADING SPINNER -->
+    <!-- LOADING SPINNER -->
     <div class="loading-spinner" id="loadingSpinner">
         <div class="spinner"></div>
+        <p id="loadingText">Cargando...</p>
     </div>
 
-    <!-- COMPONENTE: MODAL GENÉRICO -->
+    <!-- MODAL GENÉRICO -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -774,7 +784,7 @@
         </div>
     </div>
 
-    <!-- COMPONENTE: DIÁLOGO DE CONFIRMACIÓN -->
+    <!-- DIÁLOGO DE CONFIRMACIÓN -->
     <div class="confirmation-dialog" id="confirmationDialog">
         <div class="confirmation-content">
             <h3 style="color: var(--secondary); margin-bottom: 1rem;" id="confirmationTitle">¿Estás seguro?</h3>
@@ -792,27 +802,21 @@
 
     <script>
         // =============================================
-        // CONFIGURACIÓN SUPABASE (VERSIÓN CORREGIDA)
+        // CONFIGURACIÓN SUPABASE
         // =============================================
         const SUPABASE_URL = 'https://cmrysvcahpouziogzang.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_rj4q31YiBwxLcfuswCX21g_LxsxRc_n';
         
-        // SOLUCIÓN DEFINITIVA: Inicializar supabase una sola vez
-        (function() {
-            // Verificar si ya existe una instancia global de Supabase
-            if (window.supabaseClient && typeof window.supabaseClient === 'object') {
-                console.log('✅ Usando instancia existente de Supabase');
-                window.supabase = window.supabaseClient;
-            } else {
-                // Crear nueva instancia
-                console.log('🔄 Creando nueva instancia de Supabase');
-                const { createClient } = window.supabase;
-                window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                window.supabaseClient = window.supabase; // Guardar referencia
-            }
-        })();
+        // Inicializar Supabase
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('✅ Supabase inicializado correctamente');
+        } catch (error) {
+            console.error('❌ Error inicializando Supabase:', error);
+            showNotification('error', 'Error de conexión', 'No se pudo conectar con la base de datos');
+        }
         
-        // Usar window.supabase en lugar de declarar una nueva constante
         // =============================================
         // VARIABLES GLOBALES
         // =============================================
@@ -826,15 +830,15 @@
             clientes: [],
             ventas: [],
             almacenes: [],
-            inventario: [],
             rutas: [],
             visitas: []
         };
         
         // =============================================
-        // MÓDULO: FUNCIONES DE LOADING
+        // FUNCIONES DE UTILIDAD
         // =============================================
-        function showLoading() {
+        function showLoading(text = 'Cargando...') {
+            document.getElementById('loadingText').textContent = text;
             document.getElementById('loadingSpinner').style.display = 'flex';
         }
         
@@ -842,13 +846,84 @@
             document.getElementById('loadingSpinner').style.display = 'none';
         }
         
+        function showNotification(type, title, message) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                    <strong>${title}</strong>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; cursor: pointer;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div>${message}</div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+        
+        function showModal(title, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+        
+        function showConfirmation(title, message, onConfirm) {
+            document.getElementById('confirmationTitle').textContent = title;
+            document.getElementById('confirmationMessage').textContent = message;
+            document.getElementById('confirmationDialog').style.display = 'flex';
+            
+            document.getElementById('confirmActionBtn').onclick = function() {
+                hideConfirmation();
+                onConfirm();
+            };
+        }
+        
+        function hideConfirmation() {
+            document.getElementById('confirmationDialog').style.display = 'none';
+        }
+        
+        function getRoleName(role) {
+            const roles = {
+                'superadmin': 'Super Admin',
+                'admin_empresa': 'Jefe Empresa',
+                'gerente': 'Gerente',
+                'contador': 'Contador',
+                'vendedor': 'Vendedor',
+                'distribuidor': 'Distribuidor',
+                'almacenero': 'Almacenero',
+                'supervisor': 'Supervisor'
+            };
+            return roles[role] || role;
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'No disponible';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('es-ES');
+            } catch (e) {
+                return dateString;
+            }
+        }
+        
         // =============================================
-        // MÓDULO: FUNCIONES DE SUPABASE
+        // FUNCIONES DE SUPABASE
         // =============================================
         async function checkSession() {
             try {
                 console.log('🔍 Verificando sesión...');
-                const { data: { session }, error } = await window.supabase.auth.getSession();
+                const { data: { session }, error } = await supabase.auth.getSession();
                 
                 if (error) {
                     console.error('Error en sesión:', error);
@@ -866,7 +941,6 @@
                 return session;
             } catch (error) {
                 console.error('Error checking session:', error);
-                showNotification('error', 'Error de sesión', 'No se pudo verificar la sesión');
                 window.location.href = 'index.html';
                 return null;
             }
@@ -877,18 +951,25 @@
             
             try {
                 console.log('👤 Cargando datos del usuario...');
-                const { data: usuarioData, error } = await window.supabase
+                // CORRECCIÓN: Usar limit(1) en lugar de single() por si hay múltiples usuarios
+                const { data: usuarios, error } = await supabase
                     .from('usuarios')
                     .select('*')
                     .eq('email', currentSession.user.email)
-                    .single();
+                    .limit(1);
                 
                 if (error) {
                     console.error('Error loading user:', error);
-                    showNotification('error', 'Error', 'No se encontró el usuario en la base de datos');
+                    throw error;
+                }
+                
+                if (!usuarios || usuarios.length === 0) {
+                    console.error('❌ Usuario no encontrado en la base de datos');
+                    showNotification('error', 'Error', 'Usuario no encontrado en la base de datos');
                     return null;
                 }
                 
+                const usuarioData = usuarios[0];
                 currentUser = {
                     id: usuarioData.id,
                     email: usuarioData.email,
@@ -908,19 +989,10 @@
             }
         }
         
-        // =============================================
-        // MÓDULO: CARGA DE DATOS CON RLS AUTOMÁTICO
-        // =============================================
         async function loadEmpresas() {
             try {
                 console.log('🏢 Cargando empresas...');
-                let query = window.supabase.from('empresas').select('*');
-                
-                if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
-                    query = query.eq('id', currentUser.empresa_id);
-                }
-                
-                const { data, error } = await query;
+                const { data, error } = await supabase.from('empresas').select('*');
                 
                 if (error) throw error;
                 database.empresas = data || [];
@@ -928,7 +1000,6 @@
                 return database.empresas;
             } catch (error) {
                 console.error('Error loading empresas:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar las empresas');
                 return [];
             }
         }
@@ -936,23 +1007,7 @@
         async function loadUsuarios() {
             try {
                 console.log('👥 Cargando usuarios...');
-                let query = window.supabase.from('usuarios').select('*');
-                
-                if (currentUser.rol === 'superadmin') {
-                    // Superadmin ve todos los usuarios
-                } else if (currentUser.rol === 'admin_empresa') {
-                    query = query.eq('empresa_id', currentUser.empresa_id);
-                } else if (currentUser.rol === 'gerente') {
-                    query = query.eq('empresa_id', currentUser.empresa_id)
-                                 .in('rol', ['vendedor', 'distribuidor', 'almacenero']);
-                } else if (currentUser.rol === 'contador') {
-                    query = query.eq('empresa_id', currentUser.empresa_id)
-                                 .neq('rol', 'superadmin');
-                } else if (['vendedor', 'distribuidor', 'almacenero'].includes(currentUser.rol)) {
-                    query = query.eq('id', currentUser.id);
-                }
-                
-                const { data, error } = await query;
+                const { data, error } = await supabase.from('usuarios').select('*');
                 
                 if (error) throw error;
                 database.usuarios = data || [];
@@ -960,40 +1015,13 @@
                 return database.usuarios;
             } catch (error) {
                 console.error('Error loading usuarios:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar los usuarios');
-                return [];
-            }
-        }
-        
-        async function loadEmpleados() {
-            try {
-                let query = window.supabase.from('empleados').select('*');
-                
-                if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
-                    query = query.eq('empresa_id', currentUser.empresa_id);
-                }
-                
-                const { data, error } = await query;
-                
-                if (error) throw error;
-                database.empleados = data || [];
-                return database.empleados;
-            } catch (error) {
-                console.error('Error loading empleados:', error);
                 return [];
             }
         }
         
         async function loadClientes() {
             try {
-                let query = window.supabase.from('clientes').select('*');
-                
-                if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
-                    query = query.eq('empresa_id', currentUser.empresa_id);
-                }
-                
-                const { data, error } = await query;
-                
+                const { data, error } = await supabase.from('clientes').select('*');
                 if (error) throw error;
                 database.clientes = data || [];
                 return database.clientes;
@@ -1005,14 +1033,7 @@
         
         async function loadProductos() {
             try {
-                let query = window.supabase.from('productos').select('*');
-                
-                if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
-                    query = query.eq('empresa_id', currentUser.empresa_id);
-                }
-                
-                const { data, error } = await query;
-                
+                const { data, error } = await supabase.from('productos').select('*');
                 if (error) throw error;
                 database.productos = data || [];
                 return database.productos;
@@ -1024,40 +1045,12 @@
         
         async function loadAlmacenes() {
             try {
-                let query = window.supabase.from('almacenes').select('*');
-                
-                if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
-                    query = query.eq('empresa_id', currentUser.empresa_id);
-                }
-                
-                const { data, error } = await query;
-                
+                const { data, error } = await supabase.from('almacenes').select('*');
                 if (error) throw error;
                 database.almacenes = data || [];
                 return database.almacenes;
             } catch (error) {
                 console.error('Error loading almacenes:', error);
-                return [];
-            }
-        }
-        
-        async function loadRutas() {
-            try {
-                let query = window.supabase.from('rutas_distribucion').select('*');
-                
-                if (currentUser.rol === 'distribuidor') {
-                    query = query.eq('distribuidor_id', currentUser.id);
-                } else if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
-                    query = query.eq('empresa_id', currentUser.empresa_id);
-                }
-                
-                const { data, error } = await query;
-                
-                if (error) throw error;
-                database.rutas = data || [];
-                return database.rutas;
-            } catch (error) {
-                console.error('Error loading rutas:', error);
                 return [];
             }
         }
@@ -1069,11 +1062,9 @@
                 await Promise.all([
                     loadEmpresas(),
                     loadUsuarios(),
-                    loadEmpleados(),
                     loadClientes(),
                     loadProductos(),
-                    loadAlmacenes(),
-                    loadRutas()
+                    loadAlmacenes()
                 ]);
                 console.log('✅ Todos los datos cargados correctamente');
                 return true;
@@ -1087,7 +1078,7 @@
         }
         
         // =============================================
-        // MÓDULO: CONFIGURACIÓN DE INTERFAZ POR ROL
+        // CONFIGURACIÓN DE INTERFAZ
         // =============================================
         function configureInterface() {
             if (!currentUser) {
@@ -1097,335 +1088,23 @@
             
             console.log('🎨 Configurando interfaz para rol:', currentUser.rol);
             
-            const roleConfigs = {
-                'superadmin': {
-                    badgeClass: 'superadmin',
-                    badgeText: 'SUPER ADMIN',
-                    userName: currentUser.nombre || 'Administrador Sistema',
-                    userRole: 'Control Total',
-                    viewId: 'viewSuperadmin',
-                    navMenu: `
-                    <div class="nav-section">
-                        <div class="nav-title">CORPORATIVO</div>
-                        <ul class="nav-links">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active" onclick="loadSuperadminDashboard()">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard Corporativo</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadEmpresasManagement()">
-                            <i class="fas fa-building"></i>
-                            <span>Gestión de Empresas</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadUsuariosManagement()">
-                            <i class="fas fa-users-cog"></i>
-                            <span>Gestión de Usuarios</span>
-                            </a>
-                        </li>
-                        </ul>
-                    </div>
-                    `,
-                    pageTitle: 'Panel de Control Corporativo'
-                },
-                'admin_empresa': {
-                    badgeClass: 'jefe',
-                    badgeText: 'JEFE EMPRESA',
-                    userName: currentUser.nombre || 'Jefe de Empresa',
-                    userRole: 'Gestión Empresarial',
-                    viewId: 'viewAdminEmpresa',
-                    navMenu: `
-                    <div class="nav-section">
-                        <div class="nav-title">EMPRESA</div>
-                        <ul class="nav-links">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active" onclick="loadJefeDashboard()">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard Empresa</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadUsuariosEmpresa()">
-                            <i class="fas fa-users"></i>
-                            <span>Gestión de Usuarios</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadGestionProductos()">
-                            <i class="fas fa-boxes"></i>
-                            <span>Gestión de Productos</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadGestionClientes()">
-                            <i class="fas fa-users"></i>
-                            <span>Gestión de Clientes</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadGestionAlmacenes()">
-                            <i class="fas fa-warehouse"></i>
-                            <span>Gestión de Almacenes</span>
-                            </a>
-                        </li>
-                        </ul>
-                    </div>
-                    `,
-                    pageTitle: 'Dashboard Empresa'
-                },
-                'gerente': {
-                    badgeClass: 'gerente',
-                    badgeText: 'DIRECCIÓN COMERCIAL',
-                    userName: currentUser.nombre || 'Dirección Comercial',
-                    userRole: 'Gestión Comercial',
-                    viewId: 'viewGerente',
-                    navMenu: `
-                    <div class="nav-section">
-                        <div class="nav-title">COMERCIAL</div>
-                        <ul class="nav-links">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active" onclick="loadGerenteDashboard()">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard Comercial</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadGestionVendedores()">
-                            <i class="fas fa-user-tie"></i>
-                            <span>Gestión de Vendedores</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadGestionDistribuidores()">
-                            <i class="fas fa-truck"></i>
-                            <span>Gestión de Distribuidores</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadGestionAlmacenes()">
-                            <i class="fas fa-warehouse"></i>
-                            <span>Gestión de Almacenes</span>
-                            </a>
-                        </li>
-                        </ul>
-                    </div>
-                    `,
-                    pageTitle: 'Dashboard Comercial'
-                },
-                'contador': {
-                    badgeClass: 'contador',
-                    badgeText: 'ADMINISTRACIÓN',
-                    userName: currentUser.nombre || 'Administración y Finanzas',
-                    userRole: 'Gestión Financiera',
-                    viewId: 'viewContador',
-                    navMenu: `
-                    <div class="nav-section">
-                        <div class="nav-title">FINANZAS</div>
-                        <ul class="nav-links">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active" onclick="loadContadorDashboard()">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard Financiero</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadGestionVentas()">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span>Gestión de Ventas</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadReportesFinancieros()">
-                            <i class="fas fa-chart-bar"></i>
-                            <span>Reportes Financieros</span>
-                            </a>
-                        </li>
-                        </ul>
-                    </div>
-                    `,
-                    pageTitle: 'Dashboard Administración y Finanzas'
-                },
-                'vendedor': {
-                    badgeClass: 'vendedor',
-                    badgeText: 'VENDEDOR',
-                    userName: currentUser.nombre || 'Vendedor',
-                    userRole: 'Ventas y Comercialización',
-                    viewId: 'viewVendedor',
-                    navMenu: `
-                    <div class="nav-section">
-                        <div class="nav-title">VENTAS</div>
-                        <ul class="nav-links">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active" onclick="loadVendedorDashboard()">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Mi Dashboard</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadMisClientes()">
-                            <i class="fas fa-users"></i>
-                            <span>Mis Clientes</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadMisVentas()">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span>Mis Ventas</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadCatalogoProductos()">
-                            <i class="fas fa-box-open"></i>
-                            <span>Catálogo de Productos</span>
-                            </a>
-                        </li>
-                        </ul>
-                    </div>
-                    `,
-                    pageTitle: 'Dashboard Vendedor'
-                },
-                'distribuidor': {
-                    badgeClass: 'distribuidor',
-                    badgeText: 'DISTRIBUIDOR',
-                    userName: currentUser.nombre || 'Distribuidor',
-                    userRole: 'Distribución y Logística',
-                    viewId: 'viewDistribuidor',
-                    navMenu: `
-                    <div class="nav-section">
-                        <div class="nav-title">DISTRIBUCIÓN</div>
-                        <ul class="nav-links">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active" onclick="loadDistribuidorDashboard()">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Mi Dashboard</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadMisRutas()">
-                            <i class="fas fa-route"></i>
-                            <span>Mis Rutas</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadMisVisitas()">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>Mis Visitas</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="cargarMiUbicacion()">
-                            <i class="fas fa-map-pin"></i>
-                            <span>Mi Ubicación</span>
-                            </a>
-                        </li>
-                        </ul>
-                    </div>
-                    `,
-                    pageTitle: 'Dashboard Distribuidor'
-                },
-                'almacenero': {
-                    badgeClass: 'almacenero',
-                    badgeText: 'ALMACÉN',
-                    userName: currentUser.nombre || 'Almacén',
-                    userRole: 'Gestión de Inventario',
-                    viewId: 'viewAlmacenero',
-                    navMenu: `
-                    <div class="nav-section">
-                        <div class="nav-title">ALMACÉN</div>
-                        <ul class="nav-links">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active" onclick="loadAlmaceneroDashboard()">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard Almacén</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadGestionInventario()">
-                            <i class="fas fa-boxes"></i>
-                            <span>Gestión de Inventario</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadEntradasSalidas()">
-                            <i class="fas fa-exchange-alt"></i>
-                            <span>Entradas y Salidas</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadReportesInventario()">
-                            <i class="fas fa-chart-pie"></i>
-                            <span>Reportes de Inventario</span>
-                            </a>
-                        </li>
-                        </ul>
-                    </div>
-                    `,
-                    pageTitle: 'Dashboard Almacén'
-                },
-                'supervisor': {
-                    badgeClass: 'supervisor',
-                    badgeText: 'SUPERVISOR',
-                    userName: currentUser.nombre || 'Supervisor',
-                    userRole: 'Supervisión y Control',
-                    viewId: 'viewSupervisor',
-                    navMenu: `
-                    <div class="nav-section">
-                        <div class="nav-title">SUPERVISIÓN</div>
-                        <ul class="nav-links">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link active" onclick="loadSupervisorDashboard()">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard Supervisor</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadMonitoreoEquipos()">
-                            <i class="fas fa-user-check"></i>
-                            <span>Monitoreo de Equipos</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="loadReportesSupervision()">
-                            <i class="fas fa-chart-line"></i>
-                            <span>Reportes de Supervisión</span>
-                            </a>
-                        </li>
-                        </ul>
-                    </div>
-                    `,
-                    pageTitle: 'Dashboard Supervisor'
-                }
-            };
+            // Configurar badge según rol
+            const userBadge = document.getElementById('userBadge');
+            userBadge.className = `user-badge ${currentUser.rol}`;
+            userBadge.textContent = getRoleName(currentUser.rol).toUpperCase();
             
-            const config = roleConfigs[currentUser.rol] || roleConfigs.superadmin;
+            document.getElementById('userName').textContent = currentUser.nombre || 'Usuario';
+            document.getElementById('userRole').textContent = getRoleName(currentUser.rol);
             
-            document.getElementById('userBadge').className = `user-badge ${config.badgeClass}`;
-            document.getElementById('userBadge').textContent = config.badgeText;
-            document.getElementById('userName').textContent = config.userName;
-            document.getElementById('userRole').textContent = config.userRole;
-            
-            // Obtener nombre de empresa si existe
-            if (currentUser.empresa_id) {
-                const empresa = database.empresas.find(e => e.id === currentUser.empresa_id);
-                if (empresa) {
-                    document.getElementById('sidebarCompanyName').textContent = empresa.nombre || 'NEXIAL SUITE';
-                }
-            }
-            
-            document.getElementById('navMenu').innerHTML = config.navMenu;
-            document.getElementById('pageTitle').textContent = config.pageTitle;
+            // Configurar menú según rol
+            const navMenu = document.getElementById('navMenu');
+            navMenu.innerHTML = generateNavMenu(currentUser.rol);
             
             // Ocultar todas las vistas y mostrar solo la del rol actual
             document.querySelectorAll('.role-view').forEach(view => {
                 view.classList.remove('active');
                 view.innerHTML = '';
             });
-            
-            const activeView = document.getElementById(config.viewId);
-            activeView.classList.add('active');
             
             // Cargar dashboard según rol
             setTimeout(() => {
@@ -1449,23 +1128,108 @@
             }, 100);
         }
         
-        // =============================================
-        // MÓDULO: DASHBOARD SUPER ADMIN
-        // =============================================
-        async function loadSuperadminDashboard() {
-            const empresasCount = database.empresas.length;
-            const usuariosCount = database.usuarios.length;
-            const empleadosCount = database.empleados.length;
-            const productosCount = database.productos.length;
+        function generateNavMenu(rol) {
+            const menus = {
+                'superadmin': `
+                    <div class="nav-section">
+                        <div class="nav-title">CORPORATIVO</div>
+                        <ul class="nav-links">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link active" onclick="loadSuperadminDashboard()">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    <span>Dashboard Corporativo</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link" onclick="loadEmpresasManagement()">
+                                    <i class="fas fa-building"></i>
+                                    <span>Gestión de Empresas</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link" onclick="loadUsuariosManagement()">
+                                    <i class="fas fa-users-cog"></i>
+                                    <span>Gestión de Usuarios</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                `,
+                'admin_empresa': `
+                    <div class="nav-section">
+                        <div class="nav-title">EMPRESA</div>
+                        <ul class="nav-links">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link active" onclick="loadJefeDashboard()">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    <span>Dashboard Empresa</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link" onclick="loadUsuariosEmpresa()">
+                                    <i class="fas fa-users"></i>
+                                    <span>Gestión de Usuarios</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link" onclick="loadGestionProductos()">
+                                    <i class="fas fa-boxes"></i>
+                                    <span>Gestión de Productos</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link" onclick="loadGestionClientes()">
+                                    <i class="fas fa-users"></i>
+                                    <span>Gestión de Clientes</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                `,
+                'vendedor': `
+                    <div class="nav-section">
+                        <div class="nav-title">VENTAS</div>
+                        <ul class="nav-links">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link active" onclick="loadVendedorDashboard()">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    <span>Mi Dashboard</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link" onclick="loadMisClientes()">
+                                    <i class="fas fa-users"></i>
+                                    <span>Mis Clientes</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link" onclick="loadCatalogoProductos()">
+                                    <i class="fas fa-box-open"></i>
+                                    <span>Catálogo de Productos</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                `
+            };
             
-            document.getElementById('viewSuperadmin').innerHTML = `
+            return menus[rol] || menus.vendedor;
+        }
+        
+        // =============================================
+        // DASHBOARDS POR ROL
+        // =============================================
+        function loadSuperadminDashboard() {
+            const view = document.getElementById('viewSuperadmin');
+            view.classList.add('active');
+            view.innerHTML = `
                 <div class="stats-grid fade-in">
                     <div class="stat-card">
                         <div class="stat-header">
                             <div class="stat-title">Empresas Activas</div>
                             <div class="stat-icon"><i class="fas fa-building"></i></div>
                         </div>
-                        <div class="stat-value">${empresasCount}</div>
+                        <div class="stat-value">${database.empresas.length}</div>
                         <div class="stat-change positive">
                             <i class="fas fa-arrow-up"></i> Total registradas
                         </div>
@@ -1476,7 +1240,7 @@
                             <div class="stat-title">Usuarios Totales</div>
                             <div class="stat-icon"><i class="fas fa-users"></i></div>
                         </div>
-                        <div class="stat-value">${usuariosCount}</div>
+                        <div class="stat-value">${database.usuarios.length}</div>
                         <div class="stat-change positive">
                             <i class="fas fa-arrow-up"></i> En sistema
                         </div>
@@ -1484,10 +1248,10 @@
                     
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-title">Empleados</div>
-                            <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
+                            <div class="stat-title">Clientes</div>
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
                         </div>
-                        <div class="stat-value">${empleadosCount}</div>
+                        <div class="stat-value">${database.clientes.length}</div>
                         <div class="stat-change positive">
                             <i class="fas fa-user-plus"></i> Registrados
                         </div>
@@ -1498,7 +1262,7 @@
                             <div class="stat-title">Productos</div>
                             <div class="stat-icon"><i class="fas fa-boxes"></i></div>
                         </div>
-                        <div class="stat-value">${productosCount}</div>
+                        <div class="stat-value">${database.productos.length}</div>
                         <div class="stat-change positive">
                             <i class="fas fa-box"></i> En catálogo
                         </div>
@@ -1514,34 +1278,20 @@
                     </button>
                 </div>
             `;
+            
+            document.getElementById('pageTitle').textContent = 'Dashboard Corporativo';
         }
         
-        // =============================================
-        // MÓDULO: DASHBOARD JEFE EMPRESA
-        // =============================================
-        async function loadJefeDashboard() {
-            const empresaId = currentUser.empresa_id;
-            const empresa = database.empresas.find(e => e.id === empresaId);
+        function loadJefeDashboard() {
+            const view = document.getElementById('viewAdminEmpresa');
+            view.classList.add('active');
             
-            if (!empresa) {
-                document.getElementById('viewAdminEmpresa').innerHTML = `
-                    <div class="table-card">
-                        <div style="padding: 3rem; text-align: center;">
-                            <i class="fas fa-building" style="font-size: 4rem; color: var(--danger); margin-bottom: 1rem;"></i>
-                            <h3 style="color: var(--danger); margin-bottom: 1rem;">Empresa no encontrada</h3>
-                            <p style="color: rgba(255,255,255,0.7);">No se encontró información de tu empresa. Contacta al administrador.</p>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
+            const empresa = database.empresas.find(e => e.id === currentUser.empresa_id);
+            const usuariosEmpresa = database.usuarios.filter(u => u.empresa_id === currentUser.empresa_id);
+            const productosEmpresa = database.productos.filter(p => p.empresa_id === currentUser.empresa_id);
+            const clientesEmpresa = database.clientes.filter(c => c.empresa_id === currentUser.empresa_id);
             
-            const usuariosEmpresa = database.usuarios.filter(u => u.empresa_id === empresaId);
-            const empleadosEmpresa = database.empleados.filter(e => e.empresa_id === empresaId);
-            const clientesEmpresa = database.clientes.filter(c => c.empresa_id === empresaId);
-            const productosEmpresa = database.productos.filter(p => p.empresa_id === empresaId);
-            
-            document.getElementById('viewAdminEmpresa').innerHTML = `
+            view.innerHTML = `
                 <div class="stats-grid fade-in">
                     <div class="stat-card">
                         <div class="stat-header">
@@ -1556,12 +1306,12 @@
                     
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-title">Empleados</div>
-                            <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
+                            <div class="stat-title">Productos</div>
+                            <div class="stat-icon"><i class="fas fa-boxes"></i></div>
                         </div>
-                        <div class="stat-value">${empleadosEmpresa.length}</div>
+                        <div class="stat-value">${productosEmpresa.length}</div>
                         <div class="stat-change positive">
-                            <i class="fas fa-user-plus"></i> Registrados
+                            <i class="fas fa-box"></i> En inventario
                         </div>
                     </div>
                     
@@ -1578,216 +1328,78 @@
                     
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-title">Productos</div>
-                            <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+                            <div class="stat-title">Almacenes</div>
+                            <div class="stat-icon"><i class="fas fa-warehouse"></i></div>
                         </div>
-                        <div class="stat-value">${productosEmpresa.length}</div>
+                        <div class="stat-value">${database.almacenes.filter(a => a.empresa_id === currentUser.empresa_id).length}</div>
                         <div class="stat-change positive">
-                            <i class="fas fa-box"></i> En inventario
+                            <i class="fas fa-warehouse"></i> Operativos
                         </div>
                     </div>
                 </div>
                 
-                <div style="margin-top: 2rem; display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
-                    <div class="table-card">
-                        <div class="table-header">
-                            <h3 class="table-title">Usuarios de la Empresa</h3>
-                            <div class="table-actions">
-                                <button class="btn btn-primary" onclick="loadUsuariosEmpresa()">
-                                    <i class="fas fa-users-cog"></i> Gestionar
-                                </button>
-                            </div>
-                        </div>
-                        <div class="table-wrapper">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Nombre</th>
-                                        <th>Rol</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${usuariosEmpresa.slice(0, 5).map(usuario => `
-                                        <tr>
-                                            <td>${usuario.nombre || 'Sin nombre'}</td>
-                                            <td>
-                                                <span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; background: ${getRoleColor(usuario.rol)}; font-size: 0.8rem;">
-                                                    ${getRoleName(usuario.rol)}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span class="status-badge ${usuario.activo ? 'status-active' : 'status-inactive'}">
-                                                    ${usuario.activo ? 'Activo' : 'Inactivo'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="action-btn edit" onclick="editarUsuario('${usuario.id}')" title="Editar">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="action-btn delete" onclick="eliminarUsuario('${usuario.id}', '${usuario.nombre}')" title="Eliminar">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                    ${usuariosEmpresa.length === 0 ? `
-                                        <tr>
-                                            <td colspan="4" style="text-align: center; padding: 1rem; color: rgba(255,255,255,0.5);">
-                                                No hay usuarios registrados
-                                            </td>
-                                        </tr>
-                                    ` : ''}
-                                </tbody>
-                            </table>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3 class="table-title">Información de la Empresa</h3>
+                        <div class="table-actions">
+                            <button class="btn btn-secondary" onclick="editarInformacionEmpresa()">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
                         </div>
                     </div>
-                    
-                    <div class="table-card">
-                        <div class="table-header">
-                            <h3 class="table-title">Información de la Empresa</h3>
-                            <div class="table-actions">
-                                <button class="btn btn-secondary" onclick="editarInformacionEmpresa()">
-                                    <i class="fas fa-edit"></i> Editar
-                                </button>
-                            </div>
-                        </div>
-                        <div style="padding: 1rem;">
+                    <div style="padding: 1rem;">
+                        ${empresa ? `
+                            <p><strong>Nombre:</strong> ${empresa.nombre}</p>
                             <p><strong>Código:</strong> ${empresa.codigo || 'No registrado'}</p>
                             <p><strong>NIT:</strong> ${empresa.nit || 'No registrado'}</p>
                             <p><strong>Dirección:</strong> ${empresa.direccion || 'No registrada'}</p>
-                            <p><strong>Teléfono:</strong> ${empresa.telefono || 'No registrado'}</p>
                             <p><strong>Email:</strong> ${empresa.email || 'No registrado'}</p>
                             <p><strong>Estado:</strong> <span class="status-badge ${empresa.activa ? 'status-active' : 'status-inactive'}">${empresa.activa ? 'Activa' : 'Inactiva'}</span></p>
-                        </div>
+                        ` : '<p>Información de empresa no disponible</p>'}
                     </div>
-                </div>
-                
-                <div style="margin-top: 2rem; text-align: center;">
-                    <button class="btn btn-primary" onclick="loadUsuariosEmpresa()" style="margin-right: 1rem;">
-                        <i class="fas fa-users-cog"></i> Gestionar Usuarios
-                    </button>
-                    <button class="btn btn-primary" onclick="loadGestionProductos()" style="margin-right: 1rem;">
-                        <i class="fas fa-boxes"></i> Gestionar Productos
-                    </button>
-                    <button class="btn btn-secondary" onclick="loadGestionClientes()">
-                        <i class="fas fa-users"></i> Gestionar Clientes
-                    </button>
                 </div>
             `;
             
-            document.getElementById('pageTitle').textContent = `Dashboard - ${empresa.nombre}`;
+            document.getElementById('pageTitle').textContent = empresa ? `Dashboard - ${empresa.nombre}` : 'Dashboard Empresa';
+        }
+        
+        function loadVendedorDashboard() {
+            const view = document.getElementById('viewVendedor');
+            view.classList.add('active');
+            
+            view.innerHTML = `
+                <div class="table-card fade-in">
+                    <div style="padding: 3rem; text-align: center;">
+                        <i class="fas fa-user-tie" style="font-size: 4rem; color: var(--vendedor); margin-bottom: 1rem;"></i>
+                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Vendedor</h3>
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
+                            ¡Bienvenido, ${currentUser.nombre || 'Vendedor'}!
+                        </p>
+                        <div style="display: flex; gap: 1rem; justify-content: center;">
+                            <button class="btn btn-primary" onclick="loadMisClientes()">
+                                <i class="fas fa-users"></i> Mis Clientes
+                            </button>
+                            <button class="btn btn-primary" onclick="loadCatalogoProductos()">
+                                <i class="fas fa-box-open"></i> Catálogo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('pageTitle').textContent = 'Dashboard Vendedor';
         }
         
         // =============================================
-        // FUNCIONES AUXILIARES
-        // =============================================
-        function getRoleName(role) {
-            const roles = {
-                'superadmin': 'Super Admin',
-                'admin_empresa': 'Jefe Empresa',
-                'gerente': 'Gerente',
-                'contador': 'Contador',
-                'vendedor': 'Vendedor',
-                'distribuidor': 'Distribuidor',
-                'almacenero': 'Almacenero',
-                'supervisor': 'Supervisor'
-            };
-            return roles[role] || role;
-        }
-        
-        function getRoleColor(role) {
-            switch(role) {
-                case 'superadmin': return 'rgba(255,0,85,0.2)';
-                case 'admin_empresa': return 'rgba(0,255,65,0.2)';
-                case 'gerente': return 'rgba(255,170,0,0.2)';
-                case 'contador': return 'rgba(0,170,255,0.2)';
-                case 'vendedor': return 'rgba(124,58,237,0.2)';
-                case 'distribuidor': return 'rgba(255,0,255,0.2)';
-                case 'almacenero': return 'rgba(255,85,0,0.2)';
-                case 'supervisor': return 'rgba(0,255,255,0.2)';
-                default: return 'rgba(255,255,255,0.1)';
-            }
-        }
-        
-        function getStatusClass(status) {
-            switch(status) {
-                case 'pendiente': return 'status-pending';
-                case 'en_ruta': return 'status-active';
-                case 'completada': return 'status-active';
-                case 'cancelada': return 'status-inactive';
-                default: return 'status-pending';
-            }
-        }
-        
-        function getStatusName(status) {
-            switch(status) {
-                case 'pendiente': return 'Pendiente';
-                case 'en_ruta': return 'En Ruta';
-                case 'completada': return 'Completada';
-                case 'cancelada': return 'Cancelada';
-                default: return status;
-            }
-        }
-        
-        function formatDate(dateString) {
-            if (!dateString) return 'No disponible';
-            try {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('es-ES');
-            } catch (e) {
-                return dateString;
-            }
-        }
-        
-        // =============================================
-        // FUNCIONES DE ACTUALIZACIÓN
-        // =============================================
-        async function refreshData() {
-            showLoading();
-            try {
-                await loadAllData();
-                
-                // Recargar la vista actual según el rol
-                if (currentUser.rol === 'superadmin') {
-                    loadSuperadminDashboard();
-                } else if (currentUser.rol === 'admin_empresa') {
-                    loadJefeDashboard();
-                } else if (currentUser.rol === 'gerente') {
-                    loadGerenteDashboard();
-                } else if (currentUser.rol === 'contador') {
-                    loadContadorDashboard();
-                } else if (currentUser.rol === 'vendedor') {
-                    loadVendedorDashboard();
-                } else if (currentUser.rol === 'distribuidor') {
-                    loadDistribuidorDashboard();
-                } else if (currentUser.rol === 'almacenero') {
-                    loadAlmaceneroDashboard();
-                } else if (currentUser.rol === 'supervisor') {
-                    loadSupervisorDashboard();
-                }
-                
-                showNotification('success', 'Datos Actualizados', 'La información se sincronizó correctamente');
-            } catch (error) {
-                console.error('Error actualizando datos:', error);
-                showNotification('error', 'Error', 'No se pudieron actualizar los datos');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // =============================================
-        // FUNCIONES DE GESTIÓN COMPLETAS
+        // FUNCIONES DE GESTIÓN
         // =============================================
         async function loadEmpresasManagement() {
-            showLoading();
+            showLoading('Cargando empresas...');
             try {
-                const { data: empresas, error } = await window.supabase
+                const { data: empresas, error } = await supabase
                     .from('empresas')
-                    .select('*');
+                    .select('*')
+                    .order('nombre');
                 
                 if (error) throw error;
                 
@@ -1818,7 +1430,7 @@
                                             <td>${empresa.codigo || 'N/A'}</td>
                                             <td>${empresa.nombre}</td>
                                             <td>${empresa.nit}</td>
-                                            <td>${empresa.email}</td>
+                                            <td>${empresa.email || 'No disponible'}</td>
                                             <td>
                                                 <span class="status-badge ${empresa.activa ? 'status-active' : 'status-inactive'}">
                                                     ${empresa.activa ? 'Activa' : 'Inactiva'}
@@ -1860,11 +1472,12 @@
         }
         
         async function loadUsuariosManagement() {
-            showLoading();
+            showLoading('Cargando usuarios...');
             try {
-                const { data: usuarios, error } = await window.supabase
+                const { data: usuarios, error } = await supabase
                     .from('usuarios')
-                    .select('*');
+                    .select('*')
+                    .order('nombre');
                 
                 if (error) throw error;
                 
@@ -1940,322 +1553,18 @@
             }
         }
         
-        async function loadUsuariosEmpresa() {
-            showLoading();
-            try {
-                const empresaId = currentUser.empresa_id;
-                const { data: usuarios, error } = await window.supabase
-                    .from('usuarios')
-                    .select('*')
-                    .eq('empresa_id', empresaId);
-                
-                if (error) throw error;
-                
-                const content = `
-                    <div style="max-width: 800px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h3 style="color: var(--secondary);">Usuarios de Mi Empresa</h3>
-                            <button class="btn btn-primary" onclick="mostrarFormularioUsuario()">
-                                <i class="fas fa-plus"></i> Nuevo Usuario
-                            </button>
-                        </div>
-                        
-                        <div class="table-wrapper">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Nombre</th>
-                                        <th>Email</th>
-                                        <th>Rol</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${usuarios.map(usuario => `
-                                        <tr>
-                                            <td>${usuario.codigo || 'N/A'}</td>
-                                            <td>${usuario.nombre}</td>
-                                            <td>${usuario.email}</td>
-                                            <td>
-                                                <span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; background: ${getRoleColor(usuario.rol)}; font-size: 0.8rem;">
-                                                    ${getRoleName(usuario.rol)}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span class="status-badge ${usuario.activo ? 'status-active' : 'status-inactive'}">
-                                                    ${usuario.activo ? 'Activo' : 'Inactivo'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="action-btn edit" onclick="editarUsuario('${usuario.id}')" title="Editar">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="action-btn delete" onclick="eliminarUsuario('${usuario.id}', '${usuario.nombre}')" title="Eliminar">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                    ${usuarios.length === 0 ? `
-                                        <tr>
-                                            <td colspan="6" style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.5);">
-                                                <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                                                No hay usuarios en tu empresa
-                                            </td>
-                                        </tr>
-                                    ` : ''}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-                
-                showModal('Gestión de Usuarios', content);
-            } catch (error) {
-                console.error('Error cargando usuarios:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar los usuarios');
-            } finally {
-                hideLoading();
+        function getRoleColor(role) {
+            switch(role) {
+                case 'superadmin': return 'rgba(255,0,85,0.2)';
+                case 'admin_empresa': return 'rgba(0,255,65,0.2)';
+                case 'gerente': return 'rgba(255,170,0,0.2)';
+                case 'contador': return 'rgba(0,170,255,0.2)';
+                case 'vendedor': return 'rgba(124,58,237,0.2)';
+                case 'distribuidor': return 'rgba(255,0,255,0.2)';
+                case 'almacenero': return 'rgba(255,85,0,0.2)';
+                case 'supervisor': return 'rgba(0,255,255,0.2)';
+                default: return 'rgba(255,255,255,0.1)';
             }
-        }
-        
-        async function loadGestionProductos() {
-            showLoading();
-            try {
-                const empresaId = currentUser.empresa_id;
-                const { data: productos, error } = await window.supabase
-                    .from('productos')
-                    .select('*')
-                    .eq('empresa_id', empresaId);
-                
-                if (error) throw error;
-                
-                const content = `
-                    <div style="max-width: 800px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h3 style="color: var(--secondary);">Productos de Mi Empresa</h3>
-                            <button class="btn btn-primary" onclick="mostrarFormularioProducto()">
-                                <i class="fas fa-plus"></i> Nuevo Producto
-                            </button>
-                        </div>
-                        
-                        <div class="table-wrapper">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Nombre</th>
-                                        <th>Categoría</th>
-                                        <th>Precio</th>
-                                        <th>Stock</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${productos.map(producto => `
-                                        <tr>
-                                            <td>${producto.codigo || 'N/A'}</td>
-                                            <td>${producto.nombre}</td>
-                                            <td>${producto.categoria || 'Sin categoría'}</td>
-                                            <td>$${parseFloat(producto.precio || 0).toFixed(2)}</td>
-                                            <td>${producto.stock || 0}</td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="action-btn edit" onclick="editarProducto('${producto.id}')" title="Editar">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="action-btn delete" onclick="eliminarProducto('${producto.id}', '${producto.nombre}')" title="Eliminar">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                    ${productos.length === 0 ? `
-                                        <tr>
-                                            <td colspan="6" style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.5);">
-                                                <i class="fas fa-boxes" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                                                No hay productos registrados
-                                            </td>
-                                        </tr>
-                                    ` : ''}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-                
-                showModal('Gestión de Productos', content);
-            } catch (error) {
-                console.error('Error cargando productos:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar los productos');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        async function loadGestionClientes() {
-            showLoading();
-            try {
-                const empresaId = currentUser.empresa_id;
-                const { data: clientes, error } = await window.supabase
-                    .from('clientes')
-                    .select('*')
-                    .eq('empresa_id', empresaId);
-                
-                if (error) throw error;
-                
-                const content = `
-                    <div style="max-width: 800px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h3 style="color: var(--secondary);">Clientes de Mi Empresa</h3>
-                            <button class="btn btn-primary" onclick="mostrarFormularioCliente()">
-                                <i class="fas fa-plus"></i> Nuevo Cliente
-                            </button>
-                        </div>
-                        
-                        <div class="table-wrapper">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Nombre</th>
-                                        <th>Teléfono</th>
-                                        <th>Email</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${clientes.map(cliente => `
-                                        <tr>
-                                            <td>${cliente.codigo || 'N/A'}</td>
-                                            <td>${cliente.nombre}</td>
-                                            <td>${cliente.telefono || 'No disponible'}</td>
-                                            <td>${cliente.email || 'No disponible'}</td>
-                                            <td>
-                                                <span class="status-badge ${cliente.activo ? 'status-active' : 'status-inactive'}">
-                                                    ${cliente.activo ? 'Activo' : 'Inactivo'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="action-btn edit" onclick="editarCliente('${cliente.id}')" title="Editar">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="action-btn delete" onclick="eliminarCliente('${cliente.id}', '${cliente.nombre}')" title="Eliminar">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                    ${clientes.length === 0 ? `
-                                        <tr>
-                                            <td colspan="6" style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.5);">
-                                                <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                                                No hay clientes registrados
-                                            </td>
-                                        </tr>
-                                    ` : ''}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-                
-                showModal('Gestión de Clientes', content);
-            } catch (error) {
-                console.error('Error cargando clientes:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar los clientes');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        async function loadGestionAlmacenes() {
-            showLoading();
-            try {
-                const empresaId = currentUser.empresa_id;
-                const { data: almacenes, error } = await window.supabase
-                    .from('almacenes')
-                    .select('*')
-                    .eq('empresa_id', empresaId);
-                
-                if (error) throw error;
-                
-                const content = `
-                    <div style="max-width: 800px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h3 style="color: var(--secondary);">Almacenes de Mi Empresa</h3>
-                            <button class="btn btn-primary" onclick="mostrarFormularioAlmacen()">
-                                <i class="fas fa-plus"></i> Nuevo Almacén
-                            </button>
-                        </div>
-                        
-                        <div class="table-wrapper">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Nombre</th>
-                                        <th>Dirección</th>
-                                        <th>Ciudad</th>
-                                        <th>Encargado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${almacenes.map(almacen => `
-                                        <tr>
-                                            <td>${almacen.codigo || 'N/A'}</td>
-                                            <td>${almacen.nombre}</td>
-                                            <td>${almacen.direccion || 'No disponible'}</td>
-                                            <td>${almacen.ciudad || 'No disponible'}</td>
-                                            <td>${getNombreUsuario(almacen.encargado_id)}</td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="action-btn edit" onclick="editarAlmacen('${almacen.id}')" title="Editar">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="action-btn delete" onclick="eliminarAlmacen('${almacen.id}', '${almacen.nombre}')" title="Eliminar">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                    ${almacenes.length === 0 ? `
-                                        <tr>
-                                            <td colspan="6" style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.5);">
-                                                <i class="fas fa-warehouse" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                                                No hay almacenes registrados
-                                            </td>
-                                        </tr>
-                                    ` : ''}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-                
-                showModal('Gestión de Almacenes', content);
-            } catch (error) {
-                console.error('Error cargando almacenes:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar los almacenes');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        function getNombreUsuario(usuarioId) {
-            if (!usuarioId) return 'Sin asignar';
-            const usuario = database.usuarios.find(u => u.id === usuarioId);
-            return usuario ? usuario.nombre : 'Desconocido';
         }
         
         // =============================================
@@ -2323,96 +1632,6 @@
             showModal(empresa ? 'Editar Empresa' : 'Nueva Empresa', content);
         }
         
-        function mostrarFormularioUsuario(usuarioId = null) {
-            const usuario = usuarioId ? database.usuarios.find(u => u.id === usuarioId) : null;
-            const empresas = database.empresas;
-            
-            const content = `
-                <div style="max-width: 600px;">
-                    <h3 style="color: var(--secondary); margin-bottom: 1.5rem;">
-                        ${usuario ? 'Editar Usuario' : 'Nuevo Usuario'}
-                    </h3>
-                    
-                    <form id="formUsuario" onsubmit="guardarUsuario(event, '${usuarioId}')">
-                        <div class="form-group">
-                            <label for="nombre">Nombre *</label>
-                            <input type="text" id="nombre" name="nombre" required 
-                                   value="${usuario ? usuario.nombre : ''}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="email">Email *</label>
-                            <input type="email" id="email" name="email" required 
-                                   value="${usuario ? usuario.email : ''}">
-                        </div>
-                        
-                        ${currentUser.rol === 'superadmin' ? `
-                            <div class="form-group">
-                                <label for="empresa_id">Empresa *</label>
-                                <select id="empresa_id" name="empresa_id" required>
-                                    <option value="">Seleccionar empresa</option>
-                                    ${empresas.map(emp => `
-                                        <option value="${emp.id}" ${usuario && usuario.empresa_id === emp.id ? 'selected' : ''}>
-                                            ${emp.nombre}
-                                        </option>
-                                    `).join('')}
-                                </select>
-                            </div>
-                        ` : `
-                            <input type="hidden" id="empresa_id" name="empresa_id" value="${currentUser.empresa_id}">
-                        `}
-                        
-                        <div class="form-group">
-                            <label for="rol">Rol *</label>
-                            <select id="rol" name="rol" required>
-                                <option value="">Seleccionar rol</option>
-                                ${currentUser.rol === 'superadmin' ? `
-                                    <option value="superadmin" ${usuario && usuario.rol === 'superadmin' ? 'selected' : ''}>Super Admin</option>
-                                    <option value="admin_empresa" ${usuario && usuario.rol === 'admin_empresa' ? 'selected' : ''}>Jefe Empresa</option>
-                                ` : ''}
-                                <option value="gerente" ${usuario && usuario.rol === 'gerente' ? 'selected' : ''}>Gerente</option>
-                                <option value="contador" ${usuario && usuario.rol === 'contador' ? 'selected' : ''}>Contador</option>
-                                <option value="vendedor" ${usuario && usuario.rol === 'vendedor' ? 'selected' : ''}>Vendedor</option>
-                                <option value="distribuidor" ${usuario && usuario.rol === 'distribuidor' ? 'selected' : ''}>Distribuidor</option>
-                                <option value="almacenero" ${usuario && usuario.rol === 'almacenero' ? 'selected' : ''}>Almacenero</option>
-                                <option value="supervisor" ${usuario && usuario.rol === 'supervisor' ? 'selected' : ''}>Supervisor</option>
-                            </select>
-                        </div>
-                        
-                        ${!usuarioId ? `
-                            <div class="form-group">
-                                <label for="password">Contraseña *</label>
-                                <input type="password" id="password" name="password" required>
-                                <small style="color: rgba(255,255,255,0.5);">La contraseña se encriptará automáticamente</small>
-                            </div>
-                        ` : ''}
-                        
-                        <div class="form-group">
-                            <label for="activo">Estado</label>
-                            <select id="activo" name="activo">
-                                <option value="true" ${usuario && usuario.activo ? 'selected' : ''}>Activo</option>
-                                <option value="false" ${usuario && !usuario.activo ? 'selected' : ''}>Inactivo</option>
-                            </select>
-                        </div>
-                        
-                        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                            <button type="button" class="btn btn-secondary" onclick="closeModal()">
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                ${usuario ? 'Actualizar Usuario' : 'Crear Usuario'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            `;
-            
-            showModal(usuario ? 'Editar Usuario' : 'Nuevo Usuario', content);
-        }
-        
-        // =============================================
-        // FUNCIONES CRUD COMPLETAS
-        // =============================================
         async function guardarEmpresa(event, empresaId = null) {
             event.preventDefault();
             showLoading();
@@ -2430,14 +1649,12 @@
                 
                 let result;
                 if (empresaId) {
-                    // Actualizar empresa existente
-                    result = await window.supabase
+                    result = await supabase
                         .from('empresas')
                         .update(empresaData)
                         .eq('id', empresaId);
                 } else {
-                    // Crear nueva empresa
-                    result = await window.supabase
+                    result = await supabase
                         .from('empresas')
                         .insert([empresaData]);
                 }
@@ -2448,7 +1665,6 @@
                 showNotification('success', 'Éxito', 
                     `Empresa ${empresaId ? 'actualizada' : 'creada'} correctamente`);
                 
-                // Recargar datos y vistas
                 await loadAllData();
                 if (currentUser.rol === 'superadmin') {
                     loadEmpresasManagement();
@@ -2464,57 +1680,15 @@
             }
         }
         
-        async function guardarUsuario(event, usuarioId = null) {
-            event.preventDefault();
-            showLoading();
-            
-            try {
-                const formData = new FormData(event.target);
-                const usuarioData = {
-                    nombre: formData.get('nombre'),
-                    email: formData.get('email'),
-                    empresa_id: currentUser.rol === 'superadmin' ? formData.get('empresa_id') : currentUser.empresa_id,
-                    rol: formData.get('rol'),
-                    activo: formData.get('activo') === 'true'
-                };
-                
-                let result;
-                if (usuarioId) {
-                    // Actualizar usuario existente
-                    result = await window.supabase
-                        .from('usuarios')
-                        .update(usuarioData)
-                        .eq('id', usuarioId);
-                } else {
-                    // Crear nuevo usuario
-                    const password = formData.get('password');
-                    // En un sistema real, aquí deberías crear el usuario en Supabase Auth
-                    // y luego crear el registro en la tabla usuarios
-                    result = await window.supabase
-                        .from('usuarios')
-                        .insert([usuarioData]);
-                }
-                
-                if (result.error) throw result.error;
-                
-                closeModal();
-                showNotification('success', 'Éxito', 
-                    `Usuario ${usuarioId ? 'actualizado' : 'creado'} correctamente`);
-                
-                // Recargar datos y vistas
-                await loadAllData();
-                if (currentUser.rol === 'superadmin') {
-                    loadUsuariosManagement();
-                } else {
-                    loadUsuariosEmpresa();
-                }
-            } catch (error) {
-                console.error('Error guardando usuario:', error);
-                showNotification('error', 'Error', 
-                    `No se pudo ${usuarioId ? 'actualizar' : 'crear'} el usuario`);
-            } finally {
-                hideLoading();
-            }
+        // =============================================
+        // FUNCIONES CRUD
+        // =============================================
+        function editarEmpresa(id) {
+            mostrarFormularioEmpresa(id);
+        }
+        
+        function editarInformacionEmpresa() {
+            mostrarFormularioEmpresa(currentUser.empresa_id);
         }
         
         async function eliminarEmpresa(id, nombre) {
@@ -2524,7 +1698,7 @@
                 async () => {
                     showLoading();
                     try {
-                        const { error } = await window.supabase
+                        const { error } = await supabase
                             .from('empresas')
                             .delete()
                             .eq('id', id);
@@ -2533,7 +1707,6 @@
                         
                         showNotification('success', 'Éxito', 'Empresa eliminada correctamente');
                         
-                        // Recargar datos y vistas
                         await loadAllData();
                         if (currentUser.rol === 'superadmin') {
                             loadEmpresasManagement();
@@ -2548,437 +1721,55 @@
             );
         }
         
-        async function eliminarUsuario(id, nombre) {
-            showConfirmation(
-                'Eliminar Usuario',
-                `¿Estás seguro de eliminar el usuario "${nombre}"? Esta acción no se puede deshacer.`,
-                async () => {
-                    showLoading();
-                    try {
-                        const { error } = await window.supabase
-                            .from('usuarios')
-                            .delete()
-                            .eq('id', id);
-                        
-                        if (error) throw error;
-                        
-                        showNotification('success', 'Éxito', 'Usuario eliminado correctamente');
-                        
-                        // Recargar datos y vistas
-                        await loadAllData();
-                        if (currentUser.rol === 'superadmin') {
-                            loadUsuariosManagement();
-                        } else {
-                            loadUsuariosEmpresa();
-                        }
-                    } catch (error) {
-                        console.error('Error eliminando usuario:', error);
-                        showNotification('error', 'Error', 'No se pudo eliminar el usuario');
-                    } finally {
-                        hideLoading();
-                    }
-                }
-            );
-        }
-        
         // =============================================
-        // FUNCIONES EDITAR (PLACEHOLDERS PARA OTROS MODULOS)
+        // FUNCIONES DE ACTUALIZACIÓN
         // =============================================
-        function editarEmpresa(id) {
-            mostrarFormularioEmpresa(id);
-        }
-        
-        function editarUsuario(id) {
-            mostrarFormularioUsuario(id);
-        }
-        
-        function editarInformacionEmpresa() {
-            mostrarFormularioEmpresa(currentUser.empresa_id);
-        }
-        
-        function editarProducto(id) {
-            showNotification('info', 'En desarrollo', 'Función de editar producto en desarrollo');
-        }
-        
-        function eliminarProducto(id, nombre) {
-            showNotification('info', 'En desarrollo', 'Función de eliminar producto en desarrollo');
-        }
-        
-        function editarCliente(id) {
-            showNotification('info', 'En desarrollo', 'Función de editar cliente en desarrollo');
-        }
-        
-        function eliminarCliente(id, nombre) {
-            showNotification('info', 'En desarrollo', 'Función de eliminar cliente en desarrollo');
-        }
-        
-        function editarAlmacen(id) {
-            showNotification('info', 'En desarrollo', 'Función de editar almacén en desarrollo');
-        }
-        
-        function eliminarAlmacen(id, nombre) {
-            showNotification('info', 'En desarrollo', 'Función de eliminar almacén en desarrollo');
-        }
-        
-        // =============================================
-        // FUNCIONES DE UBICACIÓN
-        // =============================================
-        function cargarMiUbicacion() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        showNotification('success', 'Ubicación obtenida', `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`);
-                        
-                        // Aquí podrías guardar la ubicación en Supabase
-                        // guardarUbicacionEnSupabase(lat, lng);
-                    },
-                    (error) => {
-                        showNotification('error', 'Error de ubicación', 'No se pudo obtener la ubicación');
-                    }
-                );
-            } else {
-                showNotification('error', 'Error', 'Geolocalización no soportada');
-            }
-        }
-        
-        // =============================================
-        // DASHBOARDS RESTANTES (PLACEHOLDERS)
-        // =============================================
-        function loadContadorDashboard() {
-            document.getElementById('viewContador').innerHTML = `
-                <div class="table-card">
-                    <div style="padding: 3rem; text-align: center;">
-                        <i class="fas fa-calculator" style="font-size: 4rem; color: var(--contador); margin-bottom: 1rem;"></i>
-                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Financiero</h3>
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
-                            Módulo de Administración y Finanzas en desarrollo
-                        </p>
-                        <button class="btn btn-primary" onclick="loadGestionVentas()">
-                            <i class="fas fa-shopping-cart"></i> Gestionar Ventas
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        function loadVendedorDashboard() {
-            document.getElementById('viewVendedor').innerHTML = `
-                <div class="table-card">
-                    <div style="padding: 3rem; text-align: center;">
-                        <i class="fas fa-user-tie" style="font-size: 4rem; color: var(--vendedor); margin-bottom: 1rem;"></i>
-                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Vendedor</h3>
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
-                            ¡Bienvenido, ${currentUser.nombre || 'Vendedor'}!
-                        </p>
-                        <div style="display: flex; gap: 1rem; justify-content: center;">
-                            <button class="btn btn-primary" onclick="loadMisClientes()">
-                                <i class="fas fa-users"></i> Mis Clientes
-                            </button>
-                            <button class="btn btn-primary" onclick="loadCatalogoProductos()">
-                                <i class="fas fa-box-open"></i> Catálogo
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        function loadAlmaceneroDashboard() {
-            document.getElementById('viewAlmacenero').innerHTML = `
-                <div class="table-card">
-                    <div style="padding: 3rem; text-align: center;">
-                        <i class="fas fa-warehouse" style="font-size: 4rem; color: var(--almacenero); margin-bottom: 1rem;"></i>
-                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Almacén</h3>
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
-                            ¡Bienvenido, ${currentUser.nombre || 'Almacenero'}!
-                        </p>
-                        <button class="btn btn-primary" onclick="loadGestionInventario()">
-                            <i class="fas fa-boxes"></i> Gestionar Inventario
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        function loadSupervisorDashboard() {
-            document.getElementById('viewSupervisor').innerHTML = `
-                <div class="table-card">
-                    <div style="padding: 3rem; text-align: center;">
-                        <i class="fas fa-user-check" style="font-size: 4rem; color: var(--supervisor); margin-bottom: 1rem;"></i>
-                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Supervisor</h3>
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
-                            ¡Bienvenido, ${currentUser.nombre || 'Supervisor'}!
-                        </p>
-                        <button class="btn btn-primary" onclick="loadMonitoreoEquipos()">
-                            <i class="fas fa-user-check"></i> Monitoreo
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // =============================================
-        // FUNCIONES DE GESTIÓN (PLACEHOLDERS RESTANTES)
-        // =============================================
-        function loadGestionVendedores() {
-            showModal('Gestión de Vendedores', `
-                <div style="max-width: 800px;">
-                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
-                        <i class="fas fa-user-tie" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <p>Módulo de Gestión de Vendedores en desarrollo</p>
-                        <p style="font-size: 0.9rem;">Pronto podrás gestionar vendedores desde aquí</p>
-                    </div>
-                </div>
-            `);
-        }
-        
-        function loadGestionDistribuidores() {
-            showModal('Gestión de Distribuidores', `
-                <div style="max-width: 800px;">
-                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
-                        <i class="fas fa-truck" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <p>Módulo de Gestión de Distribuidores en desarrollo</p>
-                        <p style="font-size: 0.9rem;">Pronto podrás gestionar distribuidores desde aquí</p>
-                    </div>
-                </div>
-            `);
-        }
-        
-        function loadMisRutas() {
-            showModal('Mis Rutas', `
-                <div style="max-width: 800px;">
-                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
-                        <i class="fas fa-route" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <p>Módulo de Mis Rutas en desarrollo</p>
-                        <p style="font-size: 0.9rem;">Pronto podrás ver y gestionar tus rutas</p>
-                    </div>
-                </div>
-            `);
-        }
-        
-        function loadMisVisitas() {
-            showModal('Mis Visitas', `
-                <div style="max-width: 800px;">
-                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
-                        <i class="fas fa-map-marker-alt" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <p>Módulo de Mis Visitas en desarrollo</p>
-                        <p style="font-size: 0.9rem;">Pronto podrás ver el historial de tus visitas</p>
-                    </div>
-                </div>
-            `);
-        }
-        
-        function loadGestionVentas() {
-            showModal('Gestión de Ventas', `
-                <div style="max-width: 800px;">
-                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
-                        <i class="fas fa-shopping-cart" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <p>Módulo de Gestión de Ventas en desarrollo</p>
-                        <p style="font-size: 0.9rem;">Pronto podrás gestionar ventas desde aquí</p>
-                    </div>
-                </div>
-            `);
-        }
-        
-        function loadMisClientes() {
-            showModal('Mis Clientes', `
-                <div style="max-width: 800px;">
-                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
-                        <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <p>Módulo de Mis Clientes en desarrollo</p>
-                        <p style="font-size: 0.9rem;">Pronto podrás ver y gestionar tus clientes</p>
-                    </div>
-                </div>
-            `);
-        }
-        
-        function loadCatalogoProductos() {
-            showModal('Catálogo de Productos', `
-                <div style="max-width: 800px;">
-                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
-                        <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <p>Módulo de Catálogo de Productos en desarrollo</p>
-                        <p style="font-size: 0.9rem;">Pronto podrás ver el catálogo de productos</p>
-                    </div>
-                </div>
-            `);
-        }
-        
-        function loadGestionInventario() {
-            showModal('Gestión de Inventario', `
-                <div style="max-width: 800px;">
-                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
-                        <i class="fas fa-boxes" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <p>Módulo de Gestión de Inventario en desarrollo</p>
-                        <p style="font-size: 0.9rem;">Pronto podrás gestionar inventario desde aquí</p>
-                    </div>
-                </div>
-            `);
-        }
-        
-        function loadMonitoreoEquipos() {
-            showModal('Monitoreo de Equipos', `
-                <div style="max-width: 800px;">
-                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
-                        <i class="fas fa-user-check" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <p>Módulo de Monitoreo de Equipos en desarrollo</p>
-                        <p style="font-size: 0.9rem;">Pronto podrás monitorear equipos desde aquí</p>
-                    </div>
-                </div>
-            `);
-        }
-        
-        // =============================================
-        // FUNCIONES DE FORMULARIOS RESTANTES (PLACEHOLDERS)
-        // =============================================
-        function mostrarFormularioProducto() {
-            showModal('Nuevo Producto', `
-                <div style="max-width: 600px;">
-                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
-                        <i class="fas fa-box" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <p>Formulario de producto en desarrollo</p>
-                        <p style="font-size: 0.9rem;">Pronto podrás crear y editar productos</p>
-                    </div>
-                </div>
-            `);
-        }
-        
-        function mostrarFormularioCliente() {
-            showModal('Nuevo Cliente', `
-                <div style="max-width: 600px;">
-                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
-                        <i class="fas fa-user-plus" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <p>Formulario de cliente en desarrollo</p>
-                        <p style="font-size: 0.9rem;">Pronto podrás crear y editar clientes</p>
-                    </div>
-                </div>
-            `);
-        }
-        
-        function mostrarFormularioAlmacen() {
-            showModal('Nuevo Almacén', `
-                <div style="max-width: 600px;">
-                    <div style="padding: 3rem; text-align: center; color: rgba(255,255,255,0.5);">
-                        <i class="fas fa-warehouse" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                        <p>Formulario de almacén en desarrollo</p>
-                        <p style="font-size: 0.9rem;">Pronto podrás crear y editar almacenes</p>
-                    </div>
-                </div>
-            `);
-        }
-        
-        // =============================================
-        // FUNCIONES DE MODALES
-        // =============================================
-        function showModal(title, content) {
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalContent').innerHTML = content;
-            document.getElementById('modalOverlay').style.display = 'flex';
-        }
-        
-        function closeModal() {
-            document.getElementById('modalOverlay').style.display = 'none';
-        }
-        
-        function showConfirmation(title, message, onConfirm) {
-            document.getElementById('confirmationTitle').textContent = title;
-            document.getElementById('confirmationMessage').innerHTML = message;
-            document.getElementById('confirmationDialog').style.display = 'flex';
-            
-            const confirmBtn = document.getElementById('confirmActionBtn');
-            confirmBtn.onclick = function() {
-                hideConfirmation();
-                onConfirm();
-            };
-        }
-        
-        function hideConfirmation() {
-            document.getElementById('confirmationDialog').style.display = 'none';
-        }
-        
-        // =============================================
-        // MÓDULO: NOTIFICACIONES
-        // =============================================
-        function showNotification(type, title, message) {
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${type === 'success' ? 'rgba(0,255,65,0.1)' : 
-                            type === 'error' ? 'rgba(255,0,85,0.1)' :
-                            type === 'info' ? 'rgba(0,170,255,0.1)' :
-                            'rgba(255,170,0,0.1)'};
-                border: 1px solid ${type === 'success' ? 'var(--success)' : 
-                                 type === 'error' ? 'var(--danger)' :
-                                 type === 'info' ? 'var(--info)' :
-                                 'var(--warning)'};
-                color: white;
-                padding: 1rem;
-                border-radius: 8px;
-                min-width: 300px;
-                max-width: 400px;
-                z-index: 10000;
-            `;
-            
-            toast.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
-                    <strong style="color: ${type === 'success' ? 'var(--success)' : 
-                                     type === 'error' ? 'var(--danger)' :
-                                     type === 'info' ? 'var(--info)' :
-                                     'var(--warning)'}">
-                        ${title}
-                    </strong>
-                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; cursor: pointer;">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">${message}</div>
-            `;
-            
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                if (toast.parentElement) {
-                    toast.remove();
-                }
-            }, 5000);
-        }
-        
-        // =============================================
-        // MÓDULO: SESIÓN Y LOGOUT
-        // =============================================
-        function showLogoutConfirmation() {
-            showConfirmation(
-                'Cerrar Sesión',
-                '¿Estás seguro de que deseas cerrar sesión?',
-                logout
-            );
-        }
-        
-        async function logout() {
-            showLoading();
+        async function refreshData() {
+            showLoading('Actualizando datos...');
             try {
-                const { error } = await window.supabase.auth.signOut();
-                if (error) throw error;
+                await loadAllData();
                 
-                window.location.href = 'index.html';
+                // Recargar la vista actual según el rol
+                if (currentUser.rol === 'superadmin') {
+                    loadSuperadminDashboard();
+                } else if (currentUser.rol === 'admin_empresa') {
+                    loadJefeDashboard();
+                } else if (currentUser.rol === 'vendedor') {
+                    loadVendedorDashboard();
+                }
+                
+                showNotification('success', 'Datos Actualizados', 'La información se sincronizó correctamente');
             } catch (error) {
-                console.error('Error al cerrar sesión:', error);
-                showNotification('error', 'Error', 'No se pudo cerrar sesión');
+                console.error('Error actualizando datos:', error);
+                showNotification('error', 'Error', 'No se pudieron actualizar los datos');
             } finally {
                 hideLoading();
             }
         }
         
         // =============================================
-        // MÓDULO: INICIALIZACIÓN
+        // FUNCIONES DE SESIÓN
+        // =============================================
+        async function logout() {
+            showLoading('Cerrando sesión...');
+            try {
+                const { error } = await supabase.auth.signOut();
+                if (error) throw error;
+                
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+                showNotification('error', 'Error', 'No se pudo cerrar sesión');
+                hideLoading();
+            }
+        }
+        
+        // =============================================
+        // FUNCIONES DE INICIALIZACIÓN
         // =============================================
         async function initializeDashboard() {
             console.log('🔄 Inicializando dashboard...');
-            showLoading();
+            showLoading('Verificando sesión...');
             
             try {
                 // 1. Verificar sesión
@@ -3011,6 +1802,112 @@
         }
         
         // =============================================
+        // DASHBOARDS RESTANTES (PLACEHOLDERS)
+        // =============================================
+        function loadContadorDashboard() {
+            const view = document.getElementById('viewContador');
+            view.classList.add('active');
+            view.innerHTML = `
+                <div class="table-card fade-in">
+                    <div style="padding: 3rem; text-align: center;">
+                        <i class="fas fa-calculator" style="font-size: 4rem; color: var(--contador); margin-bottom: 1rem;"></i>
+                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Financiero</h3>
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
+                            Módulo de Administración y Finanzas en desarrollo
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function loadGerenteDashboard() {
+            const view = document.getElementById('viewGerente');
+            view.classList.add('active');
+            view.innerHTML = `
+                <div class="table-card fade-in">
+                    <div style="padding: 3rem; text-align: center;">
+                        <i class="fas fa-user-tie" style="font-size: 4rem; color: var(--gerente); margin-bottom: 1rem;"></i>
+                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Gerente</h3>
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
+                            ¡Bienvenido, ${currentUser.nombre || 'Gerente'}!
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function loadDistribuidorDashboard() {
+            const view = document.getElementById('viewDistribuidor');
+            view.classList.add('active');
+            view.innerHTML = `
+                <div class="table-card fade-in">
+                    <div style="padding: 3rem; text-align: center;">
+                        <i class="fas fa-truck" style="font-size: 4rem; color: var(--distribuidor); margin-bottom: 1rem;"></i>
+                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Distribuidor</h3>
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
+                            ¡Bienvenido, ${currentUser.nombre || 'Distribuidor'}!
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function loadAlmaceneroDashboard() {
+            const view = document.getElementById('viewAlmacenero');
+            view.classList.add('active');
+            view.innerHTML = `
+                <div class="table-card fade-in">
+                    <div style="padding: 3rem; text-align: center;">
+                        <i class="fas fa-warehouse" style="font-size: 4rem; color: var(--almacenero); margin-bottom: 1rem;"></i>
+                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Almacén</h3>
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
+                            ¡Bienvenido, ${currentUser.nombre || 'Almacenero'}!
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function loadSupervisorDashboard() {
+            const view = document.getElementById('viewSupervisor');
+            view.classList.add('active');
+            view.innerHTML = `
+                <div class="table-card fade-in">
+                    <div style="padding: 3rem; text-align: center;">
+                        <i class="fas fa-user-check" style="font-size: 4rem; color: var(--supervisor); margin-bottom: 1rem;"></i>
+                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Supervisor</h3>
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
+                            ¡Bienvenido, ${currentUser.nombre || 'Supervisor'}!
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // =============================================
+        // FUNCIONES DE GESTIÓN (PLACEHOLDERS)
+        // =============================================
+        function loadUsuariosEmpresa() {
+            showNotification('info', 'En desarrollo', 'Módulo de Gestión de Usuarios de Empresa en desarrollo');
+        }
+        
+        function loadGestionProductos() {
+            showNotification('info', 'En desarrollo', 'Módulo de Gestión de Productos en desarrollo');
+        }
+        
+        function loadGestionClientes() {
+            showNotification('info', 'En desarrollo', 'Módulo de Gestión de Clientes en desarrollo');
+        }
+        
+        function loadMisClientes() {
+            showNotification('info', 'En desarrollo', 'Módulo de Mis Clientes en desarrollo');
+        }
+        
+        function loadCatalogoProductos() {
+            showNotification('info', 'En desarrollo', 'Módulo de Catálogo de Productos en desarrollo');
+        }
+        
+        // =============================================
         // EVENT LISTENERS
         // =============================================
         document.addEventListener('DOMContentLoaded', function() {
@@ -3026,200 +1923,12 @@
                 }
             });
             
-            // Esperar un momento para asegurar que todo esté cargado
-            setTimeout(() => {
-                initializeDashboard();
-            }, 100);
+            // Inicializar dashboard
+            setTimeout(initializeDashboard, 100);
             
-            console.log('🚀 Nexial Suite - Supabase Edition');
-            console.log('📊 Sistema Corporativo Multiempresa v4.0');
-            console.log('🔗 Supabase URL:', SUPABASE_URL);
+            console.log('🚀 Nexial Suite - Supabase Edition v4.0');
+            console.log('🔗 URL:', SUPABASE_URL);
         });
-        
-        // =============================================
-        // FUNCIONES ADICIONALES PARA OTROS MÓDULOS
-        // =============================================
-        function verRutaDetalle(rutaId) {
-            const ruta = database.rutas.find(r => r.id === rutaId);
-            if (!ruta) {
-                showNotification('error', 'Error', 'Ruta no encontrada');
-                return;
-            }
-            
-            showModal(`Detalle de Ruta: ${ruta.codigo}`, `
-                <div style="max-width: 600px;">
-                    <div style="padding: 1rem;">
-                        <p><strong>Código:</strong> ${ruta.codigo}</p>
-                        <p><strong>Fecha:</strong> ${formatDate(ruta.fecha)}</p>
-                        <p><strong>Estado:</strong> <span class="status-badge ${getStatusClass(ruta.estado)}">${getStatusName(ruta.estado)}</span></p>
-                        <p><strong>Distancia Total:</strong> ${ruta.distancia_total_km || 0} km</p>
-                        <p><strong>Observaciones:</strong> ${ruta.observaciones || 'Sin observaciones'}</p>
-                    </div>
-                </div>
-            `);
-        }
-        
-        function iniciarRuta(rutaId) {
-            showConfirmation(
-                'Iniciar Ruta',
-                '¿Estás seguro de iniciar esta ruta?',
-                async () => {
-                    showLoading();
-                    try {
-                        const { error } = await window.supabase
-                            .from('rutas_distribucion')
-                            .update({ estado: 'en_ruta' })
-                            .eq('id', rutaId);
-                        
-                        if (error) throw error;
-                        
-                        showNotification('success', 'Éxito', 'Ruta iniciada correctamente');
-                        
-                        // Recargar datos
-                        await loadRutas();
-                        loadDistribuidorDashboard();
-                    } catch (error) {
-                        console.error('Error iniciando ruta:', error);
-                        showNotification('error', 'Error', 'No se pudo iniciar la ruta');
-                    } finally {
-                        hideLoading();
-                    }
-                }
-            );
-        }
-        
-        // =============================================
-        // DASHBOARDS RESTANTES (MÍNIMOS)
-        // =============================================
-        function loadGerenteDashboard() {
-            const empresaId = currentUser.empresa_id;
-            const empresa = database.empresas.find(e => e.id === empresaId);
-            
-            document.getElementById('viewGerente').innerHTML = `
-                <div class="stats-grid fade-in">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Vendedores Activos</div>
-                            <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
-                        </div>
-                        <div class="stat-value">${database.usuarios.filter(u => u.empresa_id === empresaId && u.rol === 'vendedor').length}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-user-check"></i> En tu empresa
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Distribuidores</div>
-                            <div class="stat-icon"><i class="fas fa-truck"></i></div>
-                        </div>
-                        <div class="stat-value">${database.usuarios.filter(u => u.empresa_id === empresaId && u.rol === 'distribuidor').length}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-route"></i> En ruta
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Almacenes</div>
-                            <div class="stat-icon"><i class="fas fa-warehouse"></i></div>
-                        </div>
-                        <div class="stat-value">${database.usuarios.filter(u => u.empresa_id === empresaId && u.rol === 'almacenero').length}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-box"></i> Operativos
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Empresa</div>
-                            <div class="stat-icon"><i class="fas fa-building"></i></div>
-                        </div>
-                        <div class="stat-value" style="font-size: 1.5rem;">${empresa?.nombre || 'Mi Empresa'}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-chart-line"></i> Comercial
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 2rem; text-align: center;">
-                    <button class="btn btn-primary" onclick="loadGestionVendedores()" style="margin-right: 1rem;">
-                        <i class="fas fa-user-tie"></i> Gestionar Vendedores
-                    </button>
-                    <button class="btn btn-primary" onclick="loadGestionDistribuidores()" style="margin-right: 1rem;">
-                        <i class="fas fa-truck"></i> Gestionar Distribuidores
-                    </button>
-                    <button class="btn btn-primary" onclick="loadGestionAlmacenes()">
-                        <i class="fas fa-warehouse"></i> Gestionar Almacenes
-                    </button>
-                </div>
-            `;
-        }
-        
-        function loadDistribuidorDashboard() {
-            const misRutas = database.rutas.filter(r => r.distribuidor_id === currentUser.id);
-            
-            document.getElementById('viewDistribuidor').innerHTML = `
-                <div class="stats-grid fade-in">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Total Rutas</div>
-                            <div class="stat-icon"><i class="fas fa-map-marked-alt"></i></div>
-                        </div>
-                        <div class="stat-value">${misRutas.length}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-chart-line"></i> Asignadas
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Pendientes</div>
-                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                        </div>
-                        <div class="stat-value">${misRutas.filter(r => r.estado === 'pendiente').length}</div>
-                        <div class="stat-change ${misRutas.filter(r => r.estado === 'pendiente').length > 0 ? 'negative' : 'positive'}">
-                            <i class="fas ${misRutas.filter(r => r.estado === 'pendiente').length > 0 ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
-                            ${misRutas.filter(r => r.estado === 'pendiente').length > 0 ? 'Por realizar' : 'Al día'}
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Completadas</div>
-                            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                        </div>
-                        <div class="stat-value">${misRutas.filter(r => r.estado === 'completada').length}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-trophy"></i> Finalizadas
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">En Ruta</div>
-                            <div class="stat-icon"><i class="fas fa-route"></i></div>
-                        </div>
-                        <div class="stat-value">${misRutas.filter(r => r.estado === 'en_ruta').length}</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-calendar-day"></i> En progreso
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 2rem; text-align: center;">
-                    <button class="btn btn-primary" onclick="loadMisRutas()" style="margin-right: 1rem;">
-                        <i class="fas fa-route"></i> Mis Rutas
-                    </button>
-                    <button class="btn btn-primary" onclick="loadMisVisitas()" style="margin-right: 1rem;">
-                        <i class="fas fa-map-marker-alt"></i> Mis Visitas
-                    </button>
-                    <button class="btn btn-secondary" onclick="cargarMiUbicacion()">
-                        <i class="fas fa-map-pin"></i> Compartir Ubicación
-                    </button>
-                </div>
-            `;
-        }
     </script>
 </body>
 </html>
