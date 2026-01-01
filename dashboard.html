@@ -797,7 +797,7 @@
         const SUPABASE_URL = 'https://cmrysvcahpouziogzang.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_rj4q31YiBwxLcfuswCX21g_LxsxRc_n';
         
-        // SOLUCIÓN DEFINITIVA: Verificar si ya existe y usarla, si no crear nueva
+        // SOLUCIÓN DEFINITIVA: Inicializar supabase una sola vez
         (function() {
             // Verificar si ya existe una instancia global de Supabase
             if (window.supabaseClient && typeof window.supabaseClient === 'object') {
@@ -806,14 +806,13 @@
             } else {
                 // Crear nueva instancia
                 console.log('🔄 Creando nueva instancia de Supabase');
-                window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                const { createClient } = window.supabase;
+                window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 window.supabaseClient = window.supabase; // Guardar referencia
             }
         })();
         
-        // Ahora usamos window.supabase globalmente
-        const supabase = window.supabase;
-        
+        // Usar window.supabase en lugar de declarar una nueva constante
         // =============================================
         // VARIABLES GLOBALES
         // =============================================
@@ -849,7 +848,7 @@
         async function checkSession() {
             try {
                 console.log('🔍 Verificando sesión...');
-                const { data: { session }, error } = await supabase.auth.getSession();
+                const { data: { session }, error } = await window.supabase.auth.getSession();
                 
                 if (error) {
                     console.error('Error en sesión:', error);
@@ -878,7 +877,7 @@
             
             try {
                 console.log('👤 Cargando datos del usuario...');
-                const { data: usuarioData, error } = await supabase
+                const { data: usuarioData, error } = await window.supabase
                     .from('usuarios')
                     .select('*')
                     .eq('email', currentSession.user.email)
@@ -915,7 +914,7 @@
         async function loadEmpresas() {
             try {
                 console.log('🏢 Cargando empresas...');
-                let query = supabase.from('empresas').select('*');
+                let query = window.supabase.from('empresas').select('*');
                 
                 if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
                     query = query.eq('id', currentUser.empresa_id);
@@ -937,7 +936,7 @@
         async function loadUsuarios() {
             try {
                 console.log('👥 Cargando usuarios...');
-                let query = supabase.from('usuarios').select('*');
+                let query = window.supabase.from('usuarios').select('*');
                 
                 if (currentUser.rol === 'superadmin') {
                     // Superadmin ve todos los usuarios
@@ -968,7 +967,7 @@
         
         async function loadEmpleados() {
             try {
-                let query = supabase.from('empleados').select('*');
+                let query = window.supabase.from('empleados').select('*');
                 
                 if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
                     query = query.eq('empresa_id', currentUser.empresa_id);
@@ -987,7 +986,7 @@
         
         async function loadClientes() {
             try {
-                let query = supabase.from('clientes').select('*');
+                let query = window.supabase.from('clientes').select('*');
                 
                 if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
                     query = query.eq('empresa_id', currentUser.empresa_id);
@@ -1006,7 +1005,7 @@
         
         async function loadProductos() {
             try {
-                let query = supabase.from('productos').select('*');
+                let query = window.supabase.from('productos').select('*');
                 
                 if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
                     query = query.eq('empresa_id', currentUser.empresa_id);
@@ -1025,7 +1024,7 @@
         
         async function loadAlmacenes() {
             try {
-                let query = supabase.from('almacenes').select('*');
+                let query = window.supabase.from('almacenes').select('*');
                 
                 if (currentUser.rol !== 'superadmin' && currentUser.empresa_id) {
                     query = query.eq('empresa_id', currentUser.empresa_id);
@@ -1044,7 +1043,7 @@
         
         async function loadRutas() {
             try {
-                let query = supabase.from('rutas_distribucion').select('*');
+                let query = window.supabase.from('rutas_distribucion').select('*');
                 
                 if (currentUser.rol === 'distribuidor') {
                     query = query.eq('distribuidor_id', currentUser.id);
@@ -1786,7 +1785,7 @@
         async function loadEmpresasManagement() {
             showLoading();
             try {
-                const { data: empresas, error } = await supabase
+                const { data: empresas, error } = await window.supabase
                     .from('empresas')
                     .select('*');
                 
@@ -1863,7 +1862,7 @@
         async function loadUsuariosManagement() {
             showLoading();
             try {
-                const { data: usuarios, error } = await supabase
+                const { data: usuarios, error } = await window.supabase
                     .from('usuarios')
                     .select('*');
                 
@@ -1945,7 +1944,7 @@
             showLoading();
             try {
                 const empresaId = currentUser.empresa_id;
-                const { data: usuarios, error } = await supabase
+                const { data: usuarios, error } = await window.supabase
                     .from('usuarios')
                     .select('*')
                     .eq('empresa_id', empresaId);
@@ -2028,7 +2027,7 @@
             showLoading();
             try {
                 const empresaId = currentUser.empresa_id;
-                const { data: productos, error } = await supabase
+                const { data: productos, error } = await window.supabase
                     .from('productos')
                     .select('*')
                     .eq('empresa_id', empresaId);
@@ -2103,7 +2102,7 @@
             showLoading();
             try {
                 const empresaId = currentUser.empresa_id;
-                const { data: clientes, error } = await supabase
+                const { data: clientes, error } = await window.supabase
                     .from('clientes')
                     .select('*')
                     .eq('empresa_id', empresaId);
@@ -2182,7 +2181,7 @@
             showLoading();
             try {
                 const empresaId = currentUser.empresa_id;
-                const { data: almacenes, error } = await supabase
+                const { data: almacenes, error } = await window.supabase
                     .from('almacenes')
                     .select('*')
                     .eq('empresa_id', empresaId);
@@ -2432,13 +2431,13 @@
                 let result;
                 if (empresaId) {
                     // Actualizar empresa existente
-                    result = await supabase
+                    result = await window.supabase
                         .from('empresas')
                         .update(empresaData)
                         .eq('id', empresaId);
                 } else {
                     // Crear nueva empresa
-                    result = await supabase
+                    result = await window.supabase
                         .from('empresas')
                         .insert([empresaData]);
                 }
@@ -2482,16 +2481,16 @@
                 let result;
                 if (usuarioId) {
                     // Actualizar usuario existente
-                    result = await supabase
+                    result = await window.supabase
                         .from('usuarios')
                         .update(usuarioData)
                         .eq('id', usuarioId);
                 } else {
                     // Crear nuevo usuario
                     const password = formData.get('password');
-                    // Nota: En un sistema real, aquí deberías crear el usuario en Supabase Auth
+                    // En un sistema real, aquí deberías crear el usuario en Supabase Auth
                     // y luego crear el registro en la tabla usuarios
-                    result = await supabase
+                    result = await window.supabase
                         .from('usuarios')
                         .insert([usuarioData]);
                 }
@@ -2525,7 +2524,7 @@
                 async () => {
                     showLoading();
                     try {
-                        const { error } = await supabase
+                        const { error } = await window.supabase
                             .from('empresas')
                             .delete()
                             .eq('id', id);
@@ -2556,7 +2555,7 @@
                 async () => {
                     showLoading();
                     try {
-                        const { error } = await supabase
+                        const { error } = await window.supabase
                             .from('usuarios')
                             .delete()
                             .eq('id', id);
@@ -2962,7 +2961,7 @@
         async function logout() {
             showLoading();
             try {
-                const { error } = await supabase.auth.signOut();
+                const { error } = await window.supabase.auth.signOut();
                 if (error) throw error;
                 
                 window.location.href = 'index.html';
@@ -3067,7 +3066,7 @@
                 async () => {
                     showLoading();
                     try {
-                        const { error } = await supabase
+                        const { error } = await window.supabase
                             .from('rutas_distribucion')
                             .update({ estado: 'en_ruta' })
                             .eq('id', rutaId);
