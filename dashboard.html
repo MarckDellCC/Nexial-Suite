@@ -67,6 +67,11 @@
             to { transform: rotate(360deg); }
         }
         
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
         /* ============================================= */
         /* ESTRUCTURA PRINCIPAL */
         /* ============================================= */
@@ -174,6 +179,7 @@
             text-decoration: none;
             border-radius: 8px;
             transition: all 0.3s;
+            cursor: pointer;
         }
         
         .nav-link:hover {
@@ -433,6 +439,7 @@
             max-height: 90vh;
             overflow-y: auto;
             border: 1px solid rgba(124, 58, 237, 0.3);
+            animation: slideIn 0.3s ease-out;
         }
         
         .modal-header {
@@ -602,6 +609,21 @@
             z-index: 10000;
             max-width: 400px;
             animation: fadeIn 0.3s ease-out;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0;
         }
         
         .notification.success {
@@ -703,6 +725,42 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* ============================================= */
+        /* ERROR STATE */
+        /* ============================================= */
+        .error-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+        
+        .error-icon {
+            font-size: 4rem;
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+        
+        .error-message {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+        }
+        
+        /* ============================================= */
+        /* WELCOME STATE */
+        /* ============================================= */
+        .welcome-card {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(0, 245, 255, 0.1));
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+        
+        .welcome-icon {
+            font-size: 4rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -721,7 +779,7 @@
             
             <div class="user-info">
                 <div class="user-badge" id="userBadge">CARGANDO...</div>
-                <div class="user-name" id="userName">Cargando...</div>
+                <div class="user-name" id="userName">Cargando usuario...</div>
                 <div class="user-role" id="userRole">Cargando rol...</div>
             </div>
             
@@ -749,15 +807,10 @@
                 </div>
             </div>
 
-            <!-- VISTAS POR ROL -->
-            <div id="viewSuperadmin" class="role-view"></div>
-            <div id="viewAdminEmpresa" class="role-view"></div>
-            <div id="viewGerente" class="role-view"></div>
-            <div id="viewContador" class="role-view"></div>
-            <div id="viewVendedor" class="role-view"></div>
-            <div id="viewDistribuidor" class="role-view"></div>
-            <div id="viewAlmacenero" class="role-view"></div>
-            <div id="viewSupervisor" class="role-view"></div>
+            <!-- CONTENIDO DINÁMICO -->
+            <div id="dynamicContent">
+                <!-- Aquí se cargará el contenido según el rol -->
+            </div>
         </main>
     </div>
 
@@ -822,6 +875,7 @@
         // =============================================
         let currentUser = null;
         let currentSession = null;
+        let currentEmpresa = null;
         let database = {
             empresas: [],
             usuarios: [],
@@ -847,16 +901,21 @@
         }
         
         function showNotification(type, title, message) {
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(n => n.remove());
+            
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
-                    <strong>${title}</strong>
-                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; cursor: pointer;">
-                        <i class="fas fa-times"></i>
-                    </button>
+                <div class="notification-content">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                        <strong>${title}</strong>
+                    </div>
+                    <div>${message}</div>
                 </div>
-                <div>${message}</div>
+                <button class="notification-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
             `;
             
             document.body.appendChild(notification);
@@ -918,7 +977,7 @@
         }
         
         // =============================================
-        // FUNCIONES DE SUPABASE
+        // FUNCIONES DE SUPABASE - CORREGIDAS
         // =============================================
         async function checkSession() {
             try {
@@ -926,163 +985,149 @@
                 const { data: { session }, error } = await supabase.auth.getSession();
                 
                 if (error) {
-                    console.error('Error en sesión:', error);
-                    throw error;
+                    console.error('❌ Error en sesión:', error);
+                    showNotification('error', 'Error de sesión', 'No se pudo verificar la sesión');
+                    return null;
                 }
                 
                 if (!session) {
-                    console.log('⚠️ No hay sesión activa, redirigiendo...');
-                    window.location.href = 'index.html';
+                    console.log('⚠️ No hay sesión activa');
                     return null;
                 }
                 
                 currentSession = session;
-                console.log('✅ Sesión activa encontrada');
+                console.log('✅ Sesión activa encontrada para:', session.user.email);
                 return session;
             } catch (error) {
-                console.error('Error checking session:', error);
-                window.location.href = 'index.html';
+                console.error('❌ Error checking session:', error);
                 return null;
             }
         }
         
         async function loadUserData() {
-            if (!currentSession) return null;
+            if (!currentSession) {
+                console.error('❌ No hay sesión para cargar usuario');
+                return null;
+            }
             
             try {
                 console.log('👤 Cargando datos del usuario...');
-                // CORRECCIÓN: Usar limit(1) en lugar de single() por si hay múltiples usuarios
+                
                 const { data: usuarios, error } = await supabase
                     .from('usuarios')
                     .select('*')
-                    .eq('email', currentSession.user.email)
-                    .limit(1);
+                    .eq('email', currentSession.user.email);
                 
                 if (error) {
-                    console.error('Error loading user:', error);
-                    throw error;
-                }
-                
-                if (!usuarios || usuarios.length === 0) {
-                    console.error('❌ Usuario no encontrado en la base de datos');
-                    showNotification('error', 'Error', 'Usuario no encontrado en la base de datos');
+                    console.error('❌ Error cargando usuario:', error);
+                    showNotification('error', 'Error', 'No se pudo cargar los datos del usuario');
                     return null;
                 }
                 
-                const usuarioData = usuarios[0];
-                currentUser = {
-                    id: usuarioData.id,
-                    email: usuarioData.email,
-                    nombre: usuarioData.nombre,
-                    rol: usuarioData.rol,
-                    empresa_id: usuarioData.empresa_id,
-                    codigo: usuarioData.codigo,
-                    activo: usuarioData.activo
-                };
+                if (!usuarios || usuarios.length === 0) {
+                    console.log('⚠️ Usuario no encontrado en la BD, creando usuario temporal...');
+                    
+                    const usuarioData = {
+                        email: currentSession.user.email,
+                        nombre: currentSession.user.email.split('@')[0],
+                        rol: 'vendedor',
+                        empresa_id: 1,
+                        activo: true,
+                        codigo: 'USR-TEMP-001'
+                    };
+                    
+                    const { data: newUser, error: insertError } = await supabase
+                        .from('usuarios')
+                        .insert([usuarioData])
+                        .select();
+                    
+                    if (insertError) {
+                        console.error('❌ Error creando usuario temporal:', insertError);
+                        return null;
+                    }
+                    
+                    currentUser = newUser[0];
+                } else {
+                    currentUser = usuarios[0];
+                }
                 
                 console.log('✅ Usuario cargado:', currentUser.nombre);
                 return currentUser;
             } catch (error) {
-                console.error('Error loading user data:', error);
-                showNotification('error', 'Error', 'Error cargando datos del usuario');
+                console.error('❌ Error cargando datos de usuario:', error);
                 return null;
             }
         }
         
-        async function loadEmpresas() {
+        async function loadEmpresaData() {
+            if (!currentUser) return null;
+            
             try {
-                console.log('🏢 Cargando empresas...');
-                const { data, error } = await supabase.from('empresas').select('*');
+                const { data, error } = await supabase
+                    .from('empresas')
+                    .select('*')
+                    .eq('id', currentUser.empresa_id)
+                    .single();
                 
-                if (error) throw error;
-                database.empresas = data || [];
-                console.log(`✅ ${database.empresas.length} empresas cargadas`);
-                return database.empresas;
-            } catch (error) {
-                console.error('Error loading empresas:', error);
-                return [];
-            }
-        }
-        
-        async function loadUsuarios() {
-            try {
-                console.log('👥 Cargando usuarios...');
-                const { data, error } = await supabase.from('usuarios').select('*');
+                if (error) {
+                    console.error('❌ Error cargando empresa:', error);
+                    // Si no hay empresa, usar demo
+                    currentEmpresa = {
+                        id: 1,
+                        nombre: 'Empresa Demo',
+                        codigo: 'DEMO-001',
+                        activa: true
+                    };
+                } else {
+                    currentEmpresa = data;
+                }
                 
-                if (error) throw error;
-                database.usuarios = data || [];
-                console.log(`✅ ${database.usuarios.length} usuarios cargados`);
-                return database.usuarios;
+                return currentEmpresa;
             } catch (error) {
-                console.error('Error loading usuarios:', error);
-                return [];
-            }
-        }
-        
-        async function loadClientes() {
-            try {
-                const { data, error } = await supabase.from('clientes').select('*');
-                if (error) throw error;
-                database.clientes = data || [];
-                return database.clientes;
-            } catch (error) {
-                console.error('Error loading clientes:', error);
-                return [];
-            }
-        }
-        
-        async function loadProductos() {
-            try {
-                const { data, error } = await supabase.from('productos').select('*');
-                if (error) throw error;
-                database.productos = data || [];
-                return database.productos;
-            } catch (error) {
-                console.error('Error loading productos:', error);
-                return [];
-            }
-        }
-        
-        async function loadAlmacenes() {
-            try {
-                const { data, error } = await supabase.from('almacenes').select('*');
-                if (error) throw error;
-                database.almacenes = data || [];
-                return database.almacenes;
-            } catch (error) {
-                console.error('Error loading almacenes:', error);
-                return [];
+                console.error('❌ Error cargando empresa:', error);
+                return null;
             }
         }
         
         async function loadAllData() {
-            showLoading();
             try {
                 console.log('📊 Cargando todos los datos...');
-                await Promise.all([
-                    loadEmpresas(),
-                    loadUsuarios(),
-                    loadClientes(),
-                    loadProductos(),
-                    loadAlmacenes()
-                ]);
-                console.log('✅ Todos los datos cargados correctamente');
+                
+                // Cargar empresas
+                const { data: empresas } = await supabase.from('empresas').select('*');
+                database.empresas = empresas || [];
+                
+                // Cargar usuarios
+                const { data: usuarios } = await supabase.from('usuarios').select('*');
+                database.usuarios = usuarios || [];
+                
+                // Cargar clientes
+                const { data: clientes } = await supabase.from('clientes').select('*');
+                database.clientes = clientes || [];
+                
+                // Cargar productos
+                const { data: productos } = await supabase.from('productos').select('*');
+                database.productos = productos || [];
+                
+                // Cargar almacenes
+                const { data: almacenes } = await supabase.from('almacenes').select('*');
+                database.almacenes = almacenes || [];
+                
+                console.log('✅ Datos cargados correctamente');
                 return true;
             } catch (error) {
-                console.error('Error cargando datos:', error);
-                showNotification('error', 'Error', 'Error cargando datos desde Supabase');
+                console.error('❌ Error cargando datos:', error);
                 return false;
-            } finally {
-                hideLoading();
             }
         }
         
         // =============================================
-        // CONFIGURACIÓN DE INTERFAZ
+        // CONFIGURACIÓN DE INTERFAZ - CORREGIDA
         // =============================================
         function configureInterface() {
             if (!currentUser) {
                 console.error('❌ No hay usuario actual');
+                showErrorState('No se pudo cargar el usuario');
                 return;
             }
             
@@ -1090,146 +1135,144 @@
             
             // Configurar badge según rol
             const userBadge = document.getElementById('userBadge');
-            userBadge.className = `user-badge ${currentUser.rol}`;
+            const roleClass = currentUser.rol.replace(' ', '_');
+            userBadge.className = `user-badge ${roleClass}`;
             userBadge.textContent = getRoleName(currentUser.rol).toUpperCase();
             
-            document.getElementById('userName').textContent = currentUser.nombre || 'Usuario';
+            document.getElementById('userName').textContent = currentUser.nombre || currentUser.email;
             document.getElementById('userRole').textContent = getRoleName(currentUser.rol);
             
             // Configurar menú según rol
             const navMenu = document.getElementById('navMenu');
             navMenu.innerHTML = generateNavMenu(currentUser.rol);
             
-            // Ocultar todas las vistas y mostrar solo la del rol actual
-            document.querySelectorAll('.role-view').forEach(view => {
-                view.classList.remove('active');
-                view.innerHTML = '';
-            });
-            
             // Cargar dashboard según rol
-            setTimeout(() => {
-                if (currentUser.rol === 'superadmin') {
-                    loadSuperadminDashboard();
-                } else if (currentUser.rol === 'admin_empresa') {
-                    loadJefeDashboard();
-                } else if (currentUser.rol === 'gerente') {
-                    loadGerenteDashboard();
-                } else if (currentUser.rol === 'contador') {
-                    loadContadorDashboard();
-                } else if (currentUser.rol === 'vendedor') {
-                    loadVendedorDashboard();
-                } else if (currentUser.rol === 'distribuidor') {
-                    loadDistribuidorDashboard();
-                } else if (currentUser.rol === 'almacenero') {
-                    loadAlmaceneroDashboard();
-                } else if (currentUser.rol === 'supervisor') {
-                    loadSupervisorDashboard();
-                }
-            }, 100);
+            loadDashboardByRole();
         }
         
         function generateNavMenu(rol) {
-            const menus = {
-                'superadmin': `
+            const baseMenu = `
+                <div class="nav-section">
+                    <div class="nav-title">PRINCIPAL</div>
+                    <ul class="nav-links">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active" onclick="loadDashboardByRole()">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            `;
+            
+            if (rol === 'superadmin') {
+                return baseMenu + `
                     <div class="nav-section">
-                        <div class="nav-title">CORPORATIVO</div>
+                        <div class="nav-title">ADMINISTRACIÓN</div>
                         <ul class="nav-links">
-                            <li class="nav-item">
-                                <a href="#" class="nav-link active" onclick="loadSuperadminDashboard()">
-                                    <i class="fas fa-tachometer-alt"></i>
-                                    <span>Dashboard Corporativo</span>
-                                </a>
-                            </li>
                             <li class="nav-item">
                                 <a href="#" class="nav-link" onclick="loadEmpresasManagement()">
                                     <i class="fas fa-building"></i>
-                                    <span>Gestión de Empresas</span>
+                                    <span>Empresas</span>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="#" class="nav-link" onclick="loadUsuariosManagement()">
                                     <i class="fas fa-users-cog"></i>
-                                    <span>Gestión de Usuarios</span>
+                                    <span>Usuarios</span>
                                 </a>
                             </li>
                         </ul>
                     </div>
-                `,
-                'admin_empresa': `
+                `;
+            } else if (rol === 'admin_empresa') {
+                return baseMenu + `
                     <div class="nav-section">
-                        <div class="nav-title">EMPRESA</div>
+                        <div class="nav-title">GESTIÓN</div>
                         <ul class="nav-links">
-                            <li class="nav-item">
-                                <a href="#" class="nav-link active" onclick="loadJefeDashboard()">
-                                    <i class="fas fa-tachometer-alt"></i>
-                                    <span>Dashboard Empresa</span>
-                                </a>
-                            </li>
                             <li class="nav-item">
                                 <a href="#" class="nav-link" onclick="loadUsuariosEmpresa()">
                                     <i class="fas fa-users"></i>
-                                    <span>Gestión de Usuarios</span>
+                                    <span>Usuarios</span>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="#" class="nav-link" onclick="loadGestionProductos()">
                                     <i class="fas fa-boxes"></i>
-                                    <span>Gestión de Productos</span>
+                                    <span>Productos</span>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="#" class="nav-link" onclick="loadGestionClientes()">
                                     <i class="fas fa-users"></i>
-                                    <span>Gestión de Clientes</span>
+                                    <span>Clientes</span>
                                 </a>
                             </li>
                         </ul>
                     </div>
-                `,
-                'vendedor': `
-                    <div class="nav-section">
-                        <div class="nav-title">VENTAS</div>
-                        <ul class="nav-links">
-                            <li class="nav-item">
-                                <a href="#" class="nav-link active" onclick="loadVendedorDashboard()">
-                                    <i class="fas fa-tachometer-alt"></i>
-                                    <span>Mi Dashboard</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link" onclick="loadMisClientes()">
-                                    <i class="fas fa-users"></i>
-                                    <span>Mis Clientes</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link" onclick="loadCatalogoProductos()">
-                                    <i class="fas fa-box-open"></i>
-                                    <span>Catálogo de Productos</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                `
-            };
+                `;
+            } else {
+                return baseMenu;
+            }
+        }
+        
+        function loadDashboardByRole() {
+            const contentDiv = document.getElementById('dynamicContent');
             
-            return menus[rol] || menus.vendedor;
+            if (!currentUser) {
+                showErrorState('Usuario no disponible');
+                return;
+            }
+            
+            const role = currentUser.rol;
+            
+            if (role === 'superadmin') {
+                loadSuperadminDashboard();
+            } else if (role === 'admin_empresa') {
+                loadJefeDashboard();
+            } else if (role === 'gerente') {
+                loadGerenteDashboard();
+            } else if (role === 'contador') {
+                loadContadorDashboard();
+            } else if (role === 'vendedor') {
+                loadVendedorDashboard();
+            } else if (role === 'distribuidor') {
+                loadDistribuidorDashboard();
+            } else if (role === 'almacenero') {
+                loadAlmaceneroDashboard();
+            } else if (role === 'supervisor') {
+                loadSupervisorDashboard();
+            } else {
+                loadDefaultDashboard();
+            }
+            
+            // Actualizar menú activo
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-link')[0].classList.add('active');
         }
         
         // =============================================
-        // DASHBOARDS POR ROL
+        // DASHBOARDS POR ROL - CORREGIDOS
         // =============================================
         function loadSuperadminDashboard() {
-            const view = document.getElementById('viewSuperadmin');
-            view.classList.add('active');
-            view.innerHTML = `
+            const contentDiv = document.getElementById('dynamicContent');
+            document.getElementById('pageTitle').textContent = 'Dashboard Corporativo';
+            
+            const empresasCount = database.empresas.length;
+            const usuariosCount = database.usuarios.length;
+            const clientesCount = database.clientes.length;
+            const productosCount = database.productos.length;
+            
+            contentDiv.innerHTML = `
                 <div class="stats-grid fade-in">
                     <div class="stat-card">
                         <div class="stat-header">
                             <div class="stat-title">Empresas Activas</div>
                             <div class="stat-icon"><i class="fas fa-building"></i></div>
                         </div>
-                        <div class="stat-value">${database.empresas.length}</div>
+                        <div class="stat-value">${empresasCount}</div>
                         <div class="stat-change positive">
                             <i class="fas fa-arrow-up"></i> Total registradas
                         </div>
@@ -1240,7 +1283,7 @@
                             <div class="stat-title">Usuarios Totales</div>
                             <div class="stat-icon"><i class="fas fa-users"></i></div>
                         </div>
-                        <div class="stat-value">${database.usuarios.length}</div>
+                        <div class="stat-value">${usuariosCount}</div>
                         <div class="stat-change positive">
                             <i class="fas fa-arrow-up"></i> En sistema
                         </div>
@@ -1251,7 +1294,7 @@
                             <div class="stat-title">Clientes</div>
                             <div class="stat-icon"><i class="fas fa-users"></i></div>
                         </div>
-                        <div class="stat-value">${database.clientes.length}</div>
+                        <div class="stat-value">${clientesCount}</div>
                         <div class="stat-change positive">
                             <i class="fas fa-user-plus"></i> Registrados
                         </div>
@@ -1262,7 +1305,7 @@
                             <div class="stat-title">Productos</div>
                             <div class="stat-icon"><i class="fas fa-boxes"></i></div>
                         </div>
-                        <div class="stat-value">${database.productos.length}</div>
+                        <div class="stat-value">${productosCount}</div>
                         <div class="stat-change positive">
                             <i class="fas fa-box"></i> En catálogo
                         </div>
@@ -1278,20 +1321,19 @@
                     </button>
                 </div>
             `;
-            
-            document.getElementById('pageTitle').textContent = 'Dashboard Corporativo';
         }
         
         function loadJefeDashboard() {
-            const view = document.getElementById('viewAdminEmpresa');
-            view.classList.add('active');
+            const contentDiv = document.getElementById('dynamicContent');
             
-            const empresa = database.empresas.find(e => e.id === currentUser.empresa_id);
             const usuariosEmpresa = database.usuarios.filter(u => u.empresa_id === currentUser.empresa_id);
             const productosEmpresa = database.productos.filter(p => p.empresa_id === currentUser.empresa_id);
             const clientesEmpresa = database.clientes.filter(c => c.empresa_id === currentUser.empresa_id);
+            const almacenesEmpresa = database.almacenes.filter(a => a.empresa_id === currentUser.empresa_id);
             
-            view.innerHTML = `
+            document.getElementById('pageTitle').textContent = currentEmpresa ? `Dashboard - ${currentEmpresa.nombre}` : 'Dashboard Empresa';
+            
+            contentDiv.innerHTML = `
                 <div class="stats-grid fade-in">
                     <div class="stat-card">
                         <div class="stat-header">
@@ -1331,7 +1373,7 @@
                             <div class="stat-title">Almacenes</div>
                             <div class="stat-icon"><i class="fas fa-warehouse"></i></div>
                         </div>
-                        <div class="stat-value">${database.almacenes.filter(a => a.empresa_id === currentUser.empresa_id).length}</div>
+                        <div class="stat-value">${almacenesEmpresa.length}</div>
                         <div class="stat-change positive">
                             <i class="fas fa-warehouse"></i> Operativos
                         </div>
@@ -1348,46 +1390,72 @@
                         </div>
                     </div>
                     <div style="padding: 1rem;">
-                        ${empresa ? `
-                            <p><strong>Nombre:</strong> ${empresa.nombre}</p>
-                            <p><strong>Código:</strong> ${empresa.codigo || 'No registrado'}</p>
-                            <p><strong>NIT:</strong> ${empresa.nit || 'No registrado'}</p>
-                            <p><strong>Dirección:</strong> ${empresa.direccion || 'No registrada'}</p>
-                            <p><strong>Email:</strong> ${empresa.email || 'No registrado'}</p>
-                            <p><strong>Estado:</strong> <span class="status-badge ${empresa.activa ? 'status-active' : 'status-inactive'}">${empresa.activa ? 'Activa' : 'Inactiva'}</span></p>
+                        ${currentEmpresa ? `
+                            <p><strong>Nombre:</strong> ${currentEmpresa.nombre}</p>
+                            <p><strong>Código:</strong> ${currentEmpresa.codigo || 'No registrado'}</p>
+                            <p><strong>NIT:</strong> ${currentEmpresa.nit || 'No registrado'}</p>
+                            <p><strong>Dirección:</strong> ${currentEmpresa.direccion || 'No registrada'}</p>
+                            <p><strong>Email:</strong> ${currentEmpresa.email || 'No registrado'}</p>
+                            <p><strong>Estado:</strong> <span class="status-badge ${currentEmpresa.activa ? 'status-active' : 'status-inactive'}">${currentEmpresa.activa ? 'Activa' : 'Inactiva'}</span></p>
                         ` : '<p>Información de empresa no disponible</p>'}
                     </div>
                 </div>
             `;
-            
-            document.getElementById('pageTitle').textContent = empresa ? `Dashboard - ${empresa.nombre}` : 'Dashboard Empresa';
         }
         
         function loadVendedorDashboard() {
-            const view = document.getElementById('viewVendedor');
-            view.classList.add('active');
+            const contentDiv = document.getElementById('dynamicContent');
+            document.getElementById('pageTitle').textContent = 'Dashboard Vendedor';
             
-            view.innerHTML = `
-                <div class="table-card fade-in">
-                    <div style="padding: 3rem; text-align: center;">
-                        <i class="fas fa-user-tie" style="font-size: 4rem; color: var(--vendedor); margin-bottom: 1rem;"></i>
-                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Vendedor</h3>
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
-                            ¡Bienvenido, ${currentUser.nombre || 'Vendedor'}!
-                        </p>
-                        <div style="display: flex; gap: 1rem; justify-content: center;">
-                            <button class="btn btn-primary" onclick="loadMisClientes()">
-                                <i class="fas fa-users"></i> Mis Clientes
-                            </button>
-                            <button class="btn btn-primary" onclick="loadCatalogoProductos()">
-                                <i class="fas fa-box-open"></i> Catálogo
-                            </button>
-                        </div>
+            contentDiv.innerHTML = `
+                <div class="welcome-card fade-in">
+                    <div class="welcome-icon">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <h3>¡Bienvenido, ${currentUser.nombre || 'Vendedor'}!</h3>
+                    <p class="error-message">Estás en el panel de control de vendedores</p>
+                    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+                        <button class="btn btn-primary" onclick="loadMisClientes()">
+                            <i class="fas fa-users"></i> Mis Clientes
+                        </button>
+                        <button class="btn btn-primary" onclick="loadCatalogoProductos()">
+                            <i class="fas fa-box-open"></i> Catálogo
+                        </button>
                     </div>
                 </div>
             `;
-            
-            document.getElementById('pageTitle').textContent = 'Dashboard Vendedor';
+        }
+        
+        function showErrorState(message) {
+            const contentDiv = document.getElementById('dynamicContent');
+            contentDiv.innerHTML = `
+                <div class="error-state fade-in">
+                    <div class="error-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3 style="color: var(--danger); margin-bottom: 1rem;">Error</h3>
+                    <p class="error-message">${message}</p>
+                    <button class="btn btn-primary" onclick="initializeDashboard()">
+                        <i class="fas fa-redo"></i> Reintentar
+                    </button>
+                </div>
+            `;
+        }
+        
+        function loadDefaultDashboard() {
+            const contentDiv = document.getElementById('dynamicContent');
+            contentDiv.innerHTML = `
+                <div class="welcome-card fade-in">
+                    <div class="welcome-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <h3>¡Bienvenido a Nexial Suite!</h3>
+                    <p class="error-message">Panel de control principal</p>
+                    <p style="color: rgba(255,255,255,0.5); margin-top: 1rem;">
+                        Rol: ${getRoleName(currentUser.rol)}
+                    </p>
+                </div>
+            `;
         }
         
         // =============================================
@@ -1471,256 +1539,6 @@
             }
         }
         
-        async function loadUsuariosManagement() {
-            showLoading('Cargando usuarios...');
-            try {
-                const { data: usuarios, error } = await supabase
-                    .from('usuarios')
-                    .select('*')
-                    .order('nombre');
-                
-                if (error) throw error;
-                
-                const content = `
-                    <div style="max-width: 800px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h3 style="color: var(--secondary);">Usuarios del Sistema</h3>
-                            <button class="btn btn-primary" onclick="mostrarFormularioUsuario()">
-                                <i class="fas fa-plus"></i> Nuevo Usuario
-                            </button>
-                        </div>
-                        
-                        <div class="table-wrapper">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Nombre</th>
-                                        <th>Email</th>
-                                        <th>Rol</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${usuarios.map(usuario => `
-                                        <tr>
-                                            <td>${usuario.codigo || 'N/A'}</td>
-                                            <td>${usuario.nombre}</td>
-                                            <td>${usuario.email}</td>
-                                            <td>
-                                                <span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; background: ${getRoleColor(usuario.rol)}; font-size: 0.8rem;">
-                                                    ${getRoleName(usuario.rol)}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span class="status-badge ${usuario.activo ? 'status-active' : 'status-inactive'}">
-                                                    ${usuario.activo ? 'Activo' : 'Inactivo'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="action-btn edit" onclick="editarUsuario('${usuario.id}')" title="Editar">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="action-btn delete" onclick="eliminarUsuario('${usuario.id}', '${usuario.nombre}')" title="Eliminar">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                    ${usuarios.length === 0 ? `
-                                        <tr>
-                                            <td colspan="6" style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.5);">
-                                                <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                                                No hay usuarios registrados
-                                            </td>
-                                        </tr>
-                                    ` : ''}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-                
-                showModal('Gestión de Usuarios', content);
-            } catch (error) {
-                console.error('Error cargando usuarios:', error);
-                showNotification('error', 'Error', 'No se pudieron cargar los usuarios');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        function getRoleColor(role) {
-            switch(role) {
-                case 'superadmin': return 'rgba(255,0,85,0.2)';
-                case 'admin_empresa': return 'rgba(0,255,65,0.2)';
-                case 'gerente': return 'rgba(255,170,0,0.2)';
-                case 'contador': return 'rgba(0,170,255,0.2)';
-                case 'vendedor': return 'rgba(124,58,237,0.2)';
-                case 'distribuidor': return 'rgba(255,0,255,0.2)';
-                case 'almacenero': return 'rgba(255,85,0,0.2)';
-                case 'supervisor': return 'rgba(0,255,255,0.2)';
-                default: return 'rgba(255,255,255,0.1)';
-            }
-        }
-        
-        // =============================================
-        // FUNCIONES DE FORMULARIOS
-        // =============================================
-        function mostrarFormularioEmpresa(empresaId = null) {
-            const empresa = empresaId ? database.empresas.find(e => e.id === empresaId) : null;
-            
-            const content = `
-                <div style="max-width: 600px;">
-                    <h3 style="color: var(--secondary); margin-bottom: 1.5rem;">
-                        ${empresa ? 'Editar Empresa' : 'Nueva Empresa'}
-                    </h3>
-                    
-                    <form id="formEmpresa" onsubmit="guardarEmpresa(event, '${empresaId}')">
-                        <div class="form-group">
-                            <label for="nombre">Nombre de la Empresa *</label>
-                            <input type="text" id="nombre" name="nombre" required 
-                                   value="${empresa ? empresa.nombre : ''}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="nit">NIT *</label>
-                            <input type="text" id="nit" name="nit" required 
-                                   value="${empresa ? empresa.nit : ''}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" 
-                                   value="${empresa ? empresa.email : ''}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="telefono">Teléfono</label>
-                            <input type="text" id="telefono" name="telefono" 
-                                   value="${empresa ? empresa.telefono : ''}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="direccion">Dirección</label>
-                            <textarea id="direccion" name="direccion" rows="3">${empresa ? empresa.direccion : ''}</textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="activa">Estado</label>
-                            <select id="activa" name="activa">
-                                <option value="true" ${empresa && empresa.activa ? 'selected' : ''}>Activa</option>
-                                <option value="false" ${empresa && !empresa.activa ? 'selected' : ''}>Inactiva</option>
-                            </select>
-                        </div>
-                        
-                        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                            <button type="button" class="btn btn-secondary" onclick="closeModal()">
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                ${empresa ? 'Actualizar Empresa' : 'Crear Empresa'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            `;
-            
-            showModal(empresa ? 'Editar Empresa' : 'Nueva Empresa', content);
-        }
-        
-        async function guardarEmpresa(event, empresaId = null) {
-            event.preventDefault();
-            showLoading();
-            
-            try {
-                const formData = new FormData(event.target);
-                const empresaData = {
-                    nombre: formData.get('nombre'),
-                    nit: formData.get('nit'),
-                    email: formData.get('email'),
-                    telefono: formData.get('telefono'),
-                    direccion: formData.get('direccion'),
-                    activa: formData.get('activa') === 'true'
-                };
-                
-                let result;
-                if (empresaId) {
-                    result = await supabase
-                        .from('empresas')
-                        .update(empresaData)
-                        .eq('id', empresaId);
-                } else {
-                    result = await supabase
-                        .from('empresas')
-                        .insert([empresaData]);
-                }
-                
-                if (result.error) throw result.error;
-                
-                closeModal();
-                showNotification('success', 'Éxito', 
-                    `Empresa ${empresaId ? 'actualizada' : 'creada'} correctamente`);
-                
-                await loadAllData();
-                if (currentUser.rol === 'superadmin') {
-                    loadEmpresasManagement();
-                } else {
-                    loadJefeDashboard();
-                }
-            } catch (error) {
-                console.error('Error guardando empresa:', error);
-                showNotification('error', 'Error', 
-                    `No se pudo ${empresaId ? 'actualizar' : 'crear'} la empresa`);
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // =============================================
-        // FUNCIONES CRUD
-        // =============================================
-        function editarEmpresa(id) {
-            mostrarFormularioEmpresa(id);
-        }
-        
-        function editarInformacionEmpresa() {
-            mostrarFormularioEmpresa(currentUser.empresa_id);
-        }
-        
-        async function eliminarEmpresa(id, nombre) {
-            showConfirmation(
-                'Eliminar Empresa',
-                `¿Estás seguro de eliminar la empresa "${nombre}"? Esta acción no se puede deshacer.`,
-                async () => {
-                    showLoading();
-                    try {
-                        const { error } = await supabase
-                            .from('empresas')
-                            .delete()
-                            .eq('id', id);
-                        
-                        if (error) throw error;
-                        
-                        showNotification('success', 'Éxito', 'Empresa eliminada correctamente');
-                        
-                        await loadAllData();
-                        if (currentUser.rol === 'superadmin') {
-                            loadEmpresasManagement();
-                        }
-                    } catch (error) {
-                        console.error('Error eliminando empresa:', error);
-                        showNotification('error', 'Error', 'No se pudo eliminar la empresa');
-                    } finally {
-                        hideLoading();
-                    }
-                }
-            );
-        }
-        
         // =============================================
         // FUNCIONES DE ACTUALIZACIÓN
         // =============================================
@@ -1728,16 +1546,7 @@
             showLoading('Actualizando datos...');
             try {
                 await loadAllData();
-                
-                // Recargar la vista actual según el rol
-                if (currentUser.rol === 'superadmin') {
-                    loadSuperadminDashboard();
-                } else if (currentUser.rol === 'admin_empresa') {
-                    loadJefeDashboard();
-                } else if (currentUser.rol === 'vendedor') {
-                    loadVendedorDashboard();
-                }
-                
+                loadDashboardByRole();
                 showNotification('success', 'Datos Actualizados', 'La información se sincronizó correctamente');
             } catch (error) {
                 console.error('Error actualizando datos:', error);
@@ -1774,137 +1583,155 @@
             try {
                 // 1. Verificar sesión
                 const session = await checkSession();
-                if (!session) return;
-                
-                // 2. Cargar datos del usuario
-                const user = await loadUserData();
-                if (!user) {
+                if (!session) {
+                    console.log('⚠️ No hay sesión, redirigiendo...');
                     window.location.href = 'index.html';
                     return;
                 }
                 
-                // 3. Cargar datos iniciales
+                // 2. Cargar datos del usuario
+                const user = await loadUserData();
+                if (!user) {
+                    console.error('❌ No se pudo cargar usuario');
+                    showErrorState('No se pudo cargar el usuario');
+                    hideLoading();
+                    return;
+                }
+                
+                // 3. Cargar datos de empresa
+                await loadEmpresaData();
+                
+                // 4. Cargar datos iniciales
                 await loadAllData();
                 
-                // 4. Configurar interfaz
+                // 5. Configurar interfaz
                 configureInterface();
                 
                 console.log('✅ Dashboard inicializado correctamente');
                 console.log(`👤 Usuario: ${user.nombre} (${user.rol})`);
-                console.log(`🏢 Empresa ID: ${user.empresa_id}`);
+                console.log(`🏢 Empresa: ${currentEmpresa ? currentEmpresa.nombre : 'No asignada'}`);
                 
             } catch (error) {
-                console.error('Error inicializando dashboard:', error);
-                showNotification('error', 'Error', 'Error al cargar el dashboard');
+                console.error('❌ Error inicializando dashboard:', error);
+                showErrorState('Error al cargar el dashboard');
             } finally {
                 hideLoading();
             }
         }
         
         // =============================================
-        // DASHBOARDS RESTANTES (PLACEHOLDERS)
+        // DASHBOARDS RESTANTES
         // =============================================
-        function loadContadorDashboard() {
-            const view = document.getElementById('viewContador');
-            view.classList.add('active');
-            view.innerHTML = `
-                <div class="table-card fade-in">
-                    <div style="padding: 3rem; text-align: center;">
-                        <i class="fas fa-calculator" style="font-size: 4rem; color: var(--contador); margin-bottom: 1rem;"></i>
-                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Financiero</h3>
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
-                            Módulo de Administración y Finanzas en desarrollo
-                        </p>
+        function loadGerenteDashboard() {
+            document.getElementById('pageTitle').textContent = 'Dashboard Gerente';
+            document.getElementById('dynamicContent').innerHTML = `
+                <div class="welcome-card fade-in">
+                    <div class="welcome-icon" style="color: var(--gerente);">
+                        <i class="fas fa-user-tie"></i>
                     </div>
+                    <h3>¡Bienvenido, ${currentUser.nombre || 'Gerente'}!</h3>
+                    <p class="error-message">Panel de gestión gerencial</p>
                 </div>
             `;
         }
         
-        function loadGerenteDashboard() {
-            const view = document.getElementById('viewGerente');
-            view.classList.add('active');
-            view.innerHTML = `
-                <div class="table-card fade-in">
-                    <div style="padding: 3rem; text-align: center;">
-                        <i class="fas fa-user-tie" style="font-size: 4rem; color: var(--gerente); margin-bottom: 1rem;"></i>
-                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Gerente</h3>
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
-                            ¡Bienvenido, ${currentUser.nombre || 'Gerente'}!
-                        </p>
+        function loadContadorDashboard() {
+            document.getElementById('pageTitle').textContent = 'Dashboard Financiero';
+            document.getElementById('dynamicContent').innerHTML = `
+                <div class="welcome-card fade-in">
+                    <div class="welcome-icon" style="color: var(--contador);">
+                        <i class="fas fa-calculator"></i>
                     </div>
+                    <h3>Dashboard Financiero</h3>
+                    <p class="error-message">Módulo de Administración y Finanzas</p>
                 </div>
             `;
         }
         
         function loadDistribuidorDashboard() {
-            const view = document.getElementById('viewDistribuidor');
-            view.classList.add('active');
-            view.innerHTML = `
-                <div class="table-card fade-in">
-                    <div style="padding: 3rem; text-align: center;">
-                        <i class="fas fa-truck" style="font-size: 4rem; color: var(--distribuidor); margin-bottom: 1rem;"></i>
-                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Distribuidor</h3>
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
-                            ¡Bienvenido, ${currentUser.nombre || 'Distribuidor'}!
-                        </p>
+            document.getElementById('pageTitle').textContent = 'Dashboard Distribuidor';
+            document.getElementById('dynamicContent').innerHTML = `
+                <div class="welcome-card fade-in">
+                    <div class="welcome-icon" style="color: var(--distribuidor);">
+                        <i class="fas fa-truck"></i>
                     </div>
+                    <h3>¡Bienvenido, ${currentUser.nombre || 'Distribuidor'}!</h3>
+                    <p class="error-message">Panel de distribución</p>
                 </div>
             `;
         }
         
         function loadAlmaceneroDashboard() {
-            const view = document.getElementById('viewAlmacenero');
-            view.classList.add('active');
-            view.innerHTML = `
-                <div class="table-card fade-in">
-                    <div style="padding: 3rem; text-align: center;">
-                        <i class="fas fa-warehouse" style="font-size: 4rem; color: var(--almacenero); margin-bottom: 1rem;"></i>
-                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Almacén</h3>
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
-                            ¡Bienvenido, ${currentUser.nombre || 'Almacenero'}!
-                        </p>
+            document.getElementById('pageTitle').textContent = 'Dashboard Almacén';
+            document.getElementById('dynamicContent').innerHTML = `
+                <div class="welcome-card fade-in">
+                    <div class="welcome-icon" style="color: var(--almacenero);">
+                        <i class="fas fa-warehouse"></i>
                     </div>
+                    <h3>¡Bienvenido, ${currentUser.nombre || 'Almacenero'}!</h3>
+                    <p class="error-message">Gestión de inventario</p>
                 </div>
             `;
         }
         
         function loadSupervisorDashboard() {
-            const view = document.getElementById('viewSupervisor');
-            view.classList.add('active');
-            view.innerHTML = `
-                <div class="table-card fade-in">
-                    <div style="padding: 3rem; text-align: center;">
-                        <i class="fas fa-user-check" style="font-size: 4rem; color: var(--supervisor); margin-bottom: 1rem;"></i>
-                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dashboard Supervisor</h3>
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
-                            ¡Bienvenido, ${currentUser.nombre || 'Supervisor'}!
-                        </p>
+            document.getElementById('pageTitle').textContent = 'Dashboard Supervisor';
+            document.getElementById('dynamicContent').innerHTML = `
+                <div class="welcome-card fade-in">
+                    <div class="welcome-icon" style="color: var(--supervisor);">
+                        <i class="fas fa-user-check"></i>
                     </div>
+                    <h3>¡Bienvenido, ${currentUser.nombre || 'Supervisor'}!</h3>
+                    <p class="error-message">Panel de supervisión</p>
                 </div>
             `;
         }
         
         // =============================================
-        // FUNCIONES DE GESTIÓN (PLACEHOLDERS)
+        // FUNCIONES PLACEHOLDER
         // =============================================
+        function mostrarFormularioEmpresa(id = null) {
+            showNotification('info', 'En desarrollo', 'Formulario de empresa en desarrollo');
+        }
+        
+        function editarEmpresa(id) {
+            showNotification('info', 'En desarrollo', 'Edición de empresa en desarrollo');
+        }
+        
+        function eliminarEmpresa(id, nombre) {
+            showConfirmation(
+                'Eliminar Empresa',
+                `¿Estás seguro de eliminar la empresa "${nombre}"?`,
+                () => showNotification('info', 'En desarrollo', 'Eliminación en desarrollo')
+            );
+        }
+        
+        function editarInformacionEmpresa() {
+            showNotification('info', 'En desarrollo', 'Edición de información empresarial en desarrollo');
+        }
+        
+        function loadUsuariosManagement() {
+            showNotification('info', 'En desarrollo', 'Gestión de usuarios en desarrollo');
+        }
+        
         function loadUsuariosEmpresa() {
-            showNotification('info', 'En desarrollo', 'Módulo de Gestión de Usuarios de Empresa en desarrollo');
+            showNotification('info', 'En desarrollo', 'Gestión de usuarios de empresa en desarrollo');
         }
         
         function loadGestionProductos() {
-            showNotification('info', 'En desarrollo', 'Módulo de Gestión de Productos en desarrollo');
+            showNotification('info', 'En desarrollo', 'Gestión de productos en desarrollo');
         }
         
         function loadGestionClientes() {
-            showNotification('info', 'En desarrollo', 'Módulo de Gestión de Clientes en desarrollo');
+            showNotification('info', 'En desarrollo', 'Gestión de clientes en desarrollo');
         }
         
         function loadMisClientes() {
-            showNotification('info', 'En desarrollo', 'Módulo de Mis Clientes en desarrollo');
+            showNotification('info', 'En desarrollo', 'Mis clientes en desarrollo');
         }
         
         function loadCatalogoProductos() {
-            showNotification('info', 'En desarrollo', 'Módulo de Catálogo de Productos en desarrollo');
+            showNotification('info', 'En desarrollo', 'Catálogo de productos en desarrollo');
         }
         
         // =============================================
@@ -1923,11 +1750,26 @@
                 }
             });
             
-            // Inicializar dashboard
-            setTimeout(initializeDashboard, 100);
+            // Inicializar dashboard después de un pequeño delay
+            setTimeout(() => {
+                initializeDashboard();
+            }, 500);
             
             console.log('🚀 Nexial Suite - Supabase Edition v4.0');
             console.log('🔗 URL:', SUPABASE_URL);
+        });
+        
+        // =============================================
+        // ERROR HANDLING GLOBAL
+        // =============================================
+        window.addEventListener('error', function(e) {
+            console.error('❌ Error global:', e.error);
+            showNotification('error', 'Error', 'Ha ocurrido un error inesperado');
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('❌ Promise rechazada:', e.reason);
+            showNotification('error', 'Error', 'Error en operación asíncrona');
         });
     </script>
 </body>
