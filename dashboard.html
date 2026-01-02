@@ -510,6 +510,7 @@
         .action-btn.edit { background: rgba(0, 170, 255, 0.1); color: var(--info); }
         .action-btn.delete { background: rgba(255, 0, 85, 0.1); color: var(--danger); }
         .action-btn.view { background: rgba(0, 255, 65, 0.1); color: var(--success); }
+        .action-btn.access { background: rgba(157, 0, 255, 0.1); color: var(--contador); }
         
         .action-btn:hover {
             transform: translateY(-2px);
@@ -1105,10 +1106,14 @@
                     if (error) throw error;
                     result = insertedData;
                 } else if (action === 'update') {
+                    // IMPORTANTE: Las empresas usan BIGINT (id numérico), no UUID
+                    const empresaId = data.id;
+                    delete data.id; // Quitar el id del objeto de datos
+                    
                     const { data: updatedData, error } = await supabaseClient
                         .from(table)
                         .update(data)
-                        .eq('id', data.id)
+                        .eq('id', empresaId)
                         .select();
                     
                     if (error) throw error;
@@ -1143,7 +1148,7 @@
             try {
                 console.log('🔄 Cargando todos los datos...');
                 
-                // Cargar todas las tablas
+                // Cargar todas las tablas (nota: empresas usa BIGINT, usuarios usa UUID)
                 const [
                     empresasData,
                     usuariosData,
@@ -1170,17 +1175,17 @@
                     fetchFromSupabase('reportes')
                 ]);
                 
-                database.empresas = empresasData;
-                database.usuarios = usuariosData;
-                database.clientes = clientesData;
-                database.almacenes = almacenesData;
-                database.productos = productosData;
-                database.empleados = empleadosData;
-                database.ventas = ventasData;
-                database.rutas = rutasData;
-                database.zonas = zonasData;
-                database.pagos = pagosData;
-                database.reportes = reportesData;
+                database.empresas = empresasData || [];
+                database.usuarios = usuariosData || [];
+                database.clientes = clientesData || [];
+                database.almacenes = almacenesData || [];
+                database.productos = productosData || [];
+                database.empleados = empleadosData || [];
+                database.ventas = ventasData || [];
+                database.rutas = rutasData || [];
+                database.zonas = zonasData || [];
+                database.pagos = pagosData || [];
+                database.reportes = reportesData || [];
                 
                 console.log('✅ Todos los datos cargados exitosamente');
                 console.log('- Empresas:', database.empresas.length);
@@ -1207,9 +1212,9 @@
         // =============================================
         
         function generateStatistics() {
-            const totalVentas = database.ventas.reduce((sum, venta) => sum + (venta.total || 0), 0);
+            const totalVentas = database.ventas.reduce((sum, venta) => sum + (parseFloat(venta.total) || 0), 0);
             const ventasUltimoMes = database.ventas.filter(v => {
-                const fechaVenta = new Date(v.fecha_venta || v.creado_en);
+                const fechaVenta = new Date(v.fecha_venta || v.creado_en || new Date());
                 const unMesAtras = new Date();
                 unMesAtras.setMonth(unMesAtras.getMonth() - 1);
                 return fechaVenta > unMesAtras;
@@ -1225,10 +1230,10 @@
             // Agregar notificaciones automáticas
             notifications = [];
             
-            if (ventasUltimoMes > 50) {
+            if (ventasUltimoMes > 0) {
                 notifications.push({
                     id: Date.now(),
-                    title: '¡Alto volumen de ventas!',
+                    title: '¡Ventas registradas!',
                     message: `Se registraron ${ventasUltimoMes} ventas en el último mes.`,
                     type: 'success',
                     time: new Date(),
@@ -1236,7 +1241,7 @@
                 });
             }
             
-            if (clientesNuevos > 20) {
+            if (clientesNuevos > 0) {
                 notifications.push({
                     id: Date.now() + 1,
                     title: 'Nuevos clientes',
@@ -1250,11 +1255,11 @@
             // Notificaciones de empresas sin actividad
             database.empresas.forEach(empresa => {
                 const ventasEmpresa = database.ventas.filter(v => v.empresa_id === empresa.id);
-                if (ventasEmpresa.length === 0) {
+                if (ventasEmpresa.length === 0 && empresa.activa) {
                     notifications.push({
                         id: Date.now() + empresa.id,
-                        title: 'Empresa sin actividad',
-                        message: `${empresa.nombre} no tiene ventas registradas.`,
+                        title: 'Empresa sin ventas',
+                        message: `${empresa.nombre} no tiene ventas registradas aún.`,
                         type: 'warning',
                         time: new Date(),
                         read: false
@@ -1337,7 +1342,7 @@
             const productosCount = database.productos.length;
             
             // Calcular estadísticas
-            const totalVentas = database.ventas.reduce((sum, venta) => sum + (venta.total || 0), 0);
+            const totalVentas = database.ventas.reduce((sum, venta) => sum + (parseFloat(venta.total) || 0), 0);
             const ventasActivas = database.ventas.filter(v => v.estado === 'completada').length;
             const empresasActivas = database.empresas.filter(e => e.activa).length;
             
@@ -1429,16 +1434,16 @@
                                         </td>
                                         <td>
                                             <div class="action-buttons">
-                                                <button class="action-btn view" onclick="accessEmpresaAdmin('${empresa.id}')" title="Acceder">
+                                                <button class="action-btn access" onclick="accessEmpresaAdmin(${empresa.id})" title="Acceder como Admin">
                                                     <i class="fas fa-sign-in-alt"></i>
                                                 </button>
-                                                <button class="action-btn view" onclick="viewEmpresaCompleta('${empresa.id}')" title="Ver">
+                                                <button class="action-btn view" onclick="viewEmpresaCompleta(${empresa.id})" title="Ver Detalles">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
-                                                <button class="action-btn edit" onclick="editEmpresaCompleta('${empresa.id}')" title="Editar">
+                                                <button class="action-btn edit" onclick="editEmpresaCompleta(${empresa.id})" title="Editar">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <button class="action-btn delete" onclick="confirmarEliminarEmpresa('${empresa.id}', '${empresa.nombre}')" title="Eliminar">
+                                                <button class="action-btn delete" onclick="confirmarEliminarEmpresa(${empresa.id}, '${empresa.nombre.replace(/'/g, "\\'")}')" title="Eliminar">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </div>
@@ -1511,16 +1516,16 @@
                                         </td>
                                         <td>
                                             <div class="action-buttons">
-                                                <button class="action-btn view" onclick="accessEmpresaAdmin('${empresa.id}')" title="Acceder como Admin">
+                                                <button class="action-btn access" onclick="accessEmpresaAdmin(${empresa.id})" title="Acceder como Admin">
                                                     <i class="fas fa-sign-in-alt"></i>
                                                 </button>
-                                                <button class="action-btn view" onclick="viewEmpresaCompleta('${empresa.id}')" title="Ver Detalles">
+                                                <button class="action-btn view" onclick="viewEmpresaCompleta(${empresa.id})" title="Ver Detalles">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
-                                                <button class="action-btn edit" onclick="editEmpresaCompleta('${empresa.id}')" title="Editar">
+                                                <button class="action-btn edit" onclick="editEmpresaCompleta(${empresa.id})" title="Editar">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <button class="action-btn delete" onclick="confirmarEliminarEmpresa('${empresa.id}', '${empresa.nombre}')" title="Eliminar">
+                                                <button class="action-btn delete" onclick="confirmarEliminarEmpresa(${empresa.id}, '${empresa.nombre.replace(/'/g, "\\'")}')" title="Eliminar">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </div>
@@ -1621,7 +1626,6 @@
         async function crearNuevaEmpresaCompleta() {
             showLoading();
             
-            // NOTA: IMPORTANTE - El campo es 'activa' (singular) según tu SQL
             const empresaData = {
                 nombre: document.getElementById('nuevaEmpresaNombre').value.trim(),
                 nit: document.getElementById('nuevaEmpresaRUC').value.trim(),
@@ -1681,21 +1685,22 @@
         // =============================================
         
         function viewEmpresaCompleta(empresaId) {
-            const empresa = database.empresas.find(e => e.id === empresaId);
+            // IMPORTANTE: empresas.id es BIGINT, no UUID
+            const empresa = database.empresas.find(e => e.id === empresaId || e.id == empresaId);
             if (!empresa) {
                 showNotification('error', 'Error', 'Empresa no encontrada');
                 return;
             }
             
             // Obtener datos relacionados
-            const usuariosEmpresa = database.usuarios.filter(u => u.empresa_id === empresaId);
-            const clientesEmpresa = database.clientes.filter(c => c.empresa_id === empresaId);
-            const productosEmpresa = database.productos.filter(p => p.empresa_id === empresaId);
-            const ventasEmpresa = database.ventas.filter(v => v.empresa_id === empresaId);
-            const almacenesEmpresa = database.almacenes.filter(a => a.empresa_id === empresaId);
+            const usuariosEmpresa = database.usuarios.filter(u => u.empresa_id === empresaId || u.empresa_id == empresaId);
+            const clientesEmpresa = database.clientes.filter(c => c.empresa_id === empresaId || c.empresa_id == empresaId);
+            const productosEmpresa = database.productos.filter(p => p.empresa_id === empresaId || p.empresa_id == empresaId);
+            const ventasEmpresa = database.ventas.filter(v => v.empresa_id === empresaId || v.empresa_id == empresaId);
+            const almacenesEmpresa = database.almacenes.filter(a => a.empresa_id === empresaId || a.empresa_id == empresaId);
             
-            const totalVentas = ventasEmpresa.reduce((sum, venta) => sum + (venta.total || 0), 0);
-            const ventasPendientes = ventasEmpresa.filter(v => v.estado === 'pendiente').length;
+            const totalVentas = ventasEmpresa.reduce((sum, venta) => sum + (parseFloat(venta.total) || 0), 0);
+            const ventasPendientes = ventasEmpresa.filter(v => v.estado === 'pendiente' || v.estado === 'Pendiente').length;
             
             showModal(`Empresa: ${empresa.nombre}`, `
                 <div style="max-width: 900px;">
@@ -1873,10 +1878,10 @@
                     </div>
                     
                     <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                        <button class="btn btn-secondary" onclick="accessEmpresaAdmin('${empresaId}')" style="flex: 1;">
+                        <button class="btn btn-secondary" onclick="accessEmpresaAdmin(${empresaId})" style="flex: 1;">
                             <i class="fas fa-sign-in-alt"></i> Acceder como Admin
                         </button>
-                        <button class="btn btn-primary" onclick="editEmpresaCompleta('${empresaId}')" style="flex: 1;">
+                        <button class="btn btn-primary" onclick="editEmpresaCompleta(${empresaId})" style="flex: 1;">
                             <i class="fas fa-edit"></i> Editar Empresa
                         </button>
                     </div>
@@ -1903,7 +1908,7 @@
         // =============================================
         
         function editEmpresaCompleta(empresaId) {
-            const empresa = database.empresas.find(e => e.id === empresaId);
+            const empresa = database.empresas.find(e => e.id === empresaId || e.id == empresaId);
             if (!empresa) {
                 showNotification('error', 'Error', 'Empresa no encontrada');
                 return;
@@ -1973,7 +1978,7 @@
                         <button class="btn btn-secondary" onclick="closeModalSafe()" style="flex: 1;">
                             Cancelar
                         </button>
-                        <button class="btn btn-primary" onclick="guardarEdicionEmpresaCompleta('${empresaId}')" style="flex: 1;">
+                        <button class="btn btn-primary" onclick="guardarEdicionEmpresaCompleta(${empresaId})" style="flex: 1;">
                             <i class="fas fa-save"></i> Guardar Cambios
                         </button>
                     </div>
@@ -2032,7 +2037,7 @@
         // =============================================
         
         function accessEmpresaAdmin(empresaId) {
-            const empresa = database.empresas.find(e => e.id === empresaId);
+            const empresa = database.empresas.find(e => e.id === empresaId || e.id == empresaId);
             if (!empresa) {
                 showNotification('error', 'Error', 'Empresa no encontrada');
                 return;
@@ -2386,6 +2391,7 @@
             console.log('🚀 Nexial Suite Panel de Control - Super Admin');
             console.log('📊 Sistema Corporativo Multiempresa');
             console.log('🔗 Supabase URL:', SUPABASE_URL);
+            console.log('ℹ️ Nota: empresas.id es BIGINT (numérico), usuarios.id es UUID');
         });
     </script>
 </body>
