@@ -1055,6 +1055,7 @@
                     if (error) throw error;
                     result = insertedData;
                 } else if (action === 'update') {
+                    // Para update, usar eq con el ID correcto
                     const { data: updatedData, error } = await supabaseClient
                         .from(table)
                         .update(data)
@@ -2042,38 +2043,46 @@
         async function guardarEdicionEmpresaCompleta(empresaId) {
             showLoading();
             
-            const empresaData = {
-                id: empresaId,
-                nombre: document.getElementById('editEmpresaNombre').value,
-                nit: document.getElementById('editEmpresaRUC').value,
-                email: document.getElementById('editEmpresaEmail').value,
-                telefono: document.getElementById('editEmpresaTelefono').value,
-                direccion: document.getElementById('editEmpresaDireccion').value,
-                activa: document.getElementById('editEmpresaEstado').value === 'true'
-            };
-            
-            if (!empresaData.nombre || !empresaData.nit || !empresaData.email) {
-                showNotification('error', 'Error', 'Complete los campos obligatorios');
-                hideLoading();
-                return;
-            }
-            
             try {
+                const empresaData = {
+                    id: empresaId, // Asegurar que este es el ID correcto
+                    nombre: document.getElementById('editEmpresaNombre').value,
+                    nit: document.getElementById('editEmpresaRUC').value,
+                    email: document.getElementById('editEmpresaEmail').value,
+                    telefono: document.getElementById('editEmpresaTelefono').value,
+                    direccion: document.getElementById('editEmpresaDireccion').value || '',
+                    activa: document.getElementById('editEmpresaEstado').value === 'true'
+                };
+                
+                // Validación
+                if (!empresaData.nombre || !empresaData.nit || !empresaData.email) {
+                    showNotification('error', 'Error', 'Complete los campos obligatorios');
+                    hideLoading();
+                    return;
+                }
+                
                 const result = await postToSupabase('empresas', empresaData, 'update');
                 
-                if (result) {
-                    showNotification('success', 'Éxito', 'Empresa actualizada');
+                if (result && result.length > 0) {
+                    showNotification('success', 'Éxito', 'Empresa actualizada correctamente');
                     
+                    // Recargar datos
                     await loadEmpresasFromSupabase();
                     
                     closeModal();
-                    loadEmpresasManagement();
+                    
+                    // Recargar vista apropiada
+                    if (currentUser.role === 'superadmin') {
+                        loadEmpresasManagement();
+                    } else {
+                        loadAdminEmpresaDashboard();
+                    }
                 } else {
-                    showNotification('error', 'Error', 'Error al actualizar');
+                    showNotification('error', 'Error', 'No se pudo actualizar la empresa');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                showNotification('error', 'Error', 'Error de conexión');
+                console.error('Error actualizando empresa:', error);
+                showNotification('error', 'Error', 'Error de conexión al servidor');
             } finally {
                 hideLoading();
             }
@@ -2093,90 +2102,35 @@
             showLoading();
             
             try {
+                // Asegurar que empresaId es el ID correcto
+                const empresa = database.empresas.find(e => e.id === empresaId);
+                if (!empresa) {
+                    showNotification('error', 'Error', 'Empresa no encontrada');
+                    hideLoading();
+                    return;
+                }
+                
                 const result = await postToSupabase('empresas', { id: empresaId }, 'delete');
                 
                 if (result && result.success !== false) {
-                    showNotification('success', 'Éxito', 'Empresa eliminada');
+                    showNotification('success', 'Éxito', `Empresa "${empresa.nombre}" eliminada`);
                     
+                    // Actualizar datos locales
                     await loadEmpresasFromSupabase();
                     
-                    loadEmpresasManagement();
+                    // Recargar la vista
+                    if (currentUser.role === 'superadmin') {
+                        loadEmpresasManagement();
+                    }
                 } else {
-                    showNotification('error', 'Error', 'Error al eliminar');
+                    showNotification('error', 'Error', 'Error al eliminar empresa');
                 }
             } catch (error) {
-                showNotification('error', 'Error', 'Error de conexión');
+                console.error('Error eliminando empresa:', error);
+                showNotification('error', 'Error', 'No se pudo eliminar la empresa');
             } finally {
                 hideLoading();
             }
-        }
-        
-        // =============================================
-        // GESTIÓN DE USUARIOS (ADMIN EMPRESA)
-        // =============================================
-        
-        function loadUsuariosEmpresa() {
-            const empresaId = currentUser.empresa_id;
-            const usuariosFiltrados = database.usuarios.filter(u => u.empresa_id === empresaId);
-            
-            showModal('Gestión de Usuarios', `
-                <div style="max-width: 800px;">
-                    <div style="margin-bottom: 1.5rem;">
-                        <button class="btn btn-primary" onclick="showNuevoUsuarioParaEmpresa('${empresaId}')">
-                            <i class="fas fa-user-plus"></i> Agregar Usuario
-                        </button>
-                    </div>
-                    
-                    <div class="table-wrapper">
-                        <table class="data-table" style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Email</th>
-                                    <th>Rol</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${usuariosFiltrados.map(usuario => `
-                                    <tr>
-                                        <td>${usuario.nombre}</td>
-                                        <td>${usuario.email}</td>
-                                        <td>
-                                            <span style="padding: 0.2rem 0.5rem; border-radius: 4px; background: ${getRoleColor(usuario.rol)};">
-                                                ${getRoleName(usuario.rol)}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="status-badge ${usuario.activo ? 'status-active' : 'status-inactive'}">
-                                                ${usuario.activo ? 'Activo' : 'Inactivo'}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <button class="action-btn edit" onclick="editUsuarioCompleto('${usuario.id}')" title="Editar">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button class="action-btn delete" onclick="confirmarEliminarUsuario('${usuario.id}', '${usuario.nombre}')" title="Eliminar">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                                ${usuariosFiltrados.length === 0 ? `
-                                    <tr>
-                                        <td colspan="5" style="text-align: center; padding: 2rem;">
-                                            No hay usuarios
-                                        </td>
-                                    </tr>
-                                ` : ''}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `);
         }
         
         function loadClientesEmpresa() {
@@ -2825,3 +2779,4 @@
     </script>
 </body>
 </html>
+
