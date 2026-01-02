@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="manifest" href="pwa-manifest.json">
     <style>
         :root {
             --primary: #7c3aed;
@@ -960,7 +959,7 @@
 
     <script>
         // =============================================
-        // CONFIGURACIÓN SUPABASE - USA TUS PROPIAS CREDENCIALES
+        // CONFIGURACIÓN SUPABASE - CREDENCIALES ACTUALES
         // =============================================
         const SUPABASE_URL = 'https://cmrysvcahpouziogzang.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_rj4q31YiBwxLcfuswCX21g_LxsxRc_n';
@@ -974,7 +973,10 @@
             empresas: [],
             usuarios: [],
             clientes: [],
-            almacenes: []
+            almacenes: [],
+            productos: [],
+            ventas: [],
+            pagos: []
         };
         
         // =============================================
@@ -983,6 +985,11 @@
         
         function initializeSupabase() {
             try {
+                if (typeof supabase === 'undefined') {
+                    console.error('❌ Supabase no está cargado');
+                    return false;
+                }
+                
                 supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 console.log('✅ Supabase inicializado');
                 return true;
@@ -1001,7 +1008,7 @@
         }
         
         // =============================================
-        // FUNCIONES DE SUPABASE
+        // FUNCIONES DE SUPABASE - CORREGIDAS
         // =============================================
         
         async function fetchFromSupabase(table, filters = {}) {
@@ -1015,13 +1022,7 @@
                 // Aplicar filtros
                 Object.keys(filters).forEach(key => {
                     if (filters[key] !== undefined && filters[key] !== null) {
-                        if (key.includes('.')) {
-                            // Para filtros de relación
-                            const [table, field] = key.split('.');
-                            // Manejo especial para relaciones
-                        } else {
-                            query = query.eq(key, filters[key]);
-                        }
+                        query = query.eq(key, filters[key]);
                     }
                 });
                 
@@ -1055,20 +1056,30 @@
                     if (error) throw error;
                     result = insertedData;
                 } else if (action === 'update') {
-                    // Para update, usar eq con el ID correcto
+                    // IMPORTANTE: Usar el ID correctamente
+                    const idValue = data.id || data.ID || data.Id;
+                    if (!idValue) {
+                        throw new Error('ID no proporcionado para actualizar');
+                    }
+                    
                     const { data: updatedData, error } = await supabaseClient
                         .from(table)
                         .update(data)
-                        .eq('id', data.id)
+                        .eq('id', idValue)
                         .select();
                     
                     if (error) throw error;
                     result = updatedData;
                 } else if (action === 'delete') {
+                    const idValue = data.id || data.ID || data.Id;
+                    if (!idValue) {
+                        throw new Error('ID no proporcionado para eliminar');
+                    }
+                    
                     const { error } = await supabaseClient
                         .from(table)
                         .delete()
-                        .eq('id', data.id);
+                        .eq('id', idValue);
                     
                     if (error) throw error;
                     result = { success: true };
@@ -1086,7 +1097,7 @@
         }
         
         // =============================================
-        // CARGA DE DATOS
+        // CARGA DE DATOS - CORREGIDA
         // =============================================
         
         async function loadEmpresasFromSupabase() {
@@ -1094,6 +1105,16 @@
                 const data = await fetchFromSupabase('empresas');
                 database.empresas = data || [];
                 console.log(`✅ Empresas cargadas: ${database.empresas.length}`);
+                
+                // Debug: Ver estructura de datos
+                if (database.empresas.length > 0) {
+                    console.log('Ejemplo de empresa:', {
+                        id: database.empresas[0].id,
+                        tipo: typeof database.empresas[0].id,
+                        datos: database.empresas[0]
+                    });
+                }
+                
                 return true;
             } catch (error) {
                 console.error('Error cargando empresas:', error);
@@ -1137,17 +1158,30 @@
             }
         }
         
+        async function loadProductosFromSupabase() {
+            try {
+                const data = await fetchFromSupabase('productos');
+                database.productos = data || [];
+                console.log(`✅ Productos cargados: ${database.productos.length}`);
+                return true;
+            } catch (error) {
+                console.error('Error cargando productos:', error);
+                return false;
+            }
+        }
+        
         async function loadAllData() {
             showLoading();
             try {
                 console.log('🔄 Cargando todos los datos...');
                 
-                // Cargar en paralelo
+                // Cargar todas las tablas
                 await Promise.all([
                     loadEmpresasFromSupabase(),
                     loadUsuariosFromSupabase(),
                     loadClientesFromSupabase(),
-                    loadAlmacenesFromSupabase()
+                    loadAlmacenesFromSupabase(),
+                    loadProductosFromSupabase()
                 ]);
                 
                 console.log('✅ Todos los datos cargados exitosamente');
@@ -1155,6 +1189,7 @@
                 console.log('- Usuarios:', database.usuarios.length);
                 console.log('- Clientes:', database.clientes.length);
                 console.log('- Almacenes:', database.almacenes.length);
+                console.log('- Productos:', database.productos.length);
                 
                 return true;
             } catch (error) {
@@ -1203,6 +1238,12 @@
                             <span>Gestión de Personal</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="loadGestionProductos()">
+                            <i class="fas fa-boxes"></i>
+                            <span>Gestión de Productos</span>
+                            </a>
+                        </li>
                         </ul>
                     </div>
                     `,
@@ -1240,6 +1281,12 @@
                             <a class="nav-link" onclick="loadAlmacenesEmpresa()">
                             <i class="fas fa-warehouse"></i>
                             <span>Gestión de Almacenes</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="loadProductosEmpresa()">
+                            <i class="fas fa-boxes"></i>
+                            <span>Gestión de Productos</span>
                             </a>
                         </li>
                         </ul>
@@ -1295,6 +1342,7 @@
             const usuariosCount = database.usuarios.length;
             const clientesCount = database.clientes.length;
             const almacenesCount = database.almacenes.length;
+            const productosCount = database.productos.length;
             
             document.getElementById('viewSuperadmin').innerHTML = `
                 <div class="stats-grid">
@@ -1333,28 +1381,34 @@
                     
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-title">Almacenes</div>
-                            <div class="stat-icon"><i class="fas fa-warehouse"></i></div>
+                            <div class="stat-title">Productos</div>
+                            <div class="stat-icon"><i class="fas fa-boxes"></i></div>
                         </div>
-                        <div class="stat-value">${almacenesCount}</div>
+                        <div class="stat-value">${productosCount}</div>
                         <div class="stat-change positive">
-                            <i class="fas fa-warehouse"></i> Disponibles
+                            <i class="fas fa-box"></i> Disponibles
                         </div>
                     </div>
                 </div>
                 
-                <div style="margin-top: 2rem; text-align: center;">
-                    <button class="btn btn-primary" onclick="loadEmpresasManagement()" style="margin-right: 1rem;">
+                <div style="margin-top: 2rem; text-align: center; display: flex; gap: 1rem; justify-content: center;">
+                    <button class="btn btn-primary" onclick="loadEmpresasManagement()">
                         <i class="fas fa-building"></i> Gestionar Empresas
                     </button>
                     <button class="btn btn-secondary" onclick="loadGestionPersonal()">
                         <i class="fas fa-users-cog"></i> Gestionar Personal
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadGestionProductos()">
+                        <i class="fas fa-boxes"></i> Gestionar Productos
                     </button>
                 </div>
                 
                 <div class="table-card" style="margin-top: 2rem;">
                     <div class="table-header">
                         <h3 class="table-title">Empresas Recientes</h3>
+                        <button class="btn btn-primary" onclick="showNuevaEmpresaModal()">
+                            <i class="fas fa-plus"></i> Nueva Empresa
+                        </button>
                     </div>
                     <div class="table-wrapper">
                         <table class="data-table">
@@ -1368,7 +1422,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${database.empresas.slice(0, 5).map(empresa => `
+                                ${database.empresas.slice(0, 5).map(empresa => {
+                                    const empresaId = empresa.id || empresa.ID;
+                                    return `
                                     <tr>
                                         <td><strong>${empresa.nombre || 'Sin nombre'}</strong></td>
                                         <td>${empresa.nit || 'N/A'}</td>
@@ -1380,16 +1436,20 @@
                                         </td>
                                         <td>
                                             <div class="action-buttons">
-                                                <button class="action-btn view" onclick="viewEmpresaCompleta('${empresa.id}')" title="Ver">
+                                                <button class="action-btn view" onclick="viewEmpresaCompleta('${empresaId}')" title="Ver">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
-                                                <button class="action-btn edit" onclick="editEmpresaCompleta('${empresa.id}')" title="Editar">
+                                                <button class="action-btn edit" onclick="editEmpresaCompleta('${empresaId}')" title="Editar">
                                                     <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="action-btn delete" onclick="confirmarEliminarEmpresa('${empresaId}', '${empresa.nombre || "Empresa"}')" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
-                                `).join('')}
+                                    `;
+                                }).join('')}
                                 ${database.empresas.length === 0 ? `
                                     <tr>
                                         <td colspan="5" style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.5);">
@@ -1410,10 +1470,11 @@
         
         function loadAdminEmpresaDashboard() {
             const empresaId = currentUser.empresa_id;
-            const empresa = database.empresas.find(e => e.id === empresaId);
+            const empresa = database.empresas.find(e => (e.id === empresaId) || (e.ID === empresaId));
             const usuariosEmpresa = database.usuarios.filter(u => u.empresa_id === empresaId);
             const clientesEmpresa = database.clientes.filter(c => c.empresa_id === empresaId);
             const almacenesEmpresa = database.almacenes.filter(a => a.empresa_id === empresaId);
+            const productosEmpresa = database.productos.filter(p => p.empresa_id === empresaId);
             
             document.getElementById('viewAdminEmpresa').innerHTML = `
                 <div class="stats-grid">
@@ -1441,23 +1502,23 @@
                     
                     <div class="stat-card">
                         <div class="stat-header">
+                            <div class="stat-title">Productos</div>
+                            <div class="stat-icon"><i class="fas fa-boxes"></i></div>
+                        </div>
+                        <div class="stat-value">${productosEmpresa.length}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-box"></i> Disponibles
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
                             <div class="stat-title">Almacenes</div>
                             <div class="stat-icon"><i class="fas fa-warehouse"></i></div>
                         </div>
                         <div class="stat-value">${almacenesEmpresa.length}</div>
                         <div class="stat-change positive">
                             <i class="fas fa-warehouse"></i> Disponibles
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Sistema</div>
-                            <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-                        </div>
-                        <div class="stat-value">100%</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-bolt"></i> Operativo
                         </div>
                     </div>
                 </div>
@@ -1544,7 +1605,7 @@
         }
         
         // =============================================
-        // GESTIÓN DE EMPRESAS (SUPERADMIN)
+        // GESTIÓN DE EMPRESAS (SUPERADMIN) - CORREGIDA
         // =============================================
         
         function loadEmpresasManagement() {
@@ -1575,7 +1636,8 @@
                             </thead>
                             <tbody>
                                 ${database.empresas.map(empresa => {
-                                    const usuariosEmpresa = database.usuarios.filter(u => u.empresa_id === empresa.id);
+                                    const empresaId = empresa.id || empresa.ID;
+                                    const usuariosEmpresa = database.usuarios.filter(u => u.empresa_id === empresaId);
                                     return `
                                         <tr>
                                             <td>
@@ -1594,13 +1656,13 @@
                                             <td>${usuariosEmpresa.length}</td>
                                             <td>
                                                 <div class="action-buttons">
-                                                    <button class="action-btn view" onclick="viewEmpresaCompleta('${empresa.id}')" title="Ver">
+                                                    <button class="action-btn view" onclick="viewEmpresaCompleta('${empresaId}')" title="Ver">
                                                         <i class="fas fa-eye"></i>
                                                     </button>
-                                                    <button class="action-btn edit" onclick="editEmpresaCompleta('${empresa.id}')" title="Editar">
+                                                    <button class="action-btn edit" onclick="editEmpresaCompleta('${empresaId}')" title="Editar">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
-                                                    <button class="action-btn delete" onclick="confirmarEliminarEmpresa('${empresa.id}', '${empresa.nombre}')" title="Eliminar">
+                                                    <button class="action-btn delete" onclick="confirmarEliminarEmpresa('${empresaId}', '${empresa.nombre || "Empresa"}')" title="Eliminar">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </div>
@@ -1623,7 +1685,7 @@
         }
         
         // =============================================
-        // GESTIÓN DE PERSONAL (SUPERADMIN)
+        // GESTIÓN DE PERSONAL (SUPERADMIN) - CORREGIDA
         // =============================================
         
         function loadGestionPersonal() {
@@ -1656,7 +1718,11 @@
                             </thead>
                             <tbody>
                                 ${usuariosFiltrados.map(usuario => {
-                                    const empresa = database.empresas.find(e => e.id === usuario.empresa_id);
+                                    const usuarioId = usuario.id || usuario.ID;
+                                    const empresa = database.empresas.find(e => {
+                                        const empresaId = e.id || e.ID;
+                                        return empresaId === usuario.empresa_id;
+                                    });
                                     return `
                                         <tr>
                                             <td><strong>${usuario.nombre}</strong></td>
@@ -1674,10 +1740,10 @@
                                             </td>
                                             <td>
                                                 <div class="action-buttons">
-                                                    <button class="action-btn edit" onclick="editUsuarioCompleto('${usuario.id}')" title="Editar">
+                                                    <button class="action-btn edit" onclick="editUsuarioCompleto('${usuarioId}')" title="Editar">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
-                                                    <button class="action-btn delete" onclick="confirmarEliminarUsuario('${usuario.id}', '${usuario.nombre}')" title="Eliminar">
+                                                    <button class="action-btn delete" onclick="confirmarEliminarUsuario('${usuarioId}', '${usuario.nombre || "Usuario"}')" title="Eliminar">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </div>
@@ -1689,6 +1755,86 @@
                                     <tr>
                                         <td colspan="6" style="text-align: center; padding: 2rem;">
                                             No hay usuarios registrados
+                                        </td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // =============================================
+        // GESTIÓN DE PRODUCTOS (SUPERADMIN) - NUEVA
+        // =============================================
+        
+        function loadGestionProductos() {
+            document.getElementById('pageTitle').textContent = 'Gestión de Productos';
+            
+            document.getElementById('viewSuperadmin').innerHTML = `
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3 class="table-title">Productos del Sistema</h3>
+                        <div class="table-actions">
+                            <button class="btn btn-primary" onclick="showNuevoProductoModal()">
+                                <i class="fas fa-plus"></i> Nuevo Producto
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Categoría</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Empresa</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${database.productos.map(producto => {
+                                    const productoId = producto.id || producto.ID;
+                                    const empresa = database.empresas.find(e => {
+                                        const empresaId = e.id || e.ID;
+                                        return empresaId === producto.empresa_id;
+                                    });
+                                    return `
+                                        <tr>
+                                            <td><strong>${producto.nombre || 'Sin nombre'}</strong></td>
+                                            <td>${producto.categoria || 'Sin categoría'}</td>
+                                            <td>$${producto.precio || '0.00'}</td>
+                                            <td>${producto.stock || 0}</td>
+                                            <td>${empresa ? empresa.nombre : 'Sin empresa'}</td>
+                                            <td>
+                                                <span class="status-badge ${producto.activo ? 'status-active' : 'status-inactive'}">
+                                                    ${producto.activo ? 'Activo' : 'Inactivo'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="action-btn view" onclick="viewProductoCompleto('${productoId}')" title="Ver">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="action-btn edit" onclick="editProductoCompleto('${productoId}')" title="Editar">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="action-btn delete" onclick="confirmarEliminarProducto('${productoId}', '${producto.nombre || "Producto"}')" title="Eliminar">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                                ${database.productos.length === 0 ? `
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; padding: 2rem;">
+                                            No hay productos registrados
                                         </td>
                                     </tr>
                                 ` : ''}
@@ -1848,7 +1994,7 @@
         }
         
         // =============================================
-        // GESTIÓN DE EMPRESAS (MODALES)
+        // GESTIÓN DE EMPRESAS (MODALES) - CORREGIDAS
         // =============================================
         
         function showNuevaEmpresaModal() {
@@ -1932,7 +2078,11 @@
         }
         
         function viewEmpresaCompleta(empresaId) {
-            const empresa = database.empresas.find(e => e.id === empresaId);
+            const empresa = database.empresas.find(e => {
+                const eId = e.id || e.ID;
+                return eId === empresaId;
+            });
+            
             if (!empresa) {
                 showNotification('error', 'Error', 'Empresa no encontrada');
                 return;
@@ -1983,7 +2133,11 @@
         }
         
         function editEmpresaCompleta(empresaId) {
-            const empresa = database.empresas.find(e => e.id === empresaId);
+            const empresa = database.empresas.find(e => {
+                const eId = e.id || e.ID;
+                return eId === empresaId;
+            });
+            
             if (!empresa) {
                 showNotification('error', 'Error', 'Empresa no encontrada');
                 return;
@@ -1991,7 +2145,7 @@
             
             showModal(`Editar Empresa: ${empresa.nombre}`, `
                 <div style="max-width: 700px;">
-                    <input type="hidden" id="editEmpresaId" value="${empresa.id || ''}">
+                    <input type="hidden" id="editEmpresaId" value="${empresaId}">
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         <div class="form-group">
@@ -2043,30 +2197,28 @@
         async function guardarEdicionEmpresaCompleta(empresaId) {
             showLoading();
             
+            const empresaData = {
+                id: empresaId,
+                nombre: document.getElementById('editEmpresaNombre').value,
+                nit: document.getElementById('editEmpresaRUC').value,
+                email: document.getElementById('editEmpresaEmail').value,
+                telefono: document.getElementById('editEmpresaTelefono').value,
+                direccion: document.getElementById('editEmpresaDireccion').value || '',
+                activa: document.getElementById('editEmpresaEstado').value === 'true'
+            };
+            
+            if (!empresaData.nombre || !empresaData.nit || !empresaData.email) {
+                showNotification('error', 'Error', 'Complete los campos obligatorios');
+                hideLoading();
+                return;
+            }
+            
             try {
-                const empresaData = {
-                    id: empresaId, // Asegurar que este es el ID correcto
-                    nombre: document.getElementById('editEmpresaNombre').value,
-                    nit: document.getElementById('editEmpresaRUC').value,
-                    email: document.getElementById('editEmpresaEmail').value,
-                    telefono: document.getElementById('editEmpresaTelefono').value,
-                    direccion: document.getElementById('editEmpresaDireccion').value || '',
-                    activa: document.getElementById('editEmpresaEstado').value === 'true'
-                };
-                
-                // Validación
-                if (!empresaData.nombre || !empresaData.nit || !empresaData.email) {
-                    showNotification('error', 'Error', 'Complete los campos obligatorios');
-                    hideLoading();
-                    return;
-                }
-                
                 const result = await postToSupabase('empresas', empresaData, 'update');
                 
                 if (result && result.length > 0) {
                     showNotification('success', 'Éxito', 'Empresa actualizada correctamente');
                     
-                    // Recargar datos
                     await loadEmpresasFromSupabase();
                     
                     closeModal();
@@ -2102,8 +2254,11 @@
             showLoading();
             
             try {
-                // Asegurar que empresaId es el ID correcto
-                const empresa = database.empresas.find(e => e.id === empresaId);
+                const empresa = database.empresas.find(e => {
+                    const eId = e.id || e.ID;
+                    return eId === empresaId;
+                });
+                
                 if (!empresa) {
                     showNotification('error', 'Error', 'Empresa no encontrada');
                     hideLoading();
@@ -2115,10 +2270,8 @@
                 if (result && result.success !== false) {
                     showNotification('success', 'Éxito', `Empresa "${empresa.nombre}" eliminada`);
                     
-                    // Actualizar datos locales
                     await loadEmpresasFromSupabase();
                     
-                    // Recargar la vista
                     if (currentUser.role === 'superadmin') {
                         loadEmpresasManagement();
                     }
@@ -2131,6 +2284,77 @@
             } finally {
                 hideLoading();
             }
+        }
+        
+        // =============================================
+        // GESTIÓN DE USUARIOS (ADMIN EMPRESA) - CORREGIDA
+        // =============================================
+        
+        function loadUsuariosEmpresa() {
+            const empresaId = currentUser.empresa_id;
+            const usuariosFiltrados = database.usuarios.filter(u => u.empresa_id === empresaId);
+            
+            showModal('Gestión de Usuarios', `
+                <div style="max-width: 800px;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <button class="btn btn-primary" onclick="showNuevoUsuarioParaEmpresa('${empresaId}')">
+                            <i class="fas fa-user-plus"></i> Agregar Usuario
+                        </button>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table class="data-table" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${usuariosFiltrados.map(usuario => {
+                                    const usuarioId = usuario.id || usuario.ID;
+                                    return `
+                                    <tr>
+                                        <td>${usuario.nombre}</td>
+                                        <td>${usuario.email}</td>
+                                        <td>
+                                            <span style="padding: 0.2rem 0.5rem; border-radius: 4px; background: ${getRoleColor(usuario.rol)};">
+                                                ${getRoleName(usuario.rol)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge ${usuario.activo ? 'status-active' : 'status-inactive'}">
+                                                ${usuario.activo ? 'Activo' : 'Inactivo'}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="action-btn edit" onclick="editUsuarioCompleto('${usuarioId}')" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="action-btn delete" onclick="confirmarEliminarUsuario('${usuarioId}', '${usuario.nombre || "Usuario"}')" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    `;
+                                }).join('')}
+                                ${usuariosFiltrados.length === 0 ? `
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 2rem;">
+                                            No hay usuarios
+                                        </td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
         }
         
         function loadClientesEmpresa() {
@@ -2153,10 +2377,13 @@
                                     <th>Contacto</th>
                                     <th>Teléfono</th>
                                     <th>Estado</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${clientesEmpresa.slice(0, 10).map(cliente => `
+                                ${clientesEmpresa.slice(0, 10).map(cliente => {
+                                    const clienteId = cliente.id || cliente.ID;
+                                    return `
                                     <tr>
                                         <td>${cliente.nombre || 'Sin nombre'}</td>
                                         <td>${cliente.contacto || 'Sin contacto'}</td>
@@ -2166,11 +2393,22 @@
                                                 ${cliente.activo ? 'Activo' : 'Inactivo'}
                                             </span>
                                         </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="action-btn edit" onclick="editClienteCompleto('${clienteId}')" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="action-btn delete" onclick="confirmarEliminarCliente('${clienteId}', '${cliente.nombre || "Cliente"}')" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
-                                `).join('')}
+                                    `;
+                                }).join('')}
                                 ${clientesEmpresa.length === 0 ? `
                                     <tr>
-                                        <td colspan="4" style="text-align: center; padding: 2rem;">
+                                        <td colspan="5" style="text-align: center; padding: 2rem;">
                                             No hay clientes
                                         </td>
                                     </tr>
@@ -2202,10 +2440,13 @@
                                     <th>Dirección</th>
                                     <th>Ciudad</th>
                                     <th>Estado</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${almacenesEmpresa.map(almacen => `
+                                ${almacenesEmpresa.map(almacen => {
+                                    const almacenId = almacen.id || almacen.ID;
+                                    return `
                                     <tr>
                                         <td>${almacen.nombre || 'Sin nombre'}</td>
                                         <td>${almacen.direccion || 'Sin dirección'}</td>
@@ -2215,12 +2456,88 @@
                                                 ${almacen.activo ? 'Activo' : 'Inactivo'}
                                             </span>
                                         </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="action-btn edit" onclick="editAlmacenCompleto('${almacenId}')" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="action-btn delete" onclick="confirmarEliminarAlmacen('${almacenId}', '${almacen.nombre || "Almacén"}')" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
-                                `).join('')}
+                                    `;
+                                }).join('')}
                                 ${almacenesEmpresa.length === 0 ? `
                                     <tr>
-                                        <td colspan="4" style="text-align: center; padding: 2rem;">
+                                        <td colspan="5" style="text-align: center; padding: 2rem;">
                                             No hay almacenes
+                                        </td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function loadProductosEmpresa() {
+            const empresaId = currentUser.empresa_id;
+            const productosEmpresa = database.productos.filter(p => p.empresa_id === empresaId);
+            
+            showModal('Productos', `
+                <div style="max-width: 800px;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <button class="btn btn-primary" onclick="showNuevoProductoParaEmpresa('${empresaId}')">
+                            <i class="fas fa-plus"></i> Agregar Producto
+                        </button>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table class="data-table" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Categoría</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${productosEmpresa.slice(0, 10).map(producto => {
+                                    const productoId = producto.id || producto.ID;
+                                    return `
+                                    <tr>
+                                        <td>${producto.nombre || 'Sin nombre'}</td>
+                                        <td>${producto.categoria || 'Sin categoría'}</td>
+                                        <td>$${producto.precio || '0.00'}</td>
+                                        <td>${producto.stock || 0}</td>
+                                        <td>
+                                            <span class="status-badge ${producto.activo ? 'status-active' : 'status-inactive'}">
+                                                ${producto.activo ? 'Activo' : 'Inactivo'}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="action-btn edit" onclick="editProductoCompleto('${productoId}')" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="action-btn delete" onclick="confirmarEliminarProducto('${productoId}', '${producto.nombre || "Producto"}')" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    `;
+                                }).join('')}
+                                ${productosEmpresa.length === 0 ? `
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; padding: 2rem;">
+                                            No hay productos
                                         </td>
                                     </tr>
                                 ` : ''}
@@ -2233,11 +2550,14 @@
         
         function editarInformacionEmpresa() {
             const empresaId = currentUser.empresa_id;
-            const empresa = database.empresas.find(e => e.id === empresaId);
+            const empresa = database.empresas.find(e => {
+                const eId = e.id || e.ID;
+                return eId === empresaId;
+            });
             
             showModal(`Editar Empresa: ${empresa?.nombre || 'Mi Empresa'}`, `
                 <div style="max-width: 700px;">
-                    <input type="hidden" id="editEmpresaId" value="${empresa?.id || ''}">
+                    <input type="hidden" id="editEmpresaId" value="${empresaId}">
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         <div class="form-group">
@@ -2287,7 +2607,7 @@
                 nit: document.getElementById('editEmpresaRUC').value,
                 email: document.getElementById('editEmpresaEmail').value,
                 telefono: document.getElementById('editEmpresaTelefono').value,
-                direccion: document.getElementById('editEmpresaDireccion').value
+                direccion: document.getElementById('editEmpresaDireccion').value || ''
             };
             
             if (!empresaData.nombre || !empresaData.nit || !empresaData.email) {
@@ -2299,7 +2619,7 @@
             try {
                 const result = await postToSupabase('empresas', empresaData, 'update');
                 
-                if (result) {
+                if (result && result.length > 0) {
                     showNotification('success', 'Éxito', 'Empresa actualizada');
                     
                     await loadEmpresasFromSupabase();
@@ -2318,7 +2638,7 @@
         }
         
         // =============================================
-        // FUNCIONES DE USUARIOS
+        // FUNCIONES DE USUARIOS - CORREGIDAS
         // =============================================
         
         function showNuevoUsuarioModalAvanzado() {
@@ -2328,9 +2648,10 @@
                         <label>Empresa *</label>
                         <select id="nuevoUsuarioEmpresaAvanzado" required>
                             <option value="">Seleccionar empresa</option>
-                            ${database.empresas.map(empresa => `
-                                <option value="${empresa.id}">${empresa.nombre}</option>
-                            `).join('')}
+                            ${database.empresas.map(empresa => {
+                                const empresaId = empresa.id || empresa.ID;
+                                return `<option value="${empresaId}">${empresa.nombre}</option>`;
+                            }).join('')}
                         </select>
                     </div>
                     
@@ -2385,9 +2706,12 @@
         }
         
         function showNuevoUsuarioParaEmpresa(empresaId) {
-            const empresa = database.empresas.find(e => e.id === empresaId);
+            const empresa = database.empresas.find(e => {
+                const eId = e.id || e.ID;
+                return eId === empresaId;
+            });
             
-            showModal(`Nuevo Usuario para: ${empresa.nombre}`, `
+            showModal(`Nuevo Usuario para: ${empresa?.nombre || 'Empresa'}`, `
                 <div style="max-width: 600px;">
                     <input type="hidden" id="nuevoUsuarioEmpresaEspecifica" value="${empresaId}">
                     
@@ -2518,15 +2842,19 @@
         }
         
         function editUsuarioCompleto(usuarioId) {
-            const usuario = database.usuarios.find(u => u.id === usuarioId);
+            const usuario = database.usuarios.find(u => {
+                const uId = u.id || u.ID;
+                return uId === usuarioId;
+            });
+            
             if (!usuario) {
-                showNotification('error', 'Error', 'Usuario no encontrada');
+                showNotification('error', 'Error', 'Usuario no encontrado');
                 return;
             }
             
             showModal(`Editar Usuario: ${usuario.nombre}`, `
                 <div style="max-width: 700px;">
-                    <input type="hidden" id="editUsuarioId" value="${usuario.id || ''}">
+                    <input type="hidden" id="editUsuarioId" value="${usuarioId}">
                     
                     <div class="form-group">
                         <label>Nombres Completos *</label>
@@ -2561,9 +2889,10 @@
                             <label>Empresa *</label>
                             <select id="editUsuarioEmpresa" required>
                                 <option value="">Seleccionar empresa</option>
-                                ${database.empresas.map(emp => `
-                                    <option value="${emp.id}" ${usuario.empresa_id === emp.id ? 'selected' : ''}>${emp.nombre}</option>
-                                `).join('')}
+                                ${database.empresas.map(emp => {
+                                    const empId = emp.id || emp.ID;
+                                    return `<option value="${empId}" ${usuario.empresa_id === empId ? 'selected' : ''}>${emp.nombre}</option>`;
+                                }).join('')}
                             </select>
                         </div>
                         
@@ -2610,7 +2939,7 @@
             try {
                 const result = await postToSupabase('usuarios', usuarioData, 'update');
                 
-                if (result) {
+                if (result && result.length > 0) {
                     showNotification('success', 'Éxito', 'Usuario actualizado');
                     
                     await loadUsuariosFromSupabase();
@@ -2645,10 +2974,21 @@
             showLoading();
             
             try {
+                const usuario = database.usuarios.find(u => {
+                    const uId = u.id || u.ID;
+                    return uId === usuarioId;
+                });
+                
+                if (!usuario) {
+                    showNotification('error', 'Error', 'Usuario no encontrado');
+                    hideLoading();
+                    return;
+                }
+                
                 const result = await postToSupabase('usuarios', { id: usuarioId }, 'delete');
                 
                 if (result && result.success !== false) {
-                    showNotification('success', 'Éxito', 'Usuario eliminado');
+                    showNotification('success', 'Éxito', `Usuario "${usuario.nombre}" eliminado`);
                     
                     await loadUsuariosFromSupabase();
                     
@@ -2668,11 +3008,320 @@
         }
         
         // =============================================
+        // FUNCIONES DE PRODUCTOS - NUEVAS
+        // =============================================
+        
+        function showNuevoProductoModal() {
+            showModal('Nuevo Producto', `
+                <div style="max-width: 600px;">
+                    <div class="form-group">
+                        <label>Empresa *</label>
+                        <select id="nuevoProductoEmpresa" required>
+                            <option value="">Seleccionar empresa</option>
+                            ${database.empresas.map(empresa => {
+                                const empresaId = empresa.id || empresa.ID;
+                                return `<option value="${empresaId}">${empresa.nombre}</option>`;
+                            }).join('')}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Nombre del Producto *</label>
+                        <input type="text" id="nuevoProductoNombre" placeholder="Producto XYZ" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <textarea id="nuevoProductoDescripcion" placeholder="Descripción del producto" rows="3"></textarea>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label>Categoría</label>
+                            <input type="text" id="nuevoProductoCategoria" placeholder="Electrónica">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Precio *</label>
+                            <input type="number" id="nuevoProductoPrecio" placeholder="0.00" step="0.01" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Stock *</label>
+                            <input type="number" id="nuevoProductoStock" placeholder="0" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Estado *</label>
+                            <select id="nuevoProductoActivo" required>
+                                <option value="true">Activo</option>
+                                <option value="false">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                        <button class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">
+                            Cancelar
+                        </button>
+                        <button class="btn btn-primary" onclick="crearNuevoProducto()" style="flex: 1;">
+                            <i class="fas fa-plus"></i> Crear Producto
+                        </button>
+                    </div>
+                </div>
+            `);
+        }
+        
+        async function crearNuevoProducto() {
+            showLoading();
+            
+            const productoData = {
+                nombre: document.getElementById('nuevoProductoNombre').value,
+                descripcion: document.getElementById('nuevoProductoDescripcion').value || '',
+                categoria: document.getElementById('nuevoProductoCategoria').value || '',
+                precio: parseFloat(document.getElementById('nuevoProductoPrecio').value) || 0,
+                stock: parseInt(document.getElementById('nuevoProductoStock').value) || 0,
+                activo: document.getElementById('nuevoProductoActivo').value === 'true',
+                empresa_id: document.getElementById('nuevoProductoEmpresa').value
+            };
+            
+            if (!productoData.nombre || !productoData.empresa_id) {
+                showNotification('error', 'Error', 'Complete los campos obligatorios');
+                hideLoading();
+                return;
+            }
+            
+            try {
+                const result = await postToSupabase('productos', productoData, 'insert');
+                
+                if (result && result.length > 0) {
+                    showNotification('success', 'Éxito', `Producto "${productoData.nombre}" creado`);
+                    
+                    await loadProductosFromSupabase();
+                    
+                    closeModal();
+                    loadGestionProductos();
+                } else {
+                    showNotification('error', 'Error', 'Error al crear producto');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('error', 'Error', 'Error de conexión');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function viewProductoCompleto(productoId) {
+            const producto = database.productos.find(p => {
+                const pId = p.id || p.ID;
+                return pId === productoId;
+            });
+            
+            if (!producto) {
+                showNotification('error', 'Error', 'Producto no encontrado');
+                return;
+            }
+            
+            const empresa = database.empresas.find(e => {
+                const eId = e.id || e.ID;
+                return eId === producto.empresa_id;
+            });
+            
+            showModal(`Producto: ${producto.nombre}`, `
+                <div style="max-width: 700px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div>
+                            <h4 style="color: var(--secondary);">Información General</h4>
+                            <p><strong>Nombre:</strong> ${producto.nombre || 'N/A'}</p>
+                            <p><strong>Descripción:</strong> ${producto.descripcion || 'Sin descripción'}</p>
+                            <p><strong>Categoría:</strong> ${producto.categoria || 'N/A'}</p>
+                            <p><strong>Empresa:</strong> ${empresa ? empresa.nombre : 'N/A'}</p>
+                        </div>
+                        
+                        <div>
+                            <h4 style="color: var(--secondary);">Detalles</h4>
+                            <p><strong>Precio:</strong> $${producto.precio || '0.00'}</p>
+                            <p><strong>Stock:</strong> ${producto.stock || 0}</p>
+                            <p><strong>Estado:</strong> ${producto.activo ? 'Activo' : 'Inactivo'}</p>
+                            <p><strong>Código:</strong> ${producto.codigo || 'N/A'}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                        <button class="btn btn-secondary" onclick="editProductoCompleto('${productoId}')" style="flex: 1;">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function editProductoCompleto(productoId) {
+            const producto = database.productos.find(p => {
+                const pId = p.id || p.ID;
+                return pId === productoId;
+            });
+            
+            if (!producto) {
+                showNotification('error', 'Error', 'Producto no encontrado');
+                return;
+            }
+            
+            showModal(`Editar Producto: ${producto.nombre}`, `
+                <div style="max-width: 700px;">
+                    <input type="hidden" id="editProductoId" value="${productoId}">
+                    
+                    <div class="form-group">
+                        <label>Nombre del Producto *</label>
+                        <input type="text" id="editProductoNombre" value="${producto.nombre || ''}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <textarea id="editProductoDescripcion" rows="3">${producto.descripcion || ''}</textarea>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label>Categoría</label>
+                            <input type="text" id="editProductoCategoria" value="${producto.categoria || ''}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Precio *</label>
+                            <input type="number" id="editProductoPrecio" value="${producto.precio || 0}" step="0.01" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Stock *</label>
+                            <input type="number" id="editProductoStock" value="${producto.stock || 0}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Estado *</label>
+                            <select id="editProductoActivo" required>
+                                <option value="true" ${producto.activo ? 'selected' : ''}>Activo</option>
+                                <option value="false" ${!producto.activo ? 'selected' : ''}>Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                        <button class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">
+                            Cancelar
+                        </button>
+                        <button class="btn btn-primary" onclick="guardarProductoCompleto('${productoId}')" style="flex: 1;">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </div>
+            `);
+        }
+        
+        async function guardarProductoCompleto(productoId) {
+            showLoading();
+            
+            const productoData = {
+                id: productoId,
+                nombre: document.getElementById('editProductoNombre').value,
+                descripcion: document.getElementById('editProductoDescripcion').value || '',
+                categoria: document.getElementById('editProductoCategoria').value || '',
+                precio: parseFloat(document.getElementById('editProductoPrecio').value) || 0,
+                stock: parseInt(document.getElementById('editProductoStock').value) || 0,
+                activo: document.getElementById('editProductoActivo').value === 'true'
+            };
+            
+            if (!productoData.nombre) {
+                showNotification('error', 'Error', 'Complete los campos obligatorios');
+                hideLoading();
+                return;
+            }
+            
+            try {
+                const result = await postToSupabase('productos', productoData, 'update');
+                
+                if (result && result.length > 0) {
+                    showNotification('success', 'Éxito', 'Producto actualizado');
+                    
+                    await loadProductosFromSupabase();
+                    
+                    closeModal();
+                    
+                    if (currentUser.role === 'superadmin') {
+                        loadGestionProductos();
+                    } else {
+                        loadProductosEmpresa();
+                    }
+                } else {
+                    showNotification('error', 'Error', 'Error al actualizar producto');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('error', 'Error', 'Error de conexión');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function confirmarEliminarProducto(productoId, productoNombre) {
+            showConfirmation(
+                'Eliminar Producto',
+                `¿Estás seguro de eliminar el producto "${productoNombre}"?`,
+                function() {
+                    eliminarProducto(productoId);
+                }
+            );
+        }
+        
+        async function eliminarProducto(productoId) {
+            showLoading();
+            
+            try {
+                const producto = database.productos.find(p => {
+                    const pId = p.id || p.ID;
+                    return pId === productoId;
+                });
+                
+                if (!producto) {
+                    showNotification('error', 'Error', 'Producto no encontrado');
+                    hideLoading();
+                    return;
+                }
+                
+                const result = await postToSupabase('productos', { id: productoId }, 'delete');
+                
+                if (result && result.success !== false) {
+                    showNotification('success', 'Éxito', `Producto "${producto.nombre}" eliminado`);
+                    
+                    await loadProductosFromSupabase();
+                    
+                    if (currentUser.role === 'superadmin') {
+                        loadGestionProductos();
+                    } else {
+                        loadProductosEmpresa();
+                    }
+                } else {
+                    showNotification('error', 'Error', 'Error al eliminar producto');
+                }
+            } catch (error) {
+                console.error('Error eliminando producto:', error);
+                showNotification('error', 'Error', 'No se pudo eliminar el producto');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // =============================================
         // FUNCIONES DE ACCESO
         // =============================================
         
         function accessAsAdminEmpresa(empresaId) {
-            const empresa = database.empresas.find(e => e.id === empresaId);
+            const empresa = database.empresas.find(e => {
+                const eId = e.id || e.ID;
+                return eId === empresaId;
+            });
+            
             if (!empresa) {
                 showNotification('error', 'Error', 'Empresa no encontrada');
                 return;
@@ -2728,12 +3377,6 @@
                 console.log('👤 Usuario cargado:', currentUser);
                 
                 // Inicializar Supabase
-                if (typeof supabase === 'undefined') {
-                    console.error('❌ Supabase no está cargado');
-                    showNotification('error', 'Error', 'No se pudo cargar Supabase');
-                    return;
-                }
-                
                 if (!initializeSupabase()) {
                     showNotification('error', 'Error', 'Error inicializando Supabase');
                     return;
@@ -2779,4 +3422,3 @@
     </script>
 </body>
 </html>
-
