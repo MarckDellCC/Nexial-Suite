@@ -1059,7 +1059,7 @@
         }
         
         // =============================================
-        // FUNCIONES DE SUPABASE
+        // FUNCIONES DE SUPABASE - CORREGIDAS
         // =============================================
         
         async function fetchFromSupabase(table, filters = {}) {
@@ -1148,7 +1148,7 @@
             try {
                 console.log('🔄 Cargando todos los datos...');
                 
-                // Cargar todas las tablas (nota: empresas usa BIGINT, usuarios usa UUID)
+                // Cargar todas las tablas
                 const [
                     empresasData,
                     usuariosData,
@@ -1547,7 +1547,7 @@
         }
         
         // =============================================
-        // MODAL SEGURO PARA NUEVA EMPRESA
+        // MODAL SEGURO PARA NUEVA EMPRESA - CORREGIDO
         // =============================================
         
         function showNuevaEmpresaModal() {
@@ -1583,32 +1583,12 @@
                         </div>
                         
                         <div class="form-group">
-                            <label>Ciudad</label>
-                            <input type="text" id="nuevaEmpresaCiudad" placeholder="Ciudad">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>País</label>
-                            <input type="text" id="nuevaEmpresaPais" placeholder="País" value="Bolivia">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Sitio Web</label>
-                            <input type="url" id="nuevaEmpresaWeb" placeholder="https://www.empresa.com">
-                        </div>
-                        
-                        <div class="form-group">
                             <label>Estado *</label>
                             <select id="nuevaEmpresaEstado" required>
                                 <option value="true" selected>Activa</option>
                                 <option value="false">Inactiva</option>
                             </select>
                         </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Descripción / Notas</label>
-                        <textarea id="nuevaEmpresaDescripcion" rows="3" placeholder="Información adicional sobre la empresa..."></textarea>
                     </div>
                     
                     <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
@@ -1632,10 +1612,6 @@
                 email: document.getElementById('nuevaEmpresaEmail').value.trim(),
                 telefono: document.getElementById('nuevaEmpresaTelefono').value.trim(),
                 direccion: document.getElementById('nuevaEmpresaDireccion').value.trim(),
-                ciudad: document.getElementById('nuevaEmpresaCiudad').value.trim(),
-                pais: document.getElementById('nuevaEmpresaPais').value.trim(),
-                sitio_web: document.getElementById('nuevaEmpresaWeb').value.trim(),
-                descripcion: document.getElementById('nuevaEmpresaDescripcion').value.trim(),
                 activa: document.getElementById('nuevaEmpresaEstado').value === 'true'
             };
             
@@ -1681,11 +1657,10 @@
         }
         
         // =============================================
-        // VISTA COMPLETA DE EMPRESA
+        // VISTA COMPLETA DE EMPRESA - CORREGIDA
         // =============================================
         
         function viewEmpresaCompleta(empresaId) {
-            // IMPORTANTE: empresas.id es BIGINT, no UUID
             const empresa = database.empresas.find(e => e.id === empresaId || e.id == empresaId);
             if (!empresa) {
                 showNotification('error', 'Error', 'Empresa no encontrada');
@@ -1721,9 +1696,6 @@
                                 <p><strong>Email:</strong> ${empresa.email || 'N/A'}</p>
                                 <p><strong>Teléfono:</strong> ${empresa.telefono || 'N/A'}</p>
                                 <p><strong>Dirección:</strong> ${empresa.direccion || 'N/A'}</p>
-                                <p><strong>Ciudad:</strong> ${empresa.ciudad || 'N/A'}</p>
-                                <p><strong>País:</strong> ${empresa.pais || 'N/A'}</p>
-                                <p><strong>Sitio Web:</strong> ${empresa.sitio_web ? `<a href="${empresa.sitio_web}" target="_blank">${empresa.sitio_web}</a>` : 'N/A'}</p>
                                 <p><strong>Estado:</strong> 
                                     <span class="status-badge ${empresa.activa ? 'status-active' : 'status-inactive'}">
                                         ${empresa.activa ? 'Activa' : 'Inactiva'}
@@ -1732,9 +1704,10 @@
                             </div>
                             
                             <div>
-                                <h4 style="color: var(--secondary); margin-bottom: 1rem;">Descripción</h4>
-                                <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; min-height: 150px;">
-                                    ${empresa.descripcion || '<p style="color: rgba(255,255,255,0.5);">Sin descripción</p>'}
+                                <h4 style="color: var(--secondary); margin-bottom: 1rem;">Registro</h4>
+                                <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
+                                    <p><strong>Registrada:</strong> ${formatDate(empresa.creado_en)}</p>
+                                    <p><strong>Actualizada:</strong> ${formatDate(empresa.actualizado_en)}</p>
                                 </div>
                             </div>
                         </div>
@@ -1904,7 +1877,7 @@
         }
         
         // =============================================
-        // EDICIÓN COMPLETA DE EMPRESA
+        // EDICIÓN COMPLETA DE EMPRESA - CORREGIDA
         // =============================================
         
         function editEmpresaCompleta(empresaId) {
@@ -1946,32 +1919,12 @@
                         </div>
                         
                         <div class="form-group">
-                            <label>Ciudad</label>
-                            <input type="text" id="editEmpresaCiudad" value="${empresa.ciudad || ''}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>País</label>
-                            <input type="text" id="editEmpresaPais" value="${empresa.pais || 'Bolivia'}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Sitio Web</label>
-                            <input type="url" id="editEmpresaWeb" value="${empresa.sitio_web || ''}">
-                        </div>
-                        
-                        <div class="form-group">
                             <label>Estado *</label>
                             <select id="editEmpresaEstado" required>
                                 <option value="true" ${empresa.activa ? 'selected' : ''}>Activa</option>
                                 <option value="false" ${!empresa.activa ? 'selected' : ''}>Inactiva</option>
                             </select>
                         </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Descripción / Notas</label>
-                        <textarea id="editEmpresaDescripcion" rows="3">${empresa.descripcion || ''}</textarea>
                     </div>
                     
                     <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
@@ -1996,10 +1949,6 @@
                 email: document.getElementById('editEmpresaEmail').value.trim(),
                 telefono: document.getElementById('editEmpresaTelefono').value.trim(),
                 direccion: document.getElementById('editEmpresaDireccion').value.trim(),
-                ciudad: document.getElementById('editEmpresaCiudad').value.trim(),
-                pais: document.getElementById('editEmpresaPais').value.trim(),
-                sitio_web: document.getElementById('editEmpresaWeb').value.trim(),
-                descripcion: document.getElementById('editEmpresaDescripcion').value.trim(),
                 activa: document.getElementById('editEmpresaEstado').value === 'true'
             };
             
@@ -2026,7 +1975,7 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showNotification('error', 'Error', 'Error de conexión');
+                showNotification('error', 'Error', 'Error de conexión: ' + error.message);
             } finally {
                 hideLoading();
             }
@@ -2162,6 +2111,18 @@
                 day: 'numeric',
                 month: 'short',
                 year: 'numeric'
+            });
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
             });
         }
         
