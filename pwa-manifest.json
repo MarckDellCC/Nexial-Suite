@@ -1,0 +1,10 @@
+{
+  "name": "Nexial Suite",
+  "short_name": "Nexial",
+  "description": "Panel de Control Corporativo Multiempresa",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070710",
+  "theme_color": "#7c3aed",
+  "icons": []
+}
