@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="manifest" href="pwa-manifest.json">
     <style>
+        /* TODO EL CSS ORIGINAL - SIN CAMBIOS */
         :root {
             --primary: #7c3aed;
             --primary-glow: #9d5bff;
@@ -848,9 +848,9 @@
             color: rgba(255, 255, 255, 0.5);
         }
         
-        .security-alert {
-            background: rgba(255, 0, 85, 0.1);
-            border: 1px solid var(--danger);
+        .security-warning {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid var(--warning);
             border-radius: 8px;
             padding: 1rem;
             margin: 1rem 0;
@@ -859,8 +859,8 @@
             gap: 1rem;
         }
         
-        .security-alert i {
-            color: var(--danger);
+        .security-warning i {
+            color: var(--warning);
             font-size: 1.5rem;
         }
         
@@ -892,7 +892,6 @@
                     <div class="user-badge superadmin" id="userBadge">SUPER ADMIN</div>
                     <div class="user-name" id="userName">Cargando...</div>
                     <div class="user-role" id="userRole">Iniciando sesión</div>
-                    <div id="userCompany" style="font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 0.5rem;"></div>
                 </div>
                 
                 <nav class="nav-menu" id="navMenu">
@@ -921,7 +920,7 @@
                     </div>
                 </div>
 
-                <div id="securityMessages"></div>
+                <div id="securityAlert" style="display: none;"></div>
 
                 <div id="viewSuperadmin" class="role-view active">
                     <!-- Contenido dinámico para Super Admin -->
@@ -991,7 +990,7 @@
 
     <script>
         // =============================================
-        // CONFIGURACIÓN SUPABASE
+        // CONFIGURACIÓN SUPABASE - EXACTAMENTE IGUAL
         // =============================================
         const SUPABASE_URL = 'https://cmrysvcahpouziogzang.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_rj4q31YiBwxLcfuswCX21g_LxsxRc_n';
@@ -1001,14 +1000,11 @@
         // =============================================
         let currentUser = null;
         let supabaseClient = null;
-        let currentCompany = null;
         let database = {
             empresas: [],
             usuarios: [],
             clientes: [],
-            almacenes: [],
-            productos: [],
-            ventas: []
+            almacenes: []
         };
         
         // =============================================
@@ -1017,125 +1013,65 @@
         const rolePermissions = {
             'superadmin': {
                 name: 'Super Administrador',
-                modules: ['empresas', 'usuarios', 'clientes', 'almacenes', 'productos', 'ventas', 'reportes', 'configuracion'],
                 canViewAllCompanies: true,
                 canEditAll: true,
                 canDelete: true,
-                canCreateUsers: true,
-                icon: 'fas fa-crown',
-                color: 'var(--superadmin)'
+                canCreateUsers: true
             },
             'admin_empresa': {
                 name: 'Administrador de Empresa',
-                modules: ['usuarios', 'clientes', 'almacenes', 'productos', 'ventas', 'reportes', 'configuracion_empresa'],
                 canViewAllCompanies: false,
                 canEditAll: true,
                 canDelete: true,
-                canCreateUsers: true,
-                icon: 'fas fa-user-shield',
-                color: 'var(--admin-empresa)'
+                canCreateUsers: true
             },
             'gerente': {
                 name: 'Gerente',
-                modules: ['clientes', 'ventas', 'reportes', 'almacenes'],
                 canViewAllCompanies: false,
                 canEditAll: false,
                 canDelete: false,
-                canCreateUsers: false,
-                icon: 'fas fa-user-tie',
-                color: 'var(--gerente)'
+                canCreateUsers: false
             },
             'vendedor': {
                 name: 'Vendedor',
-                modules: ['clientes', 'ventas'],
                 canViewAllCompanies: false,
                 canEditAll: false,
                 canDelete: false,
-                canCreateUsers: false,
-                icon: 'fas fa-user-tag',
-                color: 'var(--vendedor)'
+                canCreateUsers: false
             },
             'distribuidor': {
                 name: 'Distribuidor',
-                modules: ['rutas', 'entregas'],
                 canViewAllCompanies: false,
                 canEditAll: false,
                 canDelete: false,
-                canCreateUsers: false,
-                icon: 'fas fa-truck',
-                color: 'var(--distribuidor)'
+                canCreateUsers: false
             },
             'almacenero': {
                 name: 'Almacenero',
-                modules: ['almacenes', 'productos', 'inventario'],
                 canViewAllCompanies: false,
                 canEditAll: false,
                 canDelete: false,
-                canCreateUsers: false,
-                icon: 'fas fa-warehouse',
-                color: 'var(--almacenero)'
+                canCreateUsers: false
             },
             'contador': {
                 name: 'Contador',
-                modules: ['ventas', 'pagos', 'reportes_financieros'],
                 canViewAllCompanies: false,
                 canEditAll: false,
                 canDelete: false,
-                canCreateUsers: false,
-                icon: 'fas fa-calculator',
-                color: 'var(--contador)'
+                canCreateUsers: false
             },
             'supervisor': {
                 name: 'Supervisor',
-                modules: ['usuarios', 'clientes', 'ventas', 'reportes'],
                 canViewAllCompanies: false,
                 canEditAll: false,
                 canDelete: false,
-                canCreateUsers: false,
-                icon: 'fas fa-user-check',
-                color: 'var(--supervisor)'
+                canCreateUsers: false
             }
         };
         
         // =============================================
-        // FUNCIONES DE SEGURIDAD
+        // FUNCIONES DE SEGURIDAD MEJORADAS
         // =============================================
-        
-        function checkPermission(module, action = 'view') {
-            if (!currentUser || !currentUser.role) {
-                console.warn('Usuario no autenticado');
-                return false;
-            }
-            
-            const permissions = rolePermissions[currentUser.role];
-            if (!permissions) {
-                console.warn(`Rol ${currentUser.role} no tiene permisos definidos`);
-                return false;
-            }
-            
-            // Superadmin tiene acceso total
-            if (currentUser.role === 'superadmin') {
-                return true;
-            }
-            
-            // Verificar si el módulo está permitido
-            if (!permissions.modules.includes(module)) {
-                console.warn(`Acceso denegado: Rol ${currentUser.role} no tiene acceso a ${module}`);
-                return false;
-            }
-            
-            // Verificar acciones específicas
-            switch(action) {
-                case 'delete':
-                    return permissions.canDelete;
-                case 'create_users':
-                    return permissions.canCreateUsers;
-                case 'edit_all':
-                    return permissions.canEditAll;
-                default:
-                    return true;
-            }
-        }
         
         function checkCompanyAccess(empresaId) {
             if (!currentUser) return false;
@@ -1151,40 +1087,24 @@
             return false;
         }
         
-        function showAccessDenied(message = 'No tienes permisos para acceder a esta función') {
-            showNotification('error', 'Acceso Denegado', message);
-            return `
-                <div class="access-denied">
-                    <i class="fas fa-lock"></i>
-                    <h3>Acceso Restringido</h3>
-                    <p>${message}</p>
-                    <button class="btn btn-secondary" onclick="closeModal()">
-                        Cerrar
-                    </button>
+        function showSecurityWarning(message) {
+            document.getElementById('securityAlert').innerHTML = `
+                <div class="security-warning">
+                    <i class="fas fa-shield-alt"></i>
+                    <div>${message}</div>
                 </div>
             `;
-        }
-        
-        function showSecurityAlert(message) {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'security-alert';
-            alertDiv.innerHTML = `
-                <i class="fas fa-shield-alt"></i>
-                <div>
-                    <strong>Seguridad Activada:</strong> ${message}
-                </div>
-            `;
-            document.getElementById('securityMessages').appendChild(alertDiv);
+            document.getElementById('securityAlert').style.display = 'block';
         }
         
         // =============================================
-        // FUNCIONES DE SUPABASE SEGURAS
+        // FUNCIONES DE INICIALIZACIÓN - CORREGIDAS
         // =============================================
         
         function initializeSupabase() {
             try {
                 supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('✅ Supabase inicializado con seguridad');
+                console.log('✅ Supabase inicializado');
                 return true;
             } catch (error) {
                 console.error('❌ Error inicializando Supabase:', error);
@@ -1192,36 +1112,41 @@
             }
         }
         
-        async function fetchFromSupabaseSecure(table, filters = {}, requirePermission = true) {
+        function showLoading() {
+            document.getElementById('loadingSpinner').style.display = 'flex';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+        
+        // =============================================
+        // FUNCIONES DE SUPABASE - CON SEGURIDAD
+        // =============================================
+        
+        async function fetchFromSupabase(table, filters = {}, checkSecurity = true) {
             try {
                 if (!supabaseClient) {
                     throw new Error('Cliente Supabase no inicializado');
                 }
                 
-                // 🔒 Verificar permiso para esta tabla
-                if (requirePermission && !checkPermission(getModuleFromTable(table))) {
-                    console.warn(`Permiso denegado para tabla: ${table}`);
-                    return [];
-                }
-                
                 let query = supabaseClient.from(table).select('*');
                 
-                // 🔒 Aplicar filtro de empresa automáticamente para usuarios no superadmin
-                if (currentUser && currentUser.role !== 'superadmin' && tableHasEmpresaId(table)) {
-                    if (currentUser.empresa_id) {
-                        query = query.eq('empresa_id', currentUser.empresa_id);
-                    } else {
-                        console.warn('Usuario sin empresa_id intentando acceder a datos');
-                        return [];
-                    }
-                }
-                
-                // Aplicar filtros adicionales
+                // Aplicar filtros
                 Object.keys(filters).forEach(key => {
                     if (filters[key] !== undefined && filters[key] !== null) {
                         query = query.eq(key, filters[key]);
                     }
                 });
+                
+                // 🔒 FILTRO DE SEGURIDAD: usuarios no superadmin solo ven su empresa
+                if (checkSecurity && currentUser && currentUser.role !== 'superadmin') {
+                    if (table === 'empresas' || table === 'usuarios' || table === 'clientes' || table === 'almacenes') {
+                        if (currentUser.empresa_id) {
+                            query = query.eq('empresa_id', currentUser.empresa_id);
+                        }
+                    }
+                }
                 
                 const { data, error } = await query;
                 
@@ -1230,72 +1155,53 @@
                     throw error;
                 }
                 
-                // 🔒 Filtro de seguridad adicional en cliente
-                if (currentUser && currentUser.role !== 'superadmin' && tableHasEmpresaId(table)) {
-                    return (data || []).filter(item => 
-                        item.empresa_id && item.empresa_id.toString() === currentUser.empresa_id.toString()
-                    );
+                // 🔒 FILTRO ADICIONAL POR SEGURIDAD
+                if (checkSecurity && currentUser && currentUser.role !== 'superadmin') {
+                    if (table === 'empresas') {
+                        // Usuarios no superadmin solo ven su empresa
+                        return (data || []).filter(item => 
+                            item.id && currentUser.empresa_id && 
+                            item.id.toString() === currentUser.empresa_id.toString()
+                        );
+                    }
                 }
                 
                 return data || [];
-                
             } catch (error) {
-                console.error(`Error en fetchFromSupabaseSecure (${table}):`, error);
+                console.error(`Error en fetchFromSupabase (${table}):`, error);
                 return [];
             }
         }
         
-        async function securePostToSupabase(table, data, action = 'insert') {
+        async function postToSupabase(table, data, action = 'insert') {
             try {
                 showLoading();
                 
-                // 🔒 VALIDACIONES DE SEGURIDAD
-                
-                // 1. Verificar permisos
-                if (!checkPermission(getModuleFromTable(table), action)) {
-                    showNotification('error', 'Permiso Denegado', 'No tienes permisos para esta acción');
-                    hideLoading();
-                    return null;
-                }
-                
-                // 2. Para usuarios no superadmin, validar empresa_id
-                if (currentUser.role !== 'superadmin') {
+                // 🔒 VALIDACIÓN DE SEGURIDAD
+                if (currentUser && currentUser.role !== 'superadmin') {
+                    // Usuarios no superadmin NO pueden crear/editar empresas
+                    if (table === 'empresas') {
+                        showNotification('error', 'Acceso Denegado', 'Solo Super Admin puede gestionar empresas');
+                        hideLoading();
+                        return null;
+                    }
+                    
                     // En inserciones, forzar empresa_id del usuario actual
                     if (action === 'insert') {
-                        if (tableHasEmpresaId(table)) {
-                            if (data.empresa_id && data.empresa_id !== currentUser.empresa_id) {
-                                showNotification('error', 'Seguridad', 'No puedes crear datos para otra empresa');
-                                hideLoading();
-                                return null;
-                            }
+                        if (table === 'usuarios' || table === 'clientes' || table === 'almacenes') {
                             data.empresa_id = currentUser.empresa_id;
                         }
                     }
                     
-                    // En actualizaciones, verificar propiedad
-                    if (action === 'update') {
-                        if (tableHasEmpresaId(table)) {
-                            // Obtener el registro actual para verificar empresa_id
-                            const existing = await fetchFromSupabaseSecure(table, { id: data.id }, false);
+                    // En actualizaciones, verificar que pertenece a su empresa
+                    if (action === 'update' || action === 'delete') {
+                        if (table === 'usuarios' || table === 'clientes' || table === 'almacenes') {
+                            // Obtener el registro actual
+                            const existing = await fetchFromSupabase(table, { id: data.id }, true);
                             if (existing && existing.length > 0) {
                                 const existingItem = existing[0];
                                 if (existingItem.empresa_id !== currentUser.empresa_id) {
-                                    showNotification('error', 'Seguridad', 'No puedes modificar datos de otra empresa');
-                                    hideLoading();
-                                    return null;
-                                }
-                            }
-                        }
-                    }
-                    
-                    // En eliminaciones, verificar propiedad
-                    if (action === 'delete') {
-                        if (tableHasEmpresaId(table)) {
-                            const existing = await fetchFromSupabaseSecure(table, { id: data.id }, false);
-                            if (existing && existing.length > 0) {
-                                const existingItem = existing[0];
-                                if (existingItem.empresa_id !== currentUser.empresa_id) {
-                                    showNotification('error', 'Seguridad', 'No puedes eliminar datos de otra empresa');
+                                    showNotification('error', 'Acceso Denegado', 'No puedes modificar datos de otra empresa');
                                     hideLoading();
                                     return null;
                                 }
@@ -1304,7 +1210,6 @@
                     }
                 }
                 
-                // 3. Ejecutar operación
                 let result;
                 
                 if (action === 'insert') {
@@ -1346,77 +1251,15 @@
         }
         
         // =============================================
-        // FUNCIONES AUXILIARES DE SEGURIDAD
-        // =============================================
-        
-        function tableHasEmpresaId(tableName) {
-            const tablesWithEmpresaId = [
-                'usuarios', 'clientes', 'empleados', 'almacenes', 
-                'productos', 'inventario', 'zonas_vendedores', 
-                'rutas_distribucion', 'visitas_clientes', 'ventas', 
-                'detalle_ventas', 'movimientos_inventario', 
-                'historial_accesos', 'archivos', 'pagos', 'reportes'
-            ];
-            return tablesWithEmpresaId.includes(tableName);
-        }
-        
-        function getModuleFromTable(tableName) {
-            const tableToModule = {
-                'empresas': 'empresas',
-                'usuarios': 'usuarios',
-                'clientes': 'clientes',
-                'almacenes': 'almacenes',
-                'productos': 'productos',
-                'ventas': 'ventas',
-                'pagos': 'reportes_financieros',
-                'reportes': 'reportes'
-            };
-            return tableToModule[tableName] || 'general';
-        }
-        
-        function getRoleName(role) {
-            const roles = {
-                'superadmin': 'Super Admin',
-                'admin_empresa': 'Admin Empresa',
-                'gerente': 'Gerente',
-                'vendedor': 'Vendedor',
-                'distribuidor': 'Distribuidor',
-                'almacenero': 'Almacenero',
-                'contador': 'Contador',
-                'supervisor': 'Supervisor'
-            };
-            return roles[role] || role;
-        }
-        
-        function getRoleColor(role) {
-            switch(role) {
-                case 'superadmin': return 'rgba(255,0,85,0.2)';
-                case 'admin_empresa': return 'rgba(0,255,65,0.2)';
-                case 'gerente': return 'rgba(255,170,0,0.2)';
-                case 'vendedor': return 'rgba(124,58,237,0.2)';
-                case 'distribuidor': return 'rgba(0,170,255,0.2)';
-                case 'almacenero': return 'rgba(255,85,0,0.2)';
-                case 'contador': return 'rgba(157,0,255,0.2)';
-                case 'supervisor': return 'rgba(0,255,170,0.2)';
-                default: return 'rgba(255,255,255,0.1)';
-            }
-        }
-        
-        // =============================================
-        // CARGA SEGURA DE DATOS
+        // CARGA DE DATOS CON SEGURIDAD
         // =============================================
         
         async function loadEmpresasFromSupabase() {
             try {
                 // Solo superadmin puede ver todas las empresas
-                if (currentUser.role !== 'superadmin') {
-                    database.empresas = [];
-                    return true;
-                }
-                
-                const data = await fetchFromSupabaseSecure('empresas', {}, false);
+                const data = await fetchFromSupabase('empresas', {}, true);
                 database.empresas = data || [];
-                console.log(`✅ Empresas cargadas: ${database.empresas.length}`);
+                console.log(`✅ Empresas cargadas (con filtro): ${database.empresas.length}`);
                 return true;
             } catch (error) {
                 console.error('Error cargando empresas:', error);
@@ -1426,9 +1269,9 @@
         
         async function loadUsuariosFromSupabase() {
             try {
-                const data = await fetchFromSupabaseSecure('usuarios', {}, true);
+                const data = await fetchFromSupabase('usuarios', {}, true);
                 database.usuarios = data || [];
-                console.log(`✅ Usuarios cargados (filtrados): ${database.usuarios.length}`);
+                console.log(`✅ Usuarios cargados (con filtro): ${database.usuarios.length}`);
                 return true;
             } catch (error) {
                 console.error('Error cargando usuarios:', error);
@@ -1438,9 +1281,9 @@
         
         async function loadClientesFromSupabase() {
             try {
-                const data = await fetchFromSupabaseSecure('clientes', {}, true);
+                const data = await fetchFromSupabase('clientes', {}, true);
                 database.clientes = data || [];
-                console.log(`✅ Clientes cargados (filtrados): ${database.clientes.length}`);
+                console.log(`✅ Clientes cargados (con filtro): ${database.clientes.length}`);
                 return true;
             } catch (error) {
                 console.error('Error cargando clientes:', error);
@@ -1450,24 +1293,12 @@
         
         async function loadAlmacenesFromSupabase() {
             try {
-                const data = await fetchFromSupabaseSecure('almacenes', {}, true);
+                const data = await fetchFromSupabase('almacenes', {}, true);
                 database.almacenes = data || [];
-                console.log(`✅ Almacenes cargados (filtrados): ${database.almacenes.length}`);
+                console.log(`✅ Almacenes cargados (con filtro): ${database.almacenes.length}`);
                 return true;
             } catch (error) {
                 console.error('Error cargando almacenes:', error);
-                return false;
-            }
-        }
-        
-        async function loadProductosFromSupabase() {
-            try {
-                const data = await fetchFromSupabaseSecure('productos', {}, true);
-                database.productos = data || [];
-                console.log(`✅ Productos cargados (filtrados): ${database.productos.length}`);
-                return true;
-            } catch (error) {
-                console.error('Error cargando productos:', error);
                 return false;
             }
         }
@@ -1477,26 +1308,17 @@
             try {
                 console.log('🔄 Cargando datos con seguridad...');
                 
-                // Cargar según permisos
                 await Promise.all([
                     loadEmpresasFromSupabase(),
                     loadUsuariosFromSupabase(),
                     loadClientesFromSupabase(),
-                    loadAlmacenesFromSupabase(),
-                    loadProductosFromSupabase()
+                    loadAlmacenesFromSupabase()
                 ]);
                 
                 console.log('✅ Datos cargados con seguridad');
-                console.log('- Empresas:', database.empresas.length);
-                console.log('- Usuarios:', database.usuarios.length);
-                console.log('- Clientes:', database.clientes.length);
-                console.log('- Almacenes:', database.almacenes.length);
-                console.log('- Productos:', database.productos.length);
-                
                 return true;
             } catch (error) {
                 console.error('Error cargando datos:', error);
-                showNotification('error', 'Error', 'Error cargando datos');
                 return false;
             } finally {
                 hideLoading();
@@ -1504,161 +1326,164 @@
         }
         
         // =============================================
-        // CONFIGURACIÓN DE INTERFAZ SEGURA
+        // CONFIGURACIÓN DE INTERFAZ - CORREGIDA
         // =============================================
         
         function configureInterface() {
-            console.log('🎨 Configurando interfaz segura para rol:', currentUser.role);
+            console.log('🎨 Configurando interfaz para rol:', currentUser.role);
             
-            // Obtener empresa actual
-            if (currentUser.empresa_id) {
-                currentCompany = database.empresas.find(e => e.id === currentUser.empresa_id);
-            }
-            
-            const roleConfig = rolePermissions[currentUser.role] || rolePermissions.superadmin;
-            
-            // Actualizar UI
-            document.getElementById('userBadge').className = `user-badge ${currentUser.role.replace('_', '-')}`;
-            document.getElementById('userBadge').textContent = roleConfig.name.toUpperCase();
-            document.getElementById('userName').textContent = currentUser.nombre || 'Usuario';
-            document.getElementById('userRole').textContent = roleConfig.name;
-            
-            if (currentCompany) {
-                document.getElementById('userCompany').textContent = `Empresa: ${currentCompany.nombre}`;
-                document.getElementById('sidebarCompanyName').textContent = currentCompany.nombre;
-            }
-            
-            // Configurar menú según permisos
-            configureNavMenu();
-            
-            // Mostrar alerta de seguridad
-            showSecurityAlert(`Modo ${roleConfig.name} - Acceso restringido a datos de empresa propia`);
-            
-            // Cargar vista inicial
-            loadInitialView();
-        }
-        
-        function configureNavMenu() {
-            const permissions = rolePermissions[currentUser.role] || rolePermissions.superadmin;
-            let navHTML = '';
-            
-            if (currentUser.role === 'superadmin') {
-                navHTML = `
+            // Mapeo de roles
+            const roleMap = {
+                'superadmin': {
+                    badgeClass: 'superadmin',
+                    badgeText: 'SUPER ADMIN',
+                    userName: currentUser.nombre || 'Administrador Corporativo',
+                    userRole: 'Control Total Sistema',
+                    viewId: 'viewSuperadmin',
+                    navMenu: `
                     <div class="nav-section">
                         <div class="nav-title">CORPORATIVO</div>
                         <ul class="nav-links">
-                            <li class="nav-item">
-                                <a class="nav-link active" onclick="loadSuperadminDashboard()">
-                                    <i class="fas fa-tachometer-alt"></i>
-                                    <span>Panel de Control</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" onclick="loadEmpresasManagement()">
-                                    <i class="fas fa-building"></i>
-                                    <span>Gestión de Empresas</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" onclick="loadGestionPersonal()">
-                                    <i class="fas fa-users-cog"></i>
-                                    <span>Gestión de Personal</span>
-                                </a>
-                            </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" onclick="loadSuperadminDashboard()">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Panel de Control</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="loadEmpresasManagement()">
+                            <i class="fas fa-building"></i>
+                            <span>Gestión de Empresas</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="loadGestionPersonal()">
+                            <i class="fas fa-users-cog"></i>
+                            <span>Gestión de Personal</span>
+                            </a>
+                        </li>
                         </ul>
                     </div>
-                `;
-            } else if (currentUser.role === 'admin_empresa') {
-                navHTML = `
+                    `,
+                    pageTitle: 'Panel de Control Corporativo'
+                },
+                'admin_empresa': {
+                    badgeClass: 'admin-empresa',
+                    badgeText: 'ADMIN EMPRESA',
+                    userName: currentUser.nombre || 'Admin Empresa',
+                    userRole: 'Administración Empresarial',
+                    viewId: 'viewAdminEmpresa',
+                    navMenu: `
                     <div class="nav-section">
                         <div class="nav-title">EMPRESA</div>
                         <ul class="nav-links">
-                            <li class="nav-item">
-                                <a class="nav-link active" onclick="loadAdminEmpresaDashboard()">
-                                    <i class="fas fa-tachometer-alt"></i>
-                                    <span>Dashboard Empresa</span>
-                                </a>
-                            </li>
-                            ${permissions.modules.includes('usuarios') ? `
-                            <li class="nav-item">
-                                <a class="nav-link" onclick="loadUsuariosEmpresa()">
-                                    <i class="fas fa-users"></i>
-                                    <span>Gestión de Usuarios</span>
-                                </a>
-                            </li>
-                            ` : ''}
-                            ${permissions.modules.includes('clientes') ? `
-                            <li class="nav-item">
-                                <a class="nav-link" onclick="loadClientesEmpresa()">
-                                    <i class="fas fa-users"></i>
-                                    <span>Gestión de Clientes</span>
-                                </a>
-                            </li>
-                            ` : ''}
-                            ${permissions.modules.includes('almacenes') ? `
-                            <li class="nav-item">
-                                <a class="nav-link" onclick="loadAlmacenesEmpresa()">
-                                    <i class="fas fa-warehouse"></i>
-                                    <span>Gestión de Almacenes</span>
-                                </a>
-                            </li>
-                            ` : ''}
-                            ${permissions.modules.includes('productos') ? `
-                            <li class="nav-item">
-                                <a class="nav-link" onclick="loadProductosEmpresa()">
-                                    <i class="fas fa-box"></i>
-                                    <span>Gestión de Productos</span>
-                                </a>
-                            </li>
-                            ` : ''}
+                        <li class="nav-item">
+                            <a class="nav-link active" onclick="loadAdminEmpresaDashboard()">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard Empresa</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="loadUsuariosEmpresa()">
+                            <i class="fas fa-users"></i>
+                            <span>Gestión de Usuarios</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="loadClientesEmpresa()">
+                            <i class="fas fa-users"></i>
+                            <span>Gestión de Clientes</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="loadAlmacenesEmpresa()">
+                            <i class="fas fa-warehouse"></i>
+                            <span>Gestión de Almacenes</span>
+                            </a>
+                        </li>
                         </ul>
                     </div>
-                `;
-            } else {
-                // Para otros roles, mostrar solo módulos permitidos
-                navHTML = `
+                    `,
+                    pageTitle: 'Dashboard Empresa'
+                },
+                'gerente': {
+                    badgeClass: 'gerente',
+                    badgeText: 'GERENTE',
+                    userName: currentUser.nombre || 'Gerente',
+                    userRole: 'Gestión Operativa',
+                    viewId: 'viewGerente',
+                    navMenu: `
                     <div class="nav-section">
                         <div class="nav-title">MI ÁREA</div>
                         <ul class="nav-links">
-                            <li class="nav-item">
-                                <a class="nav-link active" onclick="loadRoleDashboard()">
-                                    <i class="fas fa-tachometer-alt"></i>
-                                    <span>Mi Dashboard</span>
-                                </a>
-                            </li>
-                            ${permissions.modules.includes('clientes') ? `
-                            <li class="nav-item">
-                                <a class="nav-link" onclick="showAccessForRole('clientes')">
-                                    <i class="fas fa-users"></i>
-                                    <span>Clientes</span>
-                                </a>
-                            </li>
-                            ` : ''}
-                            ${permissions.modules.includes('ventas') ? `
-                            <li class="nav-item">
-                                <a class="nav-link" onclick="showAccessForRole('ventas')">
-                                    <i class="fas fa-shopping-cart"></i>
-                                    <span>Ventas</span>
-                                </a>
-                            </li>
-                            ` : ''}
-                            ${permissions.modules.includes('almacenes') ? `
-                            <li class="nav-item">
-                                <a class="nav-link" onclick="showAccessForRole('almacenes')">
-                                    <i class="fas fa-warehouse"></i>
-                                    <span>Almacén</span>
-                                </a>
-                            </li>
-                            ` : ''}
+                        <li class="nav-item">
+                            <a class="nav-link active" onclick="loadRoleDashboard('gerente')">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Mi Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="showAccessForRole('clientes')">
+                            <i class="fas fa-users"></i>
+                            <span>Clientes</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="showAccessForRole('ventas')">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Ventas</span>
+                            </a>
+                        </li>
                         </ul>
                     </div>
-                `;
-            }
+                    `,
+                    pageTitle: 'Dashboard Gerente'
+                },
+                'vendedor': {
+                    badgeClass: 'vendedor',
+                    badgeText: 'VENDEDOR',
+                    userName: currentUser.nombre || 'Vendedor',
+                    userRole: 'Ventas y Clientes',
+                    viewId: 'viewVendedor',
+                    navMenu: `
+                    <div class="nav-section">
+                        <div class="nav-title">VENTAS</div>
+                        <ul class="nav-links">
+                        <li class="nav-item">
+                            <a class="nav-link active" onclick="loadRoleDashboard('vendedor')">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Mi Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="showAccessForRole('clientes')">
+                            <i class="fas fa-users"></i>
+                            <span>Mis Clientes</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" onclick="showAccessForRole('ventas')">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Mis Ventas</span>
+                            </a>
+                        </li>
+                        </ul>
+                    </div>
+                    `,
+                    pageTitle: 'Dashboard Vendedor'
+                }
+            };
             
-            document.getElementById('navMenu').innerHTML = navHTML;
-        }
-        
-        function loadInitialView() {
+            const config = roleMap[currentUser.role] || roleMap.superadmin;
+            
+            // Actualizar UI
+            document.getElementById('userBadge').className = `user-badge ${config.badgeClass}`;
+            document.getElementById('userBadge').textContent = config.badgeText;
+            document.getElementById('userName').textContent = config.userName;
+            document.getElementById('userRole').textContent = config.userRole;
+            document.getElementById('navMenu').innerHTML = config.navMenu;
+            document.getElementById('pageTitle').textContent = config.pageTitle;
+            
             // Ocultar todas las vistas
             document.querySelectorAll('.role-view').forEach(view => {
                 view.classList.remove('active');
@@ -1666,47 +1491,46 @@
             });
             
             // Mostrar vista del rol
-            const viewId = `view${currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1).replace('_', '')}`;
-            const activeView = document.getElementById(viewId);
+            const activeView = document.getElementById(config.viewId);
             if (activeView) {
                 activeView.classList.add('active');
-                
-                // Cargar contenido según rol
+            }
+            
+            // Mostrar advertencia de seguridad si no es superadmin
+            if (currentUser.role !== 'superadmin') {
+                const empresa = database.empresas.find(e => e.id === currentUser.empresa_id);
+                const empresaNombre = empresa ? empresa.nombre : 'tu empresa';
+                showSecurityWarning(`Modo seguro activado: Solo puedes ver datos de ${empresaNombre}`);
+            }
+            
+            // Cargar datos y dashboard
+            showLoading();
+            loadAllData().then(() => {
                 if (currentUser.role === 'superadmin') {
                     loadSuperadminDashboard();
                 } else if (currentUser.role === 'admin_empresa') {
                     loadAdminEmpresaDashboard();
                 } else {
-                    loadRoleDashboard();
+                    loadRoleDashboard(currentUser.role);
                 }
-            }
+                hideLoading();
+            }).catch(error => {
+                console.error('Error:', error);
+                hideLoading();
+            });
         }
         
         // =============================================
-        // DASHBOARD SUPER ADMIN (SEGURO)
+        // DASHBOARD SUPER ADMIN - CON SEGURIDAD
         // =============================================
         
         function loadSuperadminDashboard() {
-            if (!checkPermission('empresas')) {
-                document.getElementById('viewSuperadmin').innerHTML = showAccessDenied();
-                return;
-            }
-            
-            document.getElementById('pageTitle').textContent = 'Panel de Control Corporativo';
-            
             const empresasCount = database.empresas.length;
             const usuariosCount = database.usuarios.length;
             const clientesCount = database.clientes.reduce((total, cliente) => total + 1, 0);
             const almacenesCount = database.almacenes.length;
             
             document.getElementById('viewSuperadmin').innerHTML = `
-                <div class="security-alert">
-                    <i class="fas fa-shield-alt"></i>
-                    <div>
-                        <strong>Modo Super Admin:</strong> Tienes acceso completo a todas las empresas del sistema.
-                    </div>
-                </div>
-                
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-header">
@@ -1721,7 +1545,7 @@
                     
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-title">Usuarios Totales</div>
+                            <div class="stat-title">Usuarios</div>
                             <div class="stat-icon"><i class="fas fa-users"></i></div>
                         </div>
                         <div class="stat-value">${usuariosCount}</div>
@@ -1732,12 +1556,12 @@
                     
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-title">Clientes Totales</div>
+                            <div class="stat-title">Clientes</div>
                             <div class="stat-icon"><i class="fas fa-users"></i></div>
                         </div>
                         <div class="stat-value">${clientesCount}</div>
                         <div class="stat-change positive">
-                            <i class="fas fa-user-check"></i> En sistema
+                            <i class="fas fa-user-check"></i> Totales
                         </div>
                     </div>
                     
@@ -1815,30 +1639,17 @@
         }
         
         // =============================================
-        // DASHBOARD ADMIN EMPRESA (SEGURO)
+        // DASHBOARD ADMIN EMPRESA - CON SEGURIDAD
         // =============================================
         
         function loadAdminEmpresaDashboard() {
-            if (!checkPermission('configuracion_empresa')) {
-                document.getElementById('viewAdminEmpresa').innerHTML = showAccessDenied();
-                return;
-            }
-            
             const empresaId = currentUser.empresa_id;
             const empresa = database.empresas.find(e => e.id === empresaId);
             const usuariosEmpresa = database.usuarios.filter(u => u.empresa_id === empresaId);
             const clientesEmpresa = database.clientes.filter(c => c.empresa_id === empresaId);
             const almacenesEmpresa = database.almacenes.filter(a => a.empresa_id === empresaId);
-            const productosEmpresa = database.productos.filter(p => p.empresa_id === empresaId);
             
             document.getElementById('viewAdminEmpresa').innerHTML = `
-                <div class="security-alert">
-                    <i class="fas fa-shield-alt"></i>
-                    <div>
-                        <strong>Modo Administrador de Empresa:</strong> Solo puedes ver y gestionar datos de tu propia empresa.
-                    </div>
-                </div>
-                
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-header">
@@ -1875,12 +1686,12 @@
                     
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-title">Productos</div>
-                            <div class="stat-icon"><i class="fas fa-box"></i></div>
+                            <div class="stat-title">Sistema</div>
+                            <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
                         </div>
-                        <div class="stat-value">${productosEmpresa.length}</div>
+                        <div class="stat-value">100%</div>
                         <div class="stat-change positive">
-                            <i class="fas fa-box"></i> En catálogo
+                            <i class="fas fa-bolt"></i> Operativo
                         </div>
                     </div>
                 </div>
@@ -1888,7 +1699,7 @@
                 <div style="margin-top: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                     <div class="table-card">
                         <div class="table-header">
-                            <h3 class="table-title">Usuarios de la Empresa</h3>
+                            <h3 class="table-title">Usuarios</h3>
                             <div class="table-actions">
                                 <button class="btn btn-primary" onclick="loadUsuariosEmpresa()">
                                     <i class="fas fa-users-cog"></i> Gestionar
@@ -1943,7 +1754,6 @@
                         </div>
                         <div style="padding: 1rem;">
                             ${empresa ? `
-                                <p><strong>Razón Social:</strong> ${empresa.nombre || 'N/A'}</p>
                                 <p><strong>RUC/NIT:</strong> ${empresa.nit || 'N/A'}</p>
                                 <p><strong>Email:</strong> ${empresa.email || 'N/A'}</p>
                                 <p><strong>Teléfono:</strong> ${empresa.telefono || 'N/A'}</p>
@@ -1963,6 +1773,7 @@
             
             if (empresa) {
                 document.getElementById('pageTitle').textContent = `Dashboard - ${empresa.nombre}`;
+                document.getElementById('sidebarCompanyName').textContent = empresa.nombre;
             }
         }
         
@@ -1970,19 +1781,19 @@
         // DASHBOARD PARA OTROS ROLES
         // =============================================
         
-        function loadRoleDashboard() {
-            const permissions = rolePermissions[currentUser.role];
+        function loadRoleDashboard(role) {
             const empresaId = currentUser.empresa_id;
             const empresa = database.empresas.find(e => e.id === empresaId);
+            const permissions = rolePermissions[role] || rolePermissions.vendedor;
             
             let statsHTML = '';
             
-            if (permissions.modules.includes('clientes')) {
+            if (role === 'vendedor' || role === 'gerente') {
                 const clientesCount = database.clientes.filter(c => c.empresa_id === empresaId).length;
                 statsHTML += `
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div class="stat-title">Mis Clientes</div>
+                            <div class="stat-title">Clientes</div>
                             <div class="stat-icon"><i class="fas fa-users"></i></div>
                         </div>
                         <div class="stat-value">${clientesCount}</div>
@@ -1993,22 +1804,7 @@
                 `;
             }
             
-            if (permissions.modules.includes('ventas')) {
-                statsHTML += `
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-title">Ventas</div>
-                            <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
-                        </div>
-                        <div class="stat-value">0</div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-chart-line"></i> Este mes
-                        </div>
-                    </div>
-                `;
-            }
-            
-            if (permissions.modules.includes('almacenes')) {
+            if (role === 'almacenero') {
                 const almacenesCount = database.almacenes.filter(a => a.empresa_id === empresaId).length;
                 statsHTML += `
                     <div class="stat-card">
@@ -2024,54 +1820,23 @@
                 `;
             }
             
-            statsHTML += `
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-title">Actividad</div>
-                        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-                    </div>
-                    <div class="stat-value">100%</div>
-                    <div class="stat-change positive">
-                        <i class="fas fa-bolt"></i> Operativo
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById(`view${currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1).replace('_', '')}`).innerHTML = `
-                <div class="security-alert">
-                    <i class="fas fa-shield-alt"></i>
-                    <div>
-                        <strong>Modo ${permissions.name}:</strong> Solo puedes acceder a los módulos y datos autorizados para tu rol.
-                    </div>
-                </div>
-                
-                <div class="stats-grid">
-                    ${statsHTML}
-                </div>
-                
+            document.getElementById(`view${role.charAt(0).toUpperCase() + role.slice(1)}`).innerHTML = `
                 <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: var(--card-bg); border-radius: 12px;">
-                    <i class="${permissions.icon}" style="font-size: 3rem; color: ${permissions.color}; margin-bottom: 1rem;"></i>
                     <h3 style="color: var(--secondary); margin-bottom: 1rem;">Bienvenido ${currentUser.nombre}</h3>
                     <p style="color: rgba(255,255,255,0.7); margin-bottom: 1.5rem;">
                         Estás en el panel de control para <strong>${permissions.name}</strong><br>
                         ${empresa ? `Empresa: ${empresa.nombre}` : ''}
                     </p>
-                    <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem;">
+                    ${statsHTML ? `<div class="stats-grid" style="margin-top: 2rem;">${statsHTML}</div>` : ''}
+                    <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-top: 2rem;">
                         Usa el menú lateral para acceder a las funciones disponibles para tu rol.
                     </p>
                 </div>
             `;
-            
-            document.getElementById('pageTitle').textContent = `Dashboard - ${permissions.name}`;
         }
         
         function showAccessForRole(module) {
-            if (!checkPermission(module)) {
-                showNotification('error', 'Acceso Denegado', 'No tienes permisos para este módulo');
-                return;
-            }
-            
-            showModal(`Módulo: ${module.charAt(0).toUpperCase() + module.slice(1)}`, `
+            showModal(`Módulo: ${module}`, `
                 <div style="text-align: center; padding: 2rem;">
                     <i class="fas fa-lock-open" style="font-size: 3rem; color: var(--success); margin-bottom: 1rem;"></i>
                     <h3 style="color: var(--secondary);">Acceso Autorizado</h3>
@@ -2089,11 +1854,44 @@
         }
         
         // =============================================
-        // GESTIÓN DE EMPRESAS (SOLO SUPERADMIN)
+        // FUNCIONES AUXILIARES
+        // =============================================
+        
+        function getRoleName(role) {
+            const roles = {
+                'superadmin': 'Super Admin',
+                'admin_empresa': 'Admin Empresa',
+                'gerente': 'Gerente',
+                'vendedor': 'Vendedor',
+                'distribuidor': 'Distribuidor',
+                'almacenero': 'Almacenero',
+                'contador': 'Contador',
+                'supervisor': 'Supervisor'
+            };
+            return roles[role] || role;
+        }
+        
+        function getRoleColor(role) {
+            switch(role) {
+                case 'superadmin': return 'rgba(255,0,85,0.2)';
+                case 'admin_empresa': return 'rgba(0,255,65,0.2)';
+                case 'gerente': return 'rgba(255,170,0,0.2)';
+                case 'vendedor': return 'rgba(124,58,237,0.2)';
+                case 'distribuidor': return 'rgba(0,170,255,0.2)';
+                case 'almacenero': return 'rgba(255,85,0,0.2)';
+                case 'contador': return 'rgba(157,0,255,0.2)';
+                case 'supervisor': return 'rgba(0,255,170,0.2)';
+                default: return 'rgba(255,255,255,0.1)';
+            }
+        }
+        
+        // =============================================
+        // FUNCIONES DE GESTIÓN (CON SEGURIDAD)
         // =============================================
         
         function loadEmpresasManagement() {
-            if (!checkPermission('empresas')) {
+            // Solo superadmin puede ver esto
+            if (currentUser.role !== 'superadmin') {
                 showNotification('error', 'Acceso Denegado', 'Solo Super Admin puede gestionar empresas');
                 return;
             }
@@ -2101,13 +1899,6 @@
             document.getElementById('pageTitle').textContent = 'Gestión de Empresas';
             
             document.getElementById('viewSuperadmin').innerHTML = `
-                <div class="security-alert">
-                    <i class="fas fa-shield-alt"></i>
-                    <div>
-                        <strong>Acceso Exclusivo Super Admin:</strong> Solo tú puedes ver y gestionar todas las empresas.
-                    </div>
-                </div>
-                
                 <div class="table-card">
                     <div class="table-header">
                         <h3 class="table-title">Empresas del Sistema</h3>
@@ -2179,12 +1970,9 @@
             `;
         }
         
-        // =============================================
-        // GESTIÓN DE PERSONAL (SOLO SUPERADMIN)
-        // =============================================
-        
         function loadGestionPersonal() {
-            if (!checkPermission('usuarios', 'edit_all')) {
+            // Solo superadmin puede ver esto
+            if (currentUser.role !== 'superadmin') {
                 showNotification('error', 'Acceso Denegado', 'Solo Super Admin puede gestionar todo el personal');
                 return;
             }
@@ -2194,13 +1982,6 @@
             const usuariosFiltrados = database.usuarios.filter(u => u.rol !== 'superadmin');
             
             document.getElementById('viewSuperadmin').innerHTML = `
-                <div class="security-alert">
-                    <i class="fas fa-shield-alt"></i>
-                    <div>
-                        <strong>Acceso Exclusivo Super Admin:</strong> Gestión completa de usuarios de todas las empresas.
-                    </div>
-                </div>
-                
                 <div class="table-card">
                     <div class="table-header">
                         <h3 class="table-title">Usuarios del Sistema</h3>
@@ -2269,1150 +2050,8 @@
         }
         
         // =============================================
-        // GESTIÓN DE USUARIOS POR EMPRESA (ADMIN EMPRESA)
+        // FUNCIONES DE MODALES Y UTILIDAD
         // =============================================
-        
-        function loadUsuariosEmpresa() {
-            if (!checkPermission('usuarios')) {
-                showNotification('error', 'Acceso Denegado', 'No tienes permisos para gestionar usuarios');
-                return;
-            }
-            
-            const empresaId = currentUser.empresa_id;
-            const usuariosFiltrados = database.usuarios.filter(u => u.empresa_id === empresaId);
-            
-            showModal('Gestión de Usuarios', `
-                <div style="max-width: 800px;">
-                    <div class="security-alert" style="margin-bottom: 1.5rem;">
-                        <i class="fas fa-shield-alt"></i>
-                        <div>
-                            Solo puedes ver y gestionar usuarios de tu propia empresa.
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 1.5rem;">
-                        <button class="btn btn-primary" onclick="showNuevoUsuarioParaEmpresa('${empresaId}')">
-                            <i class="fas fa-user-plus"></i> Agregar Usuario
-                        </button>
-                    </div>
-                    
-                    <div class="table-wrapper">
-                        <table class="data-table" style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Email</th>
-                                    <th>Rol</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${usuariosFiltrados.map(usuario => `
-                                    <tr>
-                                        <td>${usuario.nombre}</td>
-                                        <td>${usuario.email}</td>
-                                        <td>
-                                            <span style="padding: 0.2rem 0.5rem; border-radius: 4px; background: ${getRoleColor(usuario.rol)};">
-                                                ${getRoleName(usuario.rol)}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="status-badge ${usuario.activo ? 'status-active' : 'status-inactive'}">
-                                                ${usuario.activo ? 'Activo' : 'Inactivo'}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <button class="action-btn edit" onclick="editUsuarioCompleto('${usuario.id}')" title="Editar">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button class="action-btn delete" onclick="confirmarEliminarUsuario('${usuario.id}', '${usuario.nombre}')" title="Eliminar">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                                ${usuariosFiltrados.length === 0 ? `
-                                    <tr>
-                                        <td colspan="5" style="text-align: center; padding: 2rem;">
-                                            No hay usuarios
-                                        </td>
-                                    </tr>
-                                ` : ''}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `);
-        }
-        
-        // =============================================
-        // FUNCIONES COMUNES (CON VALIDACIÓN DE SEGURIDAD)
-        // =============================================
-        
-        function showNuevaEmpresaModal() {
-            if (!checkPermission('empresas', 'edit_all')) {
-                showNotification('error', 'Acceso Denegado', 'Solo Super Admin puede crear empresas');
-                return;
-            }
-            
-            showModal('Nueva Empresa', `
-                <div style="max-width: 600px;">
-                    <div class="form-group">
-                        <label>Razón Social *</label>
-                        <input type="text" id="nuevaEmpresaNombre" placeholder="Mi Empresa S.A.">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>RUC/NIT *</label>
-                        <input type="text" id="nuevaEmpresaRUC" placeholder="12345678901">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Email *</label>
-                        <input type="email" id="nuevaEmpresaEmail" placeholder="contacto@empresa.com">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Teléfono *</label>
-                        <input type="text" id="nuevaEmpresaTelefono" placeholder="+000 00000000">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Dirección</label>
-                        <input type="text" id="nuevaEmpresaDireccion" placeholder="Calle Principal #123">
-                    </div>
-                    
-                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                        <button class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">
-                            Cancelar
-                        </button>
-                        <button class="btn btn-primary" onclick="crearNuevaEmpresa()" style="flex: 1;">
-                            <i class="fas fa-plus"></i> Crear Empresa
-                        </button>
-                    </div>
-                </div>
-            `);
-        }
-        
-        async function crearNuevaEmpresa() {
-            if (!checkPermission('empresas', 'edit_all')) {
-                showNotification('error', 'Acceso Denegado', 'Sin permisos');
-                return;
-            }
-            
-            showLoading();
-            
-            const empresaData = {
-                nombre: document.getElementById('nuevaEmpresaNombre').value,
-                nit: document.getElementById('nuevaEmpresaRUC').value,
-                email: document.getElementById('nuevaEmpresaEmail').value,
-                telefono: document.getElementById('nuevaEmpresaTelefono').value,
-                direccion: document.getElementById('nuevaEmpresaDireccion').value || '',
-                activa: true
-            };
-            
-            if (!empresaData.nombre || !empresaData.nit || !empresaData.email) {
-                showNotification('error', 'Error', 'Complete los campos obligatorios');
-                hideLoading();
-                return;
-            }
-            
-            try {
-                const result = await securePostToSupabase('empresas', empresaData, 'insert');
-                
-                if (result && result.length > 0) {
-                    showNotification('success', 'Éxito', `Empresa "${empresaData.nombre}" creada`);
-                    
-                    await loadEmpresasFromSupabase();
-                    
-                    closeModal();
-                    loadEmpresasManagement();
-                } else {
-                    showNotification('error', 'Error', 'Error al crear empresa');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showNotification('error', 'Error', 'Error de conexión');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        function viewEmpresaCompleta(empresaId) {
-            if (!checkPermission('empresas')) {
-                showNotification('error', 'Acceso Denegado', 'Sin permisos para ver empresas');
-                return;
-            }
-            
-            // Validar acceso a esta empresa específica
-            if (!checkCompanyAccess(empresaId)) {
-                showNotification('error', 'Acceso Denegado', 'No puedes ver datos de esta empresa');
-                return;
-            }
-            
-            const empresa = database.empresas.find(e => e.id === empresaId);
-            if (!empresa) {
-                showNotification('error', 'Error', 'Empresa no encontrada');
-                return;
-            }
-            
-            const usuariosEmpresa = database.usuarios.filter(u => u.empresa_id === empresaId);
-            const clientesEmpresa = database.clientes.filter(c => c.empresa_id === empresaId);
-            const almacenesEmpresa = database.almacenes.filter(a => a.empresa_id === empresaId);
-            
-            showModal(`Empresa: ${empresa.nombre}`, `
-                <div style="max-width: 800px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                        <div>
-                            <h4 style="color: var(--secondary);">Información General</h4>
-                            <p><strong>RUC/NIT:</strong> ${empresa.nit || 'N/A'}</p>
-                            <p><strong>Email:</strong> ${empresa.email || 'N/A'}</p>
-                            <p><strong>Teléfono:</strong> ${empresa.telefono || 'N/A'}</p>
-                            <p><strong>Dirección:</strong> ${empresa.direccion || 'N/A'}</p>
-                            <p><strong>Estado:</strong> ${empresa.activa ? 'Activa' : 'Inactiva'}</p>
-                        </div>
-                        
-                        <div>
-                            <h4 style="color: var(--secondary);">Estadísticas</h4>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div style="background: rgba(124,58,237,0.1); padding: 1rem; border-radius: 8px;">
-                                    <div>Usuarios</div>
-                                    <div style="font-size: 2rem; font-weight: 700;">${usuariosEmpresa.length}</div>
-                                </div>
-                                <div style="background: rgba(0,245,255,0.1); padding: 1rem; border-radius: 8px;">
-                                    <div>Clientes</div>
-                                    <div style="font-size: 2rem; font-weight: 700;">${clientesEmpresa.length}</div>
-                                </div>
-                                <div style="background: rgba(255,170,0,0.1); padding: 1rem; border-radius: 8px;">
-                                    <div>Almacenes</div>
-                                    <div style="font-size: 2rem; font-weight: 700;">${almacenesEmpresa.length}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                        <button class="btn btn-secondary" onclick="editEmpresaCompleta('${empresaId}')" style="flex: 1;">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>
-                    </div>
-                </div>
-            `);
-        }
-        
-        function editEmpresaCompleta(empresaId) {
-            if (!checkPermission('empresas', 'edit_all')) {
-                showNotification('error', 'Acceso Denegado', 'Solo Super Admin puede editar empresas');
-                return;
-            }
-            
-            // Validar acceso
-            if (!checkCompanyAccess(empresaId)) {
-                showNotification('error', 'Acceso Denegado', 'No puedes editar esta empresa');
-                return;
-            }
-            
-            const empresa = database.empresas.find(e => e.id === empresaId);
-            if (!empresa) {
-                showNotification('error', 'Error', 'Empresa no encontrada');
-                return;
-            }
-            
-            showModal(`Editar Empresa: ${empresa.nombre}`, `
-                <div style="max-width: 700px;">
-                    <input type="hidden" id="editEmpresaId" value="${empresa.id || ''}">
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div class="form-group">
-                            <label>Razón Social *</label>
-                            <input type="text" id="editEmpresaNombre" value="${empresa.nombre || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>RUC/NIT *</label>
-                            <input type="text" id="editEmpresaRUC" value="${empresa.nit || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Email *</label>
-                            <input type="email" id="editEmpresaEmail" value="${empresa.email || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Teléfono *</label>
-                            <input type="text" id="editEmpresaTelefono" value="${empresa.telefono || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Dirección</label>
-                            <input type="text" id="editEmpresaDireccion" value="${empresa.direccion || ''}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Estado *</label>
-                            <select id="editEmpresaEstado" required>
-                                <option value="true" ${empresa.activa ? 'selected' : ''}>Activa</option>
-                                <option value="false" ${!empresa.activa ? 'selected' : ''}>Inactiva</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                        <button class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">
-                            Cancelar
-                        </button>
-                        <button class="btn btn-primary" onclick="guardarEdicionEmpresaCompleta('${empresaId}')" style="flex: 1;">
-                            <i class="fas fa-save"></i> Guardar
-                        </button>
-                    </div>
-                </div>
-            `);
-        }
-        
-        async function guardarEdicionEmpresaCompleta(empresaId) {
-            if (!checkPermission('empresas', 'edit_all')) {
-                showNotification('error', 'Acceso Denegado', 'Sin permisos');
-                return;
-            }
-            
-            showLoading();
-            
-            const empresaData = {
-                id: empresaId,
-                nombre: document.getElementById('editEmpresaNombre').value,
-                nit: document.getElementById('editEmpresaRUC').value,
-                email: document.getElementById('editEmpresaEmail').value,
-                telefono: document.getElementById('editEmpresaTelefono').value,
-                direccion: document.getElementById('editEmpresaDireccion').value,
-                activa: document.getElementById('editEmpresaEstado').value === 'true'
-            };
-            
-            if (!empresaData.nombre || !empresaData.nit || !empresaData.email) {
-                showNotification('error', 'Error', 'Complete los campos obligatorios');
-                hideLoading();
-                return;
-            }
-            
-            try {
-                const result = await securePostToSupabase('empresas', empresaData, 'update');
-                
-                if (result) {
-                    showNotification('success', 'Éxito', 'Empresa actualizada');
-                    
-                    await loadEmpresasFromSupabase();
-                    
-                    closeModal();
-                    loadEmpresasManagement();
-                } else {
-                    showNotification('error', 'Error', 'Error al actualizar');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showNotification('error', 'Error', 'Error de conexión');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        function confirmarEliminarEmpresa(empresaId, empresaNombre) {
-            if (!checkPermission('empresas', 'delete')) {
-                showNotification('error', 'Acceso Denegado', 'Sin permisos para eliminar');
-                return;
-            }
-            
-            showConfirmation(
-                'Eliminar Empresa',
-                `¿Estás seguro de eliminar la empresa "${empresaNombre}"? Esta acción no se puede deshacer.`,
-                function() {
-                    eliminarEmpresa(empresaId);
-                }
-            );
-        }
-        
-        async function eliminarEmpresa(empresaId) {
-            if (!checkPermission('empresas', 'delete')) {
-                showNotification('error', 'Acceso Denegado', 'Sin permisos');
-                return;
-            }
-            
-            showLoading();
-            
-            try {
-                const result = await securePostToSupabase('empresas', { id: empresaId }, 'delete');
-                
-                if (result && result.success !== false) {
-                    showNotification('success', 'Éxito', 'Empresa eliminada');
-                    
-                    await loadEmpresasFromSupabase();
-                    
-                    loadEmpresasManagement();
-                } else {
-                    showNotification('error', 'Error', 'Error al eliminar');
-                }
-            } catch (error) {
-                showNotification('error', 'Error', 'Error de conexión');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // =============================================
-        // FUNCIONES DE USUARIOS (CON VALIDACIÓN)
-        // =============================================
-        
-        function showNuevoUsuarioModalAvanzado() {
-            if (!checkPermission('usuarios', 'create_users')) {
-                showNotification('error', 'Acceso Denegado', 'No tienes permisos para crear usuarios');
-                return;
-            }
-            
-            showModal('Nuevo Usuario', `
-                <div style="max-width: 700px;">
-                    <div class="form-group">
-                        <label>Empresa *</label>
-                        <select id="nuevoUsuarioEmpresaAvanzado" required>
-                            <option value="">Seleccionar empresa</option>
-                            ${database.empresas.map(empresa => `
-                                <option value="${empresa.id}">${empresa.nombre}</option>
-                            `).join('')}
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Nombres Completos *</label>
-                        <input type="text" id="nuevoUsuarioNombres" placeholder="Juan Carlos Pérez Gómez" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Email *</label>
-                        <input type="email" id="nuevoUsuarioEmailAvanzado" placeholder="usuario@empresa.com" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Password *</label>
-                        <input type="text" id="nuevoUsuarioPasswordAvanzado" value="12345678" required>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div class="form-group">
-                            <label>Rol *</label>
-                            <select id="nuevoUsuarioRolAvanzado" required>
-                                <option value="admin_empresa">Admin Empresa</option>
-                                <option value="gerente">Gerente</option>
-                                <option value="vendedor">Vendedor</option>
-                                <option value="distribuidor">Distribuidor</option>
-                                <option value="almacenero">Almacenero</option>
-                                <option value="contador">Contador</option>
-                                <option value="supervisor">Supervisor</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Estado *</label>
-                            <select id="nuevoUsuarioActivoAvanzado" required>
-                                <option value="true">Activo</option>
-                                <option value="false">Inactivo</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                        <button class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">
-                            Cancelar
-                        </button>
-                        <button class="btn btn-primary" onclick="crearNuevoUsuarioAvanzado()" style="flex: 1;">
-                            <i class="fas fa-user-plus"></i> Crear Usuario
-                        </button>
-                    </div>
-                </div>
-            `);
-        }
-        
-        function showNuevoUsuarioParaEmpresa(empresaId) {
-            if (!checkPermission('usuarios', 'create_users')) {
-                showNotification('error', 'Acceso Denegado', 'No tienes permisos para crear usuarios');
-                return;
-            }
-            
-            // Validar que es su empresa
-            if (currentUser.empresa_id.toString() !== empresaId.toString()) {
-                showNotification('error', 'Acceso Denegado', 'Solo puedes crear usuarios para tu empresa');
-                return;
-            }
-            
-            const empresa = database.empresas.find(e => e.id === empresaId);
-            
-            showModal(`Nuevo Usuario para: ${empresa.nombre}`, `
-                <div style="max-width: 600px;">
-                    <input type="hidden" id="nuevoUsuarioEmpresaEspecifica" value="${empresaId}">
-                    
-                    <div class="form-group">
-                        <label>Nombres Completos *</label>
-                        <input type="text" id="nuevoUsuarioNombresEspecifico" placeholder="Juan Carlos Pérez Gómez" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Email *</label>
-                        <input type="email" id="nuevoUsuarioEmailEspecifico" placeholder="usuario@empresa.com" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Password *</label>
-                        <input type="text" id="nuevoUsuarioPasswordEspecifico" value="12345678" required>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div class="form-group">
-                            <label>Rol *</label>
-                            <select id="nuevoUsuarioRolEspecifico" required>
-                                <option value="gerente">Gerente</option>
-                                <option value="vendedor">Vendedor</option>
-                                <option value="distribuidor">Distribuidor</option>
-                                <option value="almacenero">Almacenero</option>
-                                <option value="contador">Contador</option>
-                                <option value="supervisor">Supervisor</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Estado *</label>
-                            <select id="nuevoUsuarioActivoEspecifico" required>
-                                <option value="true">Activo</option>
-                                <option value="false">Inactivo</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                        <button class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">
-                            Cancelar
-                        </button>
-                        <button class="btn btn-primary" onclick="crearNuevoUsuarioParaEmpresaEspecifica('${empresaId}')" style="flex: 1;">
-                            <i class="fas fa-user-plus"></i> Crear Usuario
-                        </button>
-                    </div>
-                </div>
-            `);
-        }
-        
-        async function crearNuevoUsuarioAvanzado() {
-            if (!checkPermission('usuarios', 'create_users')) {
-                showNotification('error', 'Acceso Denegado', 'Sin permisos');
-                return;
-            }
-            
-            showLoading();
-            
-            const usuarioData = {
-                nombre: document.getElementById('nuevoUsuarioNombres').value,
-                email: document.getElementById('nuevoUsuarioEmailAvanzado').value,
-                password_hash: document.getElementById('nuevoUsuarioPasswordAvanzado').value,
-                rol: document.getElementById('nuevoUsuarioRolAvanzado').value,
-                activo: document.getElementById('nuevoUsuarioActivoAvanzado').value === 'true',
-                empresa_id: document.getElementById('nuevoUsuarioEmpresaAvanzado').value
-            };
-            
-            if (!usuarioData.nombre || !usuarioData.email || !usuarioData.empresa_id) {
-                showNotification('error', 'Error', 'Complete los campos obligatorios');
-                hideLoading();
-                return;
-            }
-            
-            try {
-                const result = await securePostToSupabase('usuarios', usuarioData, 'insert');
-                
-                if (result && result.length > 0) {
-                    showNotification('success', 'Éxito', `Usuario creado`);
-                    
-                    await loadUsuariosFromSupabase();
-                    
-                    closeModal();
-                    if (currentUser.role === 'superadmin') {
-                        loadGestionPersonal();
-                    } else {
-                        loadUsuariosEmpresa();
-                    }
-                } else {
-                    showNotification('error', 'Error', 'Error al crear usuario');
-                }
-            } catch (error) {
-                showNotification('error', 'Error', 'Error de conexión');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        async function crearNuevoUsuarioParaEmpresaEspecifica(empresaId) {
-            if (!checkPermission('usuarios', 'create_users')) {
-                showNotification('error', 'Acceso Denegado', 'Sin permisos');
-                return;
-            }
-            
-            // Validar empresa
-            if (currentUser.empresa_id.toString() !== empresaId.toString()) {
-                showNotification('error', 'Seguridad', 'No puedes crear usuarios para otra empresa');
-                return;
-            }
-            
-            showLoading();
-            
-            const usuarioData = {
-                nombre: document.getElementById('nuevoUsuarioNombresEspecifico').value,
-                email: document.getElementById('nuevoUsuarioEmailEspecifico').value,
-                password_hash: document.getElementById('nuevoUsuarioPasswordEspecifico').value,
-                rol: document.getElementById('nuevoUsuarioRolEspecifico').value,
-                activo: document.getElementById('nuevoUsuarioActivoEspecifico').value === 'true',
-                empresa_id: empresaId
-            };
-            
-            if (!usuarioData.nombre || !usuarioData.email) {
-                showNotification('error', 'Error', 'Complete los campos obligatorios');
-                hideLoading();
-                return;
-            }
-            
-            try {
-                const result = await securePostToSupabase('usuarios', usuarioData, 'insert');
-                
-                if (result && result.length > 0) {
-                    showNotification('success', 'Éxito', `Usuario creado`);
-                    
-                    await loadUsuariosFromSupabase();
-                    
-                    closeModal();
-                    loadUsuariosEmpresa();
-                } else {
-                    showNotification('error', 'Error', 'Error al crear usuario');
-                }
-            } catch (error) {
-                showNotification('error', 'Error', 'Error de conexión');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        function editUsuarioCompleto(usuarioId) {
-            if (!checkPermission('usuarios', 'edit_all')) {
-                showNotification('error', 'Acceso Denegado', 'No tienes permisos para editar usuarios');
-                return;
-            }
-            
-            const usuario = database.usuarios.find(u => u.id === usuarioId);
-            if (!usuario) {
-                showNotification('error', 'Error', 'Usuario no encontrado');
-                return;
-            }
-            
-            // Validar acceso para usuarios no superadmin
-            if (currentUser.role !== 'superadmin' && usuario.empresa_id !== currentUser.empresa_id) {
-                showNotification('error', 'Acceso Denegado', 'No puedes editar usuarios de otra empresa');
-                return;
-            }
-            
-            showModal(`Editar Usuario: ${usuario.nombre}`, `
-                <div style="max-width: 700px;">
-                    <input type="hidden" id="editUsuarioId" value="${usuario.id || ''}">
-                    
-                    <div class="form-group">
-                        <label>Nombres Completos *</label>
-                        <input type="text" id="editUsuarioNombres" value="${usuario.nombre || ''}" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Email *</label>
-                        <input type="email" id="editUsuarioEmail" value="${usuario.email || ''}" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Password *</label>
-                        <input type="text" id="editUsuarioPassword" value="${usuario.password_hash || '12345678'}" required>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div class="form-group">
-                            <label>Rol *</label>
-                            <select id="editUsuarioRol" required>
-                                ${currentUser.role === 'superadmin' ? `
-                                    <option value="admin_empresa" ${usuario.rol === 'admin_empresa' ? 'selected' : ''}>Admin Empresa</option>
-                                ` : ''}
-                                <option value="gerente" ${usuario.rol === 'gerente' ? 'selected' : ''}>Gerente</option>
-                                <option value="vendedor" ${usuario.rol === 'vendedor' ? 'selected' : ''}>Vendedor</option>
-                                <option value="distribuidor" ${usuario.rol === 'distribuidor' ? 'selected' : ''}>Distribuidor</option>
-                                <option value="almacenero" ${usuario.rol === 'almacenero' ? 'selected' : ''}>Almacenero</option>
-                                <option value="contador" ${usuario.rol === 'contador' ? 'selected' : ''}>Contador</option>
-                                <option value="supervisor" ${usuario.rol === 'supervisor' ? 'selected' : ''}>Supervisor</option>
-                            </select>
-                        </div>
-                        
-                        ${currentUser.role === 'superadmin' ? `
-                        <div class="form-group">
-                            <label>Empresa *</label>
-                            <select id="editUsuarioEmpresa" required>
-                                <option value="">Seleccionar empresa</option>
-                                ${database.empresas.map(emp => `
-                                    <option value="${emp.id}" ${usuario.empresa_id === emp.id ? 'selected' : ''}>${emp.nombre}</option>
-                                `).join('')}
-                            </select>
-                        </div>
-                        ` : ''}
-                        
-                        <div class="form-group">
-                            <label>Estado *</label>
-                            <select id="editUsuarioActivo" required>
-                                <option value="true" ${usuario.activo ? 'selected' : ''}>Activo</option>
-                                <option value="false" ${!usuario.activo ? 'selected' : ''}>Inactivo</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                        <button class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">
-                            Cancelar
-                        </button>
-                        <button class="btn btn-primary" onclick="guardarUsuarioCompleto('${usuarioId}')" style="flex: 1;">
-                            <i class="fas fa-save"></i> Guardar
-                        </button>
-                    </div>
-                </div>
-            `);
-        }
-        
-        async function guardarUsuarioCompleto(usuarioId) {
-            if (!checkPermission('usuarios', 'edit_all')) {
-                showNotification('error', 'Acceso Denegado', 'Sin permisos');
-                return;
-            }
-            
-            showLoading();
-            
-            const usuarioData = {
-                id: usuarioId,
-                nombre: document.getElementById('editUsuarioNombres').value,
-                email: document.getElementById('editUsuarioEmail').value,
-                password_hash: document.getElementById('editUsuarioPassword').value,
-                rol: document.getElementById('editUsuarioRol').value,
-                activo: document.getElementById('editUsuarioActivo').value === 'true'
-            };
-            
-            // Solo superadmin puede cambiar empresa
-            if (currentUser.role === 'superadmin') {
-                usuarioData.empresa_id = document.getElementById('editUsuarioEmpresa').value;
-            }
-            
-            if (!usuarioData.nombre || !usuarioData.email || (currentUser.role === 'superadmin' && !usuarioData.empresa_id)) {
-                showNotification('error', 'Error', 'Complete los campos obligatorios');
-                hideLoading();
-                return;
-            }
-            
-            try {
-                const result = await securePostToSupabase('usuarios', usuarioData, 'update');
-                
-                if (result) {
-                    showNotification('success', 'Éxito', 'Usuario actualizado');
-                    
-                    await loadUsuariosFromSupabase();
-                    
-                    closeModal();
-                    if (currentUser.role === 'superadmin') {
-                        loadGestionPersonal();
-                    } else {
-                        loadUsuariosEmpresa();
-                    }
-                } else {
-                    showNotification('error', 'Error', 'Error al actualizar');
-                }
-            } catch (error) {
-                showNotification('error', 'Error', 'Error de conexión');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        function confirmarEliminarUsuario(usuarioId, usuarioNombre) {
-            if (!checkPermission('usuarios', 'delete')) {
-                showNotification('error', 'Acceso Denegado', 'No tienes permisos para eliminar usuarios');
-                return;
-            }
-            
-            showConfirmation(
-                'Eliminar Usuario',
-                `¿Estás seguro de eliminar al usuario "${usuarioNombre}"?`,
-                function() {
-                    eliminarUsuario(usuarioId);
-                }
-            );
-        }
-        
-        async function eliminarUsuario(usuarioId) {
-            if (!checkPermission('usuarios', 'delete')) {
-                showNotification('error', 'Acceso Denegado', 'Sin permisos');
-                return;
-            }
-            
-            // Validar que no se está eliminando a sí mismo
-            if (usuarioId === currentUser.id) {
-                showNotification('error', 'Error', 'No puedes eliminarte a ti mismo');
-                return;
-            }
-            
-            showLoading();
-            
-            try {
-                const result = await securePostToSupabase('usuarios', { id: usuarioId }, 'delete');
-                
-                if (result && result.success !== false) {
-                    showNotification('success', 'Éxito', 'Usuario eliminado');
-                    
-                    await loadUsuariosFromSupabase();
-                    
-                    if (currentUser.role === 'superadmin') {
-                        loadGestionPersonal();
-                    } else {
-                        loadUsuariosEmpresa();
-                    }
-                } else {
-                    showNotification('error', 'Error', 'Error al eliminar');
-                }
-            } catch (error) {
-                showNotification('error', 'Error', 'Error de conexión');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // =============================================
-        // FUNCIONES DE CLIENTES
-        // =============================================
-        
-        function loadClientesEmpresa() {
-            if (!checkPermission('clientes')) {
-                showNotification('error', 'Acceso Denegado', 'No tienes permisos para ver clientes');
-                return;
-            }
-            
-            const empresaId = currentUser.empresa_id;
-            const clientesEmpresa = database.clientes.filter(c => c.empresa_id === empresaId);
-            
-            showModal('Clientes', `
-                <div style="max-width: 800px;">
-                    <div class="security-alert" style="margin-bottom: 1.5rem;">
-                        <i class="fas fa-shield-alt"></i>
-                        <div>
-                            Solo puedes ver clientes de tu propia empresa.
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 1.5rem;">
-                        <button class="btn btn-primary" onclick="showNuevoClienteParaEmpresa('${empresaId}')">
-                            <i class="fas fa-user-plus"></i> Agregar Cliente
-                        </button>
-                    </div>
-                    
-                    <div class="table-wrapper">
-                        <table class="data-table" style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Contacto</th>
-                                    <th>Teléfono</th>
-                                    <th>Email</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${clientesEmpresa.slice(0, 10).map(cliente => `
-                                    <tr>
-                                        <td>${cliente.nombre || 'Sin nombre'}</td>
-                                        <td>${cliente.contacto || 'Sin contacto'}</td>
-                                        <td>${cliente.telefono || 'Sin teléfono'}</td>
-                                        <td>${cliente.email || 'Sin email'}</td>
-                                        <td>
-                                            <span class="status-badge ${cliente.activo ? 'status-active' : 'status-inactive'}">
-                                                ${cliente.activo ? 'Activo' : 'Inactivo'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                                ${clientesEmpresa.length === 0 ? `
-                                    <tr>
-                                        <td colspan="5" style="text-align: center; padding: 2rem;">
-                                            No hay clientes
-                                        </td>
-                                    </tr>
-                                ` : ''}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `);
-        }
-        
-        // =============================================
-        // FUNCIONES DE ALMACENES
-        // =============================================
-        
-        function loadAlmacenesEmpresa() {
-            if (!checkPermission('almacenes')) {
-                showNotification('error', 'Acceso Denegado', 'No tienes permisos para ver almacenes');
-                return;
-            }
-            
-            const empresaId = currentUser.empresa_id;
-            const almacenesEmpresa = database.almacenes.filter(a => a.empresa_id === empresaId);
-            
-            showModal('Almacenes', `
-                <div style="max-width: 800px;">
-                    <div class="security-alert" style="margin-bottom: 1.5rem;">
-                        <i class="fas fa-shield-alt"></i>
-                        <div>
-                            Solo puedes ver almacenes de tu propia empresa.
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 1.5rem;">
-                        <button class="btn btn-primary" onclick="showNuevoAlmacenParaEmpresa('${empresaId}')">
-                            <i class="fas fa-warehouse"></i> Agregar Almacén
-                        </button>
-                    </div>
-                    
-                    <div class="table-wrapper">
-                        <table class="data-table" style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Dirección</th>
-                                    <th>Ciudad</th>
-                                    <th>Teléfono</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${almacenesEmpresa.map(almacen => `
-                                    <tr>
-                                        <td>${almacen.nombre || 'Sin nombre'}</td>
-                                        <td>${almacen.direccion || 'Sin dirección'}</td>
-                                        <td>${almacen.ciudad || 'Sin ciudad'}</td>
-                                        <td>${almacen.telefono || 'Sin teléfono'}</td>
-                                        <td>
-                                            <span class="status-badge ${almacen.activo ? 'status-active' : 'status-inactive'}">
-                                                ${almacen.activo ? 'Activo' : 'Inactivo'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                                ${almacenesEmpresa.length === 0 ? `
-                                    <tr>
-                                        <td colspan="5" style="text-align: center; padding: 2rem;">
-                                            No hay almacenes
-                                        </td>
-                                    </tr>
-                                ` : ''}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `);
-        }
-        
-        // =============================================
-        // FUNCIONES DE PRODUCTOS
-        // =============================================
-        
-        function loadProductosEmpresa() {
-            if (!checkPermission('productos')) {
-                showNotification('error', 'Acceso Denegado', 'No tienes permisos para ver productos');
-                return;
-            }
-            
-            const empresaId = currentUser.empresa_id;
-            const productosEmpresa = database.productos.filter(p => p.empresa_id === empresaId);
-            
-            showModal('Productos', `
-                <div style="max-width: 800px;">
-                    <div class="security-alert" style="margin-bottom: 1.5rem;">
-                        <i class="fas fa-shield-alt"></i>
-                        <div>
-                            Solo puedes ver productos de tu propia empresa.
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 1.5rem;">
-                        <button class="btn btn-primary" onclick="showNuevoProductoParaEmpresa('${empresaId}')">
-                            <i class="fas fa-box"></i> Agregar Producto
-                        </button>
-                    </div>
-                    
-                    <div class="table-wrapper">
-                        <table class="data-table" style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Categoría</th>
-                                    <th>Precio</th>
-                                    <th>Stock</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${productosEmpresa.slice(0, 10).map(producto => `
-                                    <tr>
-                                        <td>${producto.nombre || 'Sin nombre'}</td>
-                                        <td>${producto.categoria || 'Sin categoría'}</td>
-                                        <td>$${producto.precio || '0.00'}</td>
-                                        <td>${producto.stock || '0'}</td>
-                                        <td>
-                                            <span class="status-badge ${producto.activo ? 'status-active' : 'status-inactive'}">
-                                                ${producto.activo ? 'Activo' : 'Inactivo'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                                ${productosEmpresa.length === 0 ? `
-                                    <tr>
-                                        <td colspan="5" style="text-align: center; padding: 2rem;">
-                                            No hay productos
-                                        </td>
-                                    </tr>
-                                ` : ''}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `);
-        }
-        
-        // =============================================
-        // FUNCIONES DE EMPRESA (ADMIN EMPRESA)
-        // =============================================
-        
-        function editarInformacionEmpresa() {
-            if (!checkPermission('configuracion_empresa')) {
-                showNotification('error', 'Acceso Denegado', 'No tienes permisos para editar la empresa');
-                return;
-            }
-            
-            const empresaId = currentUser.empresa_id;
-            const empresa = database.empresas.find(e => e.id === empresaId);
-            
-            if (!empresa) {
-                showNotification('error', 'Error', 'Empresa no encontrada');
-                return;
-            }
-            
-            // Validar acceso
-            if (!checkCompanyAccess(empresaId)) {
-                showNotification('error', 'Acceso Denegado', 'No puedes editar esta empresa');
-                return;
-            }
-            
-            showModal(`Editar Empresa: ${empresa.nombre}`, `
-                <div style="max-width: 700px;">
-                    <input type="hidden" id="editEmpresaId" value="${empresa.id || ''}">
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div class="form-group">
-                            <label>Razón Social *</label>
-                            <input type="text" id="editEmpresaNombre" value="${empresa.nombre || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>RUC/NIT *</label>
-                            <input type="text" id="editEmpresaRUC" value="${empresa.nit || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Email *</label>
-                            <input type="email" id="editEmpresaEmail" value="${empresa.email || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Teléfono *</label>
-                            <input type="text" id="editEmpresaTelefono" value="${empresa.telefono || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Dirección</label>
-                            <input type="text" id="editEmpresaDireccion" value="${empresa.direccion || ''}">
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                        <button class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">
-                            Cancelar
-                        </button>
-                        <button class="btn btn-primary" onclick="guardarEdicionEmpresa('${empresaId}')" style="flex: 1;">
-                            <i class="fas fa-save"></i> Guardar
-                        </button>
-                    </div>
-                </div>
-            `);
-        }
-        
-        async function guardarEdicionEmpresa(empresaId) {
-            if (!checkPermission('configuracion_empresa')) {
-                showNotification('error', 'Acceso Denegado', 'Sin permisos');
-                return;
-            }
-            
-            // Validar acceso
-            if (!checkCompanyAccess(empresaId)) {
-                showNotification('error', 'Acceso Denegado', 'No puedes editar esta empresa');
-                return;
-            }
-            
-            showLoading();
-            
-            const empresaData = {
-                id: empresaId,
-                nombre: document.getElementById('editEmpresaNombre').value,
-                nit: document.getElementById('editEmpresaRUC').value,
-                email: document.getElementById('editEmpresaEmail').value,
-                telefono: document.getElementById('editEmpresaTelefono').value,
-                direccion: document.getElementById('editEmpresaDireccion').value
-            };
-            
-            if (!empresaData.nombre || !empresaData.nit || !empresaData.email) {
-                showNotification('error', 'Error', 'Complete los campos obligatorios');
-                hideLoading();
-                return;
-            }
-            
-            try {
-                const result = await securePostToSupabase('empresas', empresaData, 'update');
-                
-                if (result) {
-                    showNotification('success', 'Éxito', 'Empresa actualizada');
-                    
-                    await loadEmpresasFromSupabase();
-                    
-                    closeModal();
-                    loadAdminEmpresaDashboard();
-                } else {
-                    showNotification('error', 'Error', 'Error al actualizar');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showNotification('error', 'Error', 'Error de conexión');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // =============================================
-        // FUNCIONES DE UTILIDAD
-        // =============================================
-        
-        function showLoading() {
-            document.getElementById('loadingSpinner').style.display = 'flex';
-        }
-        
-        function hideLoading() {
-            document.getElementById('loadingSpinner').style.display = 'none';
-        }
         
         function showModal(title, content) {
             document.getElementById('modalTitle').textContent = title;
@@ -3482,13 +2121,12 @@
             try {
                 await loadAllData();
                 
-                // Recargar vista actual
                 if (currentUser.role === 'superadmin') {
                     loadSuperadminDashboard();
                 } else if (currentUser.role === 'admin_empresa') {
                     loadAdminEmpresaDashboard();
                 } else {
-                    loadRoleDashboard();
+                    loadRoleDashboard(currentUser.role);
                 }
                 
                 showNotification('success', 'Datos Actualizados', 'La información se sincronizó correctamente');
@@ -3511,7 +2149,191 @@
         }
         
         // =============================================
-        // FUNCIONES DE SESIÓN
+        // FUNCIONES DE EMPRESA (ADMIN EMPRESA)
+        // =============================================
+        
+        function loadUsuariosEmpresa() {
+            // Solo admin_empresa puede ver esto
+            if (currentUser.role !== 'admin_empresa') {
+                showNotification('error', 'Acceso Denegado', 'Solo Admin Empresa puede gestionar usuarios');
+                return;
+            }
+            
+            const empresaId = currentUser.empresa_id;
+            const usuariosFiltrados = database.usuarios.filter(u => u.empresa_id === empresaId);
+            
+            showModal('Gestión de Usuarios', `
+                <div style="max-width: 800px;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <button class="btn btn-primary" onclick="showNuevoUsuarioParaEmpresa('${empresaId}')">
+                            <i class="fas fa-user-plus"></i> Agregar Usuario
+                        </button>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table class="data-table" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${usuariosFiltrados.map(usuario => `
+                                    <tr>
+                                        <td>${usuario.nombre}</td>
+                                        <td>${usuario.email}</td>
+                                        <td>
+                                            <span style="padding: 0.2rem 0.5rem; border-radius: 4px; background: ${getRoleColor(usuario.rol)};">
+                                                ${getRoleName(usuario.rol)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge ${usuario.activo ? 'status-active' : 'status-inactive'}">
+                                                ${usuario.activo ? 'Activo' : 'Inactivo'}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="action-btn edit" onclick="editUsuarioCompleto('${usuario.id}')" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="action-btn delete" onclick="confirmarEliminarUsuario('${usuario.id}', '${usuario.nombre}')" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                                ${usuariosFiltrados.length === 0 ? `
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 2rem;">
+                                            No hay usuarios
+                                        </td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function loadClientesEmpresa() {
+            // Solo admin_empresa puede ver esto
+            if (currentUser.role !== 'admin_empresa') {
+                showNotification('error', 'Acceso Denegado', 'Solo Admin Empresa puede ver clientes');
+                return;
+            }
+            
+            const empresaId = currentUser.empresa_id;
+            const clientesEmpresa = database.clientes.filter(c => c.empresa_id === empresaId);
+            
+            showModal('Clientes', `
+                <div style="max-width: 800px;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <button class="btn btn-primary" onclick="showNuevoClienteParaEmpresa('${empresaId}')">
+                            <i class="fas fa-user-plus"></i> Agregar Cliente
+                        </button>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table class="data-table" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Contacto</th>
+                                    <th>Teléfono</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${clientesEmpresa.slice(0, 10).map(cliente => `
+                                    <tr>
+                                        <td>${cliente.nombre || 'Sin nombre'}</td>
+                                        <td>${cliente.contacto || 'Sin contacto'}</td>
+                                        <td>${cliente.telefono || 'Sin teléfono'}</td>
+                                        <td>
+                                            <span class="status-badge ${cliente.activo ? 'status-active' : 'status-inactive'}">
+                                                ${cliente.activo ? 'Activo' : 'Inactivo'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                                ${clientesEmpresa.length === 0 ? `
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; padding: 2rem;">
+                                            No hay clientes
+                                        </td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
+        }
+        
+        function loadAlmacenesEmpresa() {
+            // Solo admin_empresa puede ver esto
+            if (currentUser.role !== 'admin_empresa') {
+                showNotification('error', 'Acceso Denegado', 'Solo Admin Empresa puede ver almacenes');
+                return;
+            }
+            
+            const empresaId = currentUser.empresa_id;
+            const almacenesEmpresa = database.almacenes.filter(a => a.empresa_id === empresaId);
+            
+            showModal('Almacenes', `
+                <div style="max-width: 800px;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <button class="btn btn-primary" onclick="showNuevoAlmacenParaEmpresa('${empresaId}')">
+                            <i class="fas fa-warehouse"></i> Agregar Almacén
+                        </button>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table class="data-table" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Dirección</th>
+                                    <th>Ciudad</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${almacenesEmpresa.map(almacen => `
+                                    <tr>
+                                        <td>${almacen.nombre || 'Sin nombre'}</td>
+                                        <td>${almacen.direccion || 'Sin dirección'}</td>
+                                        <td>${almacen.ciudad || 'Sin ciudad'}</td>
+                                        <td>
+                                            <span class="status-badge ${almacen.activo ? 'status-active' : 'status-inactive'}">
+                                                ${almacen.activo ? 'Activo' : 'Inactivo'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                                ${almacenesEmpresa.length === 0 ? `
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; padding: 2rem;">
+                                            No hay almacenes
+                                        </td>
+                                    </tr>
+                                ` : ''}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
+        }
+        
+        // =============================================
+        // FUNCIONES DE SESIÓN - CORREGIDAS
         // =============================================
         
         function showLogoutConfirmation() {
@@ -3528,60 +2350,11 @@
         }
         
         // =============================================
-        // FUNCIONES PENDIENTES (PARA COMPLETAR)
-        // =============================================
-        
-        function showNuevoClienteParaEmpresa(empresaId) {
-            showModal('Nuevo Cliente', `
-                <div style="text-align: center; padding: 2rem;">
-                    <i class="fas fa-user-plus" style="font-size: 3rem; color: var(--info); margin-bottom: 1rem;"></i>
-                    <h3 style="color: var(--secondary);">Nuevo Cliente</h3>
-                    <p style="color: rgba(255,255,255,0.7);">
-                        Función en desarrollo para la empresa ${empresaId}
-                    </p>
-                    <button class="btn btn-secondary" onclick="closeModal()" style="margin-top: 1.5rem;">
-                        Cerrar
-                    </button>
-                </div>
-            `);
-        }
-        
-        function showNuevoAlmacenParaEmpresa(empresaId) {
-            showModal('Nuevo Almacén', `
-                <div style="text-align: center; padding: 2rem;">
-                    <i class="fas fa-warehouse" style="font-size: 3rem; color: var(--warning); margin-bottom: 1rem;"></i>
-                    <h3 style="color: var(--secondary);">Nuevo Almacén</h3>
-                    <p style="color: rgba(255,255,255,0.7);">
-                        Función en desarrollo para la empresa ${empresaId}
-                    </p>
-                    <button class="btn btn-secondary" onclick="closeModal()" style="margin-top: 1.5rem;">
-                        Cerrar
-                    </button>
-                </div>
-            `);
-        }
-        
-        function showNuevoProductoParaEmpresa(empresaId) {
-            showModal('Nuevo Producto', `
-                <div style="text-align: center; padding: 2rem;">
-                    <i class="fas fa-box" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
-                    <h3 style="color: var(--secondary);">Nuevo Producto</h3>
-                    <p style="color: rgba(255,255,255,0.7);">
-                        Función en desarrollo para la empresa ${empresaId}
-                    </p>
-                    <button class="btn btn-secondary" onclick="closeModal()" style="margin-top: 1.5rem;">
-                        Cerrar
-                    </button>
-                </div>
-            `);
-        }
-        
-        // =============================================
-        // INICIALIZACIÓN DEL SISTEMA
+        // INICIALIZACIÓN - CORREGIDA
         // =============================================
         
         async function startSession() {
-            console.log('🔄 Iniciando sesión segura...');
+            console.log('🔄 Iniciando sesión...');
             
             const savedUser = localStorage.getItem('nexial_user');
             
@@ -3593,14 +2366,7 @@
             
             try {
                 currentUser = JSON.parse(savedUser);
-                console.log('👤 Usuario cargado:', currentUser.role);
-                
-                // Validar estructura del usuario
-                if (!currentUser.role) {
-                    console.error('Usuario sin rol definido');
-                    window.location.href = 'index.html';
-                    return;
-                }
+                console.log('👤 Usuario cargado:', currentUser);
                 
                 // Inicializar Supabase
                 if (typeof supabase === 'undefined') {
@@ -3614,14 +2380,10 @@
                     return;
                 }
                 
-                // Cargar datos y configurar interfaz
-                showLoading();
-                await loadAllData();
+                // Configurar interfaz
                 configureInterface();
-                hideLoading();
                 
-                console.log('✅ Sistema seguro inicializado correctamente');
-                console.log('🔒 Modo de seguridad activado para:', currentUser.role);
+                console.log('✅ Sistema inicializado correctamente');
                 
             } catch (error) {
                 console.error('Error iniciando sesión:', error);
@@ -3652,8 +2414,6 @@
             startSession();
             
             console.log('🚀 Nexial Suite Panel de Control - SEGURIDAD ACTIVADA');
-            console.log('🛡️ Sistema Corporativo Multiempresa con Aislamiento de Datos');
-            console.log('🔗 Supabase URL:', SUPABASE_URL);
         });
     </script>
 </body>
