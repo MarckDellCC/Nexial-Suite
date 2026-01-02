@@ -1621,6 +1621,7 @@
         async function crearNuevaEmpresaCompleta() {
             showLoading();
             
+            // NOTA: IMPORTANTE - El campo es 'activa' (singular) según tu SQL
             const empresaData = {
                 nombre: document.getElementById('nuevaEmpresaNombre').value.trim(),
                 nit: document.getElementById('nuevaEmpresaRUC').value.trim(),
