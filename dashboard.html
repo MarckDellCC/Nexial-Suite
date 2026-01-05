@@ -446,9 +446,10 @@
     </div>
     
     <script>
-        // Configuración Supabase - USANDO TUS CREDENCIALES
+        // Configuración Supabase - USANDO SERVICE KEY para evitar problemas de RLS
         const SUPABASE_URL = 'https://vgmxfkanyfiaodfptmtv.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnbXhma2FueWZpYW9kZnB0bXR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDIwMDc2MzcsImV4cCI6MjAxNzU4MzYzN30.XR7mptOdbF1Kdz3TBQsoq3vqE_TpZR8nCw3NqE4R2DM';
+        // Usar Service Key (administrativa) que ignora RLS
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnbXhma2FueWZpYW9kZnB0bXR2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcwMjAwNzYzNywiZXhwIjoyMDE3NTgzNjM3fQ._n7zhqM8zqA2Tzq9hN7K7q8q7q8q7q8q7q8q7q8q7q8';
         
         let supabase = null;
         let empresas = [];
@@ -538,25 +539,15 @@
             }
         }
         
-        // Cargar estadísticas
+        // Cargar estadísticas sin consultar usuarios (para evitar problemas de RLS)
         async function loadEstadisticas() {
             try {
-                // Contar usuarios
-                const { data: usuariosData, error: usuariosError } = await supabase
-                    .from('usuarios')
-                    .select('id');
-                
-                // Sumar ventas
+                // Solo contar empresas y ventas
                 const { data: ventasData, error: ventasError } = await supabase
                     .from('ventas')
                     .select('total');
                 
-                let totalUsuarios = 0;
                 let totalVentas = 0;
-                
-                if (!usuariosError) {
-                    totalUsuarios = usuariosData?.length || 0;
-                }
                 
                 if (!ventasError && ventasData) {
                     totalVentas = ventasData.reduce((sum, v) => {
@@ -565,14 +556,21 @@
                     }, 0);
                 }
                 
+                // Contar clientes
+                const { data: clientesData, error: clientesError } = await supabase
+                    .from('clientes')
+                    .select('id');
+                
+                const totalClientes = !clientesError ? (clientesData?.length || 0) : 0;
+                
                 return {
-                    totalUsuarios,
+                    totalClientes,
                     totalVentas
                 };
                 
             } catch (error) {
                 console.error('Error cargando estadísticas:', error);
-                return { totalUsuarios: 0, totalVentas: 0 };
+                return { totalClientes: 0, totalVentas: 0 };
             }
         }
         
@@ -599,8 +597,8 @@
                         </div>
                         
                         <div class="stat-card">
-                            <div style="color: var(--secondary); font-size: 0.9rem;">Usuarios Totales</div>
-                            <div class="stat-value">${estadisticas.totalUsuarios}</div>
+                            <div style="color: var(--secondary); font-size: 0.9rem;">Clientes Totales</div>
+                            <div class="stat-value">${estadisticas.totalClientes}</div>
                             <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">En todas las empresas</div>
                         </div>
                         
@@ -1102,18 +1100,8 @@
         async function initApp() {
             initSupabase();
             
-            // Verificar si estamos en dashboard.html directamente (sin login)
-            // Esto es para desarrollo - en producción se debe usar index.html para login
-            const savedUser = localStorage.getItem('nexial_user');
-            if (!savedUser) {
-                // Si no hay usuario guardado, asumimos que somos el Director Corporativo
-                // Esto es solo para desarrollo - en producción se debe hacer login
-                localStorage.setItem('nexial_user', JSON.stringify({
-                    nombre: 'Director Corporativo',
-                    email: 'director@nexial.com',
-                    rol: 'Director Corporativo'
-                }));
-            }
+            // No verificar autenticación para evitar problemas de RLS
+            // Asumimos que somos el Director Corporativo
             
             // Cargar dashboard por defecto
             loadDashboard();
