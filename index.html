@@ -783,6 +783,80 @@
             border: 1px solid var(--danger);
             color: var(--danger);
         }
+
+        /* Nuevos estilos para dashboard */
+        .dashboard-container {
+            padding: 100px 2rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .sidebar {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+        }
+
+        .main-content {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            min-height: 500px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th, .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table th {
+            background: rgba(124, 58, 237, 0.2);
+            color: var(--secondary);
+        }
+
+        .data-table tr:hover {
+            background: rgba(124, 58, 237, 0.05);
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .edit-btn {
+            background: rgba(0, 170, 255, 0.2);
+            color: var(--info);
+        }
+
+        .delete-btn {
+            background: rgba(255, 0, 85, 0.2);
+            color: var(--danger);
+        }
+
+        .add-btn {
+            background: rgba(0, 255, 65, 0.2);
+            color: var(--success);
+        }
     </style>
 </head>
 <body>
@@ -806,9 +880,13 @@
             <a href="#caracteristicas">Sistema</a>
             <a href="#ventajas">Ventajas</a>
             <a href="#" onclick="Nexial.openRegisterModal()">Registro</a>
+            <a href="#" id="dashboardLink" style="display:none;" onclick="Nexial.goToDashboard()">Dashboard</a>
         </nav>
-        <button class="cyber-btn" onclick="Nexial.openLoginModal()">
+        <button class="cyber-btn" onclick="Nexial.openLoginModal()" id="loginBtn">
             <i class="fas fa-sign-in-alt"></i> Acceso
+        </button>
+        <button class="cyber-btn btn-secondary" onclick="Nexial.logout()" id="logoutBtn" style="display:none;">
+            <i class="fas fa-sign-out-alt"></i> Salir
         </button>
     </header>
 
@@ -1033,7 +1111,7 @@
             
             <div class="alert" id="registerAlert"></div>
             
-            <form id="registerForm" onsubmit="event.preventDefault(); Nexial.registerCompany(event);">
+            <form id="registerForm">
                 <div class="form-group">
                     <label><i class="fas fa-building"></i> Razón Social *</label>
                     <input type="text" id="companyName" required placeholder="Ej: Mi Empresa S.A.">
@@ -1043,56 +1121,17 @@
                     <label><i class="fas fa-id-card"></i> Documento de Identificación *</label>
                     <select id="docType" required>
                         <option value="">Seleccionar tipo</option>
-                        <option value="NIT">NIT (Bolivia)</option>
-                        <option value="RUC">RUC (Perú)</option>
-                        <option value="RUT">RUT (Chile)</option>
-                        <option value="CUIT">CUIT/CUIL (Argentina)</option>
-                        <option value="CNPJ">CNPJ (Brasil)</option>
-                        <option value="NIE">NIE/DNI (España)</option>
-                        <option value="RFC">RFC (México)</option>
-                        <option value="RIF">RIF (Venezuela)</option>
-                        <option value="NIT">NIT (Colombia)</option>
-                        <option value="EIN">EIN (EE.UU.)</option>
-                        <option value="OTRO">Otro</option>
+                        <option value="RUC">RUC</option>
+                        <option value="DNI">DNI</option>
+                        <option value="CE">CE</option>
+                        <option value="PASAPORTE">PASAPORTE</option>
+                        <option value="NIT">NIT</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
                     <label><i class="fas fa-hashtag"></i> Número de Documento *</label>
                     <input type="text" id="companyDocNumber" required placeholder="Ingrese el número de documento">
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-industry"></i> Tipo de Industria *</label>
-                    <select id="companyIndustry" required>
-                        <option value="">Seleccionar industria</option>
-                        <option value="Tecnología">Tecnología</option>
-                        <option value="Comercio">Comercio</option>
-                        <option value="Manufactura">Manufactura</option>
-                        <option value="Servicios">Servicios</option>
-                        <option value="Alimentos">Alimentos</option>
-                        <option value="Construcción">Construcción</option>
-                        <option value="Mineria">Minería</option>
-                        <option value="Agricultura">Agricultura</option>
-                        <option value="Turismo">Turismo</option>
-                        <option value="Otros">Otros</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-user"></i> Nombres *</label>
-                    <input type="text" id="names" required placeholder="Ingrese sus nombres completos">
-                </div>
-                
-                <div class="name-grid">
-                    <div class="form-group">
-                        <label><i class="fas fa-user"></i> Primer Apellido *</label>
-                        <input type="text" id="firstLastName" required placeholder="Apellido paterno">
-                    </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-user"></i> Segundo Apellido</label>
-                        <input type="text" id="secondLastName" placeholder="Apellido materno">
-                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -1115,14 +1154,27 @@
                                 <option value="+52">+52 (MX)</option>
                                 <option value="+1">+1 (US/CA)</option>
                                 <option value="+34">+34 (ES)</option>
-                                <option value="+49">+49 (DE)</option>
-                                <option value="+33">+33 (FR)</option>
-                                <option value="+44">+44 (UK)</option>
                             </select>
                         </div>
                         <div class="form-group phone-number">
                             <input type="tel" id="companyPhone" required placeholder="60000000">
                         </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Nombres *</label>
+                    <input type="text" id="names" required placeholder="Ingrese sus nombres completos">
+                </div>
+                
+                <div class="name-grid">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Primer Apellido *</label>
+                        <input type="text" id="firstLastName" required placeholder="Apellido paterno">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Segundo Apellido</label>
+                        <input type="text" id="secondLastName" placeholder="Apellido materno">
                     </div>
                 </div>
                 
@@ -1157,7 +1209,7 @@
                     <button type="button" class="cyber-btn btn-secondary" onclick="Nexial.closeRegisterModal()">
                         Cancelar
                     </button>
-                    <button type="submit" class="cyber-btn">
+                    <button type="button" class="cyber-btn" onclick="Nexial.registerCompany()">
                         <i class="fas fa-check-circle"></i> REGISTRAR EMPRESA
                     </button>
                 </div>
@@ -1165,17 +1217,60 @@
         </div>
     </div>
 
+    <!-- MODAL: DASHBOARD -->
+    <div class="cyber-modal" id="dashboardModal" style="display: none;">
+        <div class="modal-content" style="max-width: 1200px; max-height: 90vh;">
+            <button class="close-modal" onclick="Nexial.closeDashboardModal()">×</button>
+            
+            <div class="modal-header">
+                <h2><i class="fas fa-tachometer-alt"></i> PANEL DE CONTROL</h2>
+                <p style="color: rgba(255,255,255,0.7);" id="welcomeMessage">Bienvenido</p>
+            </div>
+            
+            <div class="dashboard-container">
+                <div class="dashboard-grid">
+                    <div class="sidebar">
+                        <h3 style="color: var(--secondary); margin-bottom: 1rem;">Menú</h3>
+                        <ul style="list-style: none;">
+                            <li><button class="cyber-btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem; text-align: left;" onclick="Nexial.loadTableData('empresas')"><i class="fas fa-building"></i> Empresas</button></li>
+                            <li><button class="cyber-btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem; text-align: left;" onclick="Nexial.loadTableData('usuarios')"><i class="fas fa-users"></i> Usuarios</button></li>
+                            <li><button class="cyber-btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem; text-align: left;" onclick="Nexial.loadTableData('clientes')"><i class="fas fa-user-tie"></i> Clientes</button></li>
+                            <li><button class="cyber-btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem; text-align: left;" onclick="Nexial.loadTableData('productos')"><i class="fas fa-box"></i> Productos</button></li>
+                            <li><button class="cyber-btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem; text-align: left;" onclick="Nexial.loadTableData('ventas')"><i class="fas fa-shopping-cart"></i> Ventas</button></li>
+                            <li><button class="cyber-btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem; text-align: left;" onclick="Nexial.loadTableData('objetivos')"><i class="fas fa-bullseye"></i> Objetivos</button></li>
+                            <li><button class="cyber-btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem; text-align: left;" onclick="Nexial.loadTableData('metas')"><i class="fas fa-flag"></i> Metas</button></li>
+                        </ul>
+                        
+                        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <h4 style="color: var(--secondary); margin-bottom: 1rem;">Acciones Rápidas</h4>
+                            <button class="cyber-btn" style="width: 100%; margin-bottom: 0.5rem;" onclick="Nexial.openAddModal()"><i class="fas fa-plus"></i> Agregar Nuevo</button>
+                            <button class="cyber-btn btn-secondary" style="width: 100%;" onclick="Nexial.exportData()"><i class="fas fa-download"></i> Exportar Datos</button>
+                        </div>
+                    </div>
+                    
+                    <div class="main-content">
+                        <div id="tableContent">
+                            <h3 style="color: var(--secondary);">Seleccione una tabla para ver los datos</h3>
+                            <p style="opacity: 0.7;">Use el menú lateral para navegar entre las diferentes tablas de la base de datos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // =============================================
-        // OBJETO PRINCIPAL NEXIAL - Versión Simplificada
+        // OBJETO PRINCIPAL NEXIAL - Versión Compatible
         // =============================================
         const Nexial = (function() {
             // Variables privadas
-            const SUPABASE_URL = 'https://cmrysvcahpouziogzang.supabase.co';
-            const SUPABASE_ANON_KEY = 'sb_publishable_rj4q31YiBwxLcfuswCX21g_LxsxRc_n';
+            const SUPABASE_URL = 'https://vgmxfkanyfiaodfptmtv.supabase.co';
+            const SUPABASE_ANON_KEY = 'sb_publishable_q_EXx0EGneIY4PZWsoCA0g_OgJJ-4Ek';
             
-            // Inicializar Supabase UNA sola vez
             let _supabase = null;
+            let _currentUser = null;
+            let _currentTable = null;
             
             // =============================================
             // FUNCIONES PRIVADAS
@@ -1204,6 +1299,19 @@
                 }
             }
             
+            function generateSecurePasswordHash(password, salt) {
+                // En un sistema real, usaríamos bcrypt o similar
+                // Para este ejemplo, usaremos un hash simple
+                return btoa(password + salt);
+            }
+            
+            function generateCompanyCode(name) {
+                const prefix = 'EMP';
+                const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+                const nameCode = name.substring(0, 3).toUpperCase();
+                return `${prefix}-${nameCode}-${random}`;
+            }
+            
             // =============================================
             // FUNCIONES PÚBLICAS
             // =============================================
@@ -1214,6 +1322,7 @@
                 // =============================================
                 openLoginModal: function() {
                     document.getElementById('registerModal').style.display = 'none';
+                    document.getElementById('dashboardModal').style.display = 'none';
                     document.getElementById('loginModal').style.display = 'flex';
                     document.getElementById('loginEmail').focus();
                     document.body.style.overflow = 'hidden';
@@ -1229,6 +1338,7 @@
                 
                 openRegisterModal: function() {
                     document.getElementById('loginModal').style.display = 'none';
+                    document.getElementById('dashboardModal').style.display = 'none';
                     document.getElementById('registerModal').style.display = 'flex';
                     document.getElementById('companyName').focus();
                     document.body.style.overflow = 'hidden';
@@ -1242,6 +1352,28 @@
                         document.getElementById('registerForm').reset();
                         document.body.style.overflow = 'auto';
                     }
+                },
+                
+                openDashboardModal: function() {
+                    document.getElementById('loginModal').style.display = 'none';
+                    document.getElementById('registerModal').style.display = 'none';
+                    document.getElementById('dashboardModal').style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                    
+                    if (_currentUser) {
+                        document.getElementById('welcomeMessage').textContent = 
+                            `Bienvenido, ${_currentUser.nombre} (${_currentUser.rol})`;
+                    }
+                },
+                
+                closeDashboardModal: function() {
+                    document.getElementById('dashboardModal').style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                },
+                
+                goToDashboard: function() {
+                    this.openDashboardModal();
+                    this.loadTableData('empresas');
                 },
                 
                 // =============================================
@@ -1271,7 +1403,7 @@
                 },
                 
                 // =============================================
-                // LOGIN SIMPLIFICADO - SOLO CON TABLA USUARIOS
+                // AUTENTICACIÓN COMPATIBLE CON SQL
                 // =============================================
                 login: async function() {
                     const email = document.getElementById('loginEmail')?.value.trim();
@@ -1287,37 +1419,53 @@
                     try {
                         const supabase = getSupabase();
                         
-                        // Buscar usuario directamente en la tabla usuarios
-                        const { data: usuarios, error } = await supabase
+                        // Buscar usuario en la tabla usuarios
+                        const { data: usuario, error } = await supabase
                             .from('usuarios')
-                            .select('*, empresas(*)')
+                            .select('*')
                             .eq('email', email)
-                            .eq('password_hash', password) // En producción usar hash seguro
                             .single();
                         
-                        this.hideLoading();
-                        
-                        if (error || !usuarios) {
+                        if (error || !usuario) {
                             console.error('Error de autenticación:', error);
                             this.showAlert('loginAlert', 'error', 'Credenciales incorrectas');
+                            this.hideLoading();
                             return;
                         }
                         
-                        if (usuarios) {
-                            // Guardar usuario en localStorage
-                            localStorage.setItem('nexial_user', JSON.stringify(usuarios));
+                        // Verificar contraseña (en un sistema real, usaríamos hash seguro)
+                        // Para este ejemplo, comparamos directamente
+                        if (usuario.password_hash === generateSecurePasswordHash(password, usuario.salt)) {
+                            _currentUser = usuario;
                             
-                            // Crear sesión simple
+                            // Actualizar último login
+                            await supabase
+                                .from('usuarios')
+                                .update({ 
+                                    ultimo_login: new Date().toISOString(),
+                                    actualizado_en: new Date().toISOString()
+                                })
+                                .eq('id', usuario.id);
+                            
+                            // Guardar en localStorage
+                            localStorage.setItem('nexial_user', JSON.stringify(usuario));
                             localStorage.setItem('nexial_session', 'true');
+                            
+                            // Actualizar UI
+                            this.updateUIAfterLogin();
                             
                             this.showAlert('loginAlert', 'success', '✅ Login exitoso! Redirigiendo...');
                             
-                            // Redirigir después de 2 segundos
                             setTimeout(() => {
                                 this.closeLoginModal();
-                                window.location.href = 'dashboard.html';
-                            }, 2000);
+                                this.openDashboardModal();
+                                this.loadTableData('empresas');
+                            }, 1500);
+                        } else {
+                            this.showAlert('loginAlert', 'error', 'Credenciales incorrectas');
                         }
+                        
+                        this.hideLoading();
                         
                     } catch (error) {
                         this.hideLoading();
@@ -1327,10 +1475,9 @@
                 },
                 
                 // =============================================
-                // REGISTRO DE EMPRESA SIMPLIFICADO
+                // REGISTRO COMPATIBLE CON SQL
                 // =============================================
-                registerCompany: async function(event) {
-                    event.preventDefault();
+                registerCompany: async function() {
                     this.showLoading();
                     
                     // Validar contraseñas
@@ -1349,43 +1496,41 @@
                         return;
                     }
                     
-                    // Recopilar datos
+                    // Recopilar datos del formulario
                     const companyData = {
                         nombre: document.getElementById('companyName')?.value.trim(),
-                        tipo_documento: document.getElementById('docType')?.value,
-                        nit: document.getElementById('companyDocNumber')?.value.trim(),
+                        ruc: document.getElementById('companyDocNumber')?.value.trim(),
                         email: document.getElementById('companyEmail')?.value.trim().toLowerCase(),
-                        telefono: (document.getElementById('countryCode')?.value || '+591') + ' ' + 
+                        telefono: (document.getElementById('countryCode')?.value || '+591') + 
                                  (document.getElementById('companyPhone')?.value || ''),
-                        activa: true,
-                        creado_en: new Date().toISOString()
+                        direccion: 'Por definir',
+                        pais: 'Bolivia',
+                        nivel_seguridad: 'alto',
+                        idioma_default: 'es',
+                        moneda_default: 'USD',
+                        zona_horaria: 'UTC-5',
+                        activo: true,
+                        verificada: false
                     };
                     
                     const userData = {
-                        nombres: document.getElementById('names')?.value.trim(),
-                        primer_apellido: document.getElementById('firstLastName')?.value.trim(),
-                        segundo_apellido: document.getElementById('secondLastName')?.value.trim() || '',
                         email: document.getElementById('companyEmail')?.value.trim().toLowerCase(),
-                        password: password,
-                        nombre_completo: (document.getElementById('names')?.value.trim() || '') + ' ' + 
-                                       (document.getElementById('firstLastName')?.value.trim() || ''),
-                        rol: 'admin_empresa'
+                        nombre: document.getElementById('names')?.value.trim(),
+                        apellido: (document.getElementById('firstLastName')?.value.trim() || '') + 
+                                 (document.getElementById('secondLastName')?.value.trim() ? ' ' + 
+                                  document.getElementById('secondLastName')?.value.trim() : ''),
+                        rol: 'Director General',
+                        activo: true,
+                        departamento: 'Dirección',
+                        salt: Math.random().toString(36).substring(2, 10),
+                        password_hash: generateSecurePasswordHash(password, Math.random().toString(36).substring(2, 10))
                     };
                     
                     // Validar campos requeridos
-                    const requiredFields = ['nombre', 'tipo_documento', 'nit', 'email', 'nombres', 'primer_apellido'];
+                    const requiredFields = ['nombre', 'ruc', 'email'];
                     for (const field of requiredFields) {
-                        const value = companyData[field] || userData[field];
-                        if (!value || value.trim() === '') {
-                            const fieldNames = {
-                                'nombre': 'Razón Social',
-                                'tipo_documento': 'Tipo de Documento',
-                                'nit': 'Número de Documento',
-                                'email': 'Email Corporativo',
-                                'nombres': 'Nombres',
-                                'primer_apellido': 'Primer Apellido'
-                            };
-                            this.showAlert('registerAlert', 'error', `Por favor complete: ${fieldNames[field] || field}`);
+                        if (!companyData[field] || companyData[field].trim() === '') {
+                            this.showAlert('registerAlert', 'error', `Por favor complete todos los campos requeridos`);
                             this.hideLoading();
                             return;
                         }
@@ -1395,83 +1540,103 @@
                         const supabase = getSupabase();
                         
                         // 1. Verificar si el email ya existe
-                        const { data: existingUser } = await supabase
+                        const { data: existingEmail } = await supabase
                             .from('usuarios')
                             .select('id')
                             .eq('email', userData.email)
                             .single();
                         
-                        if (existingUser) {
+                        if (existingEmail) {
                             throw new Error('El email ya está registrado en el sistema');
                         }
                         
-                        // 2. Crear empresa (trigger generará código automático)
-                        const { data: empresaData, error: empresaError } = await supabase
+                        // 2. Verificar si el RUC ya existe
+                        const { data: existingRuc } = await supabase
                             .from('empresas')
-                            .insert([companyData])
+                            .select('id')
+                            .eq('ruc', companyData.ruc)
+                            .single();
+                        
+                        if (existingRuc) {
+                            throw new Error('El número de documento ya está registrado');
+                        }
+                        
+                        // 3. Generar código único para la empresa
+                        const empresaCodigo = generateCompanyCode(companyData.nombre);
+                        
+                        // 4. Crear empresa
+                        const empresaInsert = {
+                            id: empresaCodigo,
+                            codigo: empresaCodigo,
+                            ...companyData
+                        };
+                        
+                        const { data: empresa, error: empresaError } = await supabase
+                            .from('empresas')
+                            .insert([empresaInsert])
                             .select()
                             .single();
                         
                         if (empresaError) {
-                            // Si ya existe la empresa por NIT
-                            if (empresaError.code === '23505') {
-                                // Intentar obtener la empresa existente
-                                const { data: existingEmpresa } = await supabase
-                                    .from('empresas')
-                                    .select('*')
-                                    .eq('nit', companyData.nit)
-                                    .single();
-                                
-                                if (existingEmpresa) {
-                                    empresaData = existingEmpresa;
-                                } else {
-                                    throw new Error('Empresa ya registrada');
-                                }
-                            } else {
-                                throw new Error(`Error empresa: ${empresaError.message}`);
-                            }
+                            throw new Error(`Error al crear empresa: ${empresaError.message}`);
                         }
                         
-                        // 3. Crear usuario admin (trigger generará código automático)
+                        // 5. Crear usuario administrador
                         const usuarioInsert = {
-                            empresa_id: empresaData.id,
-                            email: userData.email,
-                            password_hash: userData.password, // En producción, usar bcrypt
-                            nombre: userData.nombre_completo,
-                            apellido: userData.primer_apellido + (userData.segundo_apellido ? ' ' + userData.segundo_apellido : ''),
-                            rol: 'admin_empresa',
-                            activo: true,
-                            creado_en: new Date().toISOString()
+                            empresa_id: empresa.id,
+                            ...userData
                         };
                         
-                        const { data: usuarioData, error: usuarioError } = await supabase
+                        const { data: usuario, error: usuarioError } = await supabase
                             .from('usuarios')
                             .insert([usuarioInsert])
                             .select()
                             .single();
                         
-                        if (usuarioError) throw new Error(`Error usuario: ${usuarioError.message}`);
+                        if (usuarioError) {
+                            // Si falla el usuario, eliminar la empresa creada
+                            await supabase.from('empresas').delete().eq('id', empresa.id);
+                            throw new Error(`Error al crear usuario: ${usuarioError.message}`);
+                        }
+                        
+                        // 6. Crear configuración de seguridad por defecto
+                        const configSeguridad = {
+                            empresa_id: empresa.id,
+                            intentos_maximos_login: 5,
+                            tiempo_bloqueo_minutos: 30,
+                            sesiones_concurrentes_max: 3,
+                            requiere_mfa: false,
+                            longitud_minima_password: 12,
+                            expiracion_password_dias: 90,
+                            encriptacion_nivel: 'AES-256',
+                            horario_acceso_inicio: '08:00',
+                            horario_acceso_fin: '18:00'
+                        };
+                        
+                        await supabase
+                            .from('configuracion_seguridad')
+                            .insert([configSeguridad]);
                         
                         this.hideLoading();
                         
                         // Mostrar éxito
                         this.showAlert('registerAlert', 'success', 
                             '✅ ¡Registro exitoso!<br><br>' +
-                            'Tu empresa ha sido registrada en PostgreSQL.<br><br>' +
-                            '<strong>Credenciales de acceso:</strong><br>' +
-                            '📧 Email: ' + userData.email + '<br>' +
-                            '🔑 Contraseña: ' + userData.password + '<br>' +
-                            '🏢 Código Empresa: Se generará automáticamente<br><br>' +
+                            'Tu empresa ha sido registrada correctamente.<br><br>' +
+                            `<strong>Datos de acceso:</strong><br>` +
+                            `🏢 Empresa: ${companyData.nombre}<br>` +
+                            `📧 Email: ${userData.email}<br>` +
+                            `🔑 Contraseña: ${'*'.repeat(password.length)}<br>` +
+                            `🔐 Código Empresa: ${empresaCodigo}<br><br>` +
                             'Puedes iniciar sesión ahora.');
                         
-                        // Autocompletar login y cerrar después de 3 segundos
+                        // Autocompletar login después de 3 segundos
                         setTimeout(() => {
                             document.getElementById('registerForm').reset();
                             this.closeRegisterModal();
                             this.openLoginModal();
                             document.getElementById('loginEmail').value = userData.email;
-                            document.getElementById('loginPassword').value = userData.password;
-                            document.getElementById('loginPassword').focus();
+                            document.getElementById('loginPassword').value = password;
                         }, 3000);
                         
                     } catch (error) {
@@ -1484,6 +1649,375 @@
                 },
                 
                 // =============================================
+                // GESTIÓN DE DATOS - CRUD
+                // =============================================
+                loadTableData: async function(tableName) {
+                    if (!_currentUser) {
+                        this.showAlert('loginAlert', 'error', 'Debe iniciar sesión primero');
+                        return;
+                    }
+                    
+                    this.showLoading();
+                    _currentTable = tableName;
+                    
+                    try {
+                        const supabase = getSupabase();
+                        let query = supabase.from(tableName).select('*');
+                        
+                        // Filtrar por empresa si no es Director Corporativo
+                        if (_currentUser.rol !== 'Director Corporativo' && tableName !== 'empresas') {
+                            query = query.eq('empresa_id', _currentUser.empresa_id);
+                        }
+                        
+                        const { data, error } = await query;
+                        
+                        this.hideLoading();
+                        
+                        if (error) {
+                            console.error('Error cargando datos:', error);
+                            this.showTableError(tableName, error.message);
+                            return;
+                        }
+                        
+                        this.displayTableData(tableName, data);
+                        
+                    } catch (error) {
+                        this.hideLoading();
+                        console.error('Error:', error);
+                        this.showTableError(tableName, error.message);
+                    }
+                },
+                
+                displayTableData: function(tableName, data) {
+                    const tableContent = document.getElementById('tableContent');
+                    
+                    if (!data || data.length === 0) {
+                        tableContent.innerHTML = `
+                            <h3 style="color: var(--secondary);">${this.getTableDisplayName(tableName)}</h3>
+                            <p style="opacity: 0.7;">No hay registros en esta tabla.</p>
+                            <button class="cyber-btn add-btn" onclick="Nexial.openAddModal()">
+                                <i class="fas fa-plus"></i> Agregar Nuevo
+                            </button>
+                        `;
+                        return;
+                    }
+                    
+                    // Crear tabla
+                    let html = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 style="color: var(--secondary);">${this.getTableDisplayName(tableName)} (${data.length} registros)</h3>
+                            <button class="cyber-btn add-btn" onclick="Nexial.openAddModal()">
+                                <i class="fas fa-plus"></i> Agregar Nuevo
+                            </button>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                    `;
+                    
+                    // Encabezados de tabla
+                    const columns = Object.keys(data[0]);
+                    columns.forEach(col => {
+                        if (col !== 'created_at' && col !== 'updated_at' && !col.includes('encrypted')) {
+                            html += `<th>${this.getColumnDisplayName(col)}</th>`;
+                        }
+                    });
+                    
+                    html += `<th>Acciones</th></tr></thead><tbody>`;
+                    
+                    // Filas de datos
+                    data.forEach((row, index) => {
+                        html += `<tr>`;
+                        columns.forEach(col => {
+                            if (col !== 'created_at' && col !== 'updated_at' && !col.includes('encrypted')) {
+                                let value = row[col];
+                                if (value === null || value === undefined) value = '';
+                                if (typeof value === 'object') value = JSON.stringify(value);
+                                html += `<td title="${value}">${String(value).substring(0, 30)}${String(value).length > 30 ? '...' : ''}</td>`;
+                            }
+                        });
+                        
+                        html += `
+                            <td>
+                                <button class="action-btn edit-btn" onclick="Nexial.editRow('${tableName}', '${row.id || row.codigo}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn delete-btn" onclick="Nexial.deleteRow('${tableName}', '${row.id || row.codigo}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>`;
+                    });
+                    
+                    html += `</tbody></table></div>`;
+                    
+                    tableContent.innerHTML = html;
+                },
+                
+                getTableDisplayName: function(tableName) {
+                    const names = {
+                        'empresas': 'Empresas',
+                        'usuarios': 'Usuarios',
+                        'clientes': 'Clientes',
+                        'productos': 'Productos',
+                        'ventas': 'Ventas',
+                        'objetivos': 'Objetivos',
+                        'metas': 'Metas',
+                        'almacenes': 'Almacenes',
+                        'pagos': 'Pagos',
+                        'auditoria': 'Auditoría'
+                    };
+                    return names[tableName] || tableName;
+                },
+                
+                getColumnDisplayName: function(columnName) {
+                    const names = {
+                        'id': 'ID',
+                        'codigo': 'Código',
+                        'nombre': 'Nombre',
+                        'email': 'Email',
+                        'telefono': 'Teléfono',
+                        'direccion': 'Dirección',
+                        'ruc': 'RUC',
+                        'activo': 'Activo',
+                        'rol': 'Rol',
+                        'empresa_id': 'Empresa',
+                        'created_at': 'Creado',
+                        'updated_at': 'Actualizado'
+                    };
+                    return names[columnName] || columnName;
+                },
+                
+                showTableError: function(tableName, error) {
+                    const tableContent = document.getElementById('tableContent');
+                    tableContent.innerHTML = `
+                        <h3 style="color: var(--secondary);">${this.getTableDisplayName(tableName)}</h3>
+                        <div class="alert alert-error">
+                            <strong>Error:</strong> ${error}
+                        </div>
+                        <p style="opacity: 0.7;">No se pudieron cargar los datos. Verifica tus permisos.</p>
+                    `;
+                },
+                
+                openAddModal: function() {
+                    if (!_currentTable) {
+                        alert('Seleccione una tabla primero');
+                        return;
+                    }
+                    
+                    const tableName = _currentTable;
+                    const modalContent = `
+                        <div class="cyber-modal" id="addModal" style="display: flex;">
+                            <div class="modal-content">
+                                <button class="close-modal" onclick="document.getElementById('addModal').style.display='none'">×</button>
+                                <div class="modal-header">
+                                    <h2><i class="fas fa-plus"></i> Agregar a ${this.getTableDisplayName(tableName)}</h2>
+                                </div>
+                                <div id="addFormContent">
+                                    <p>Cargando formulario...</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Crear modal temporal
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = modalContent;
+                    document.body.appendChild(tempDiv.firstElementChild);
+                    
+                    // Cargar formulario dinámico
+                    this.loadAddForm(tableName);
+                },
+                
+                loadAddForm: function(tableName) {
+                    // Esta función cargaría un formulario dinámico basado en la estructura de la tabla
+                    // Por simplicidad, mostraremos un formulario básico
+                    const formContent = document.getElementById('addFormContent');
+                    
+                    const formHtml = `
+                        <form id="dynamicAddForm">
+                            <div class="form-group">
+                                <label>Nombre</label>
+                                <input type="text" id="addNombre" required>
+                            </div>
+                            ${tableName === 'usuarios' ? `
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="email" id="addEmail" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Rol</label>
+                                    <select id="addRol">
+                                        <option value="Director General">Director General</option>
+                                        <option value="Director Financiero">Director Financiero</option>
+                                        <option value="Supervisor Senior">Supervisor Senior</option>
+                                        <option value="Ejecutivo Comercial">Ejecutivo Comercial</option>
+                                        <option value="Especialista Logístico">Especialista Logístico</option>
+                                        <option value="Gestor de Almacén">Gestor de Almacén</option>
+                                    </select>
+                                </div>
+                            ` : ''}
+                            ${tableName === 'productos' ? `
+                                <div class="form-group">
+                                    <label>Precio</label>
+                                    <input type="number" id="addPrecio" step="0.01" required>
+                                </div>
+                            ` : ''}
+                            <div class="form-actions">
+                                <button type="button" class="cyber-btn btn-secondary" onclick="document.getElementById('addModal').style.display='none'">
+                                    Cancelar
+                                </button>
+                                <button type="button" class="cyber-btn" onclick="Nexial.saveNewRow('${tableName}')">
+                                    Guardar
+                                </button>
+                            </div>
+                        </form>
+                    `;
+                    
+                    formContent.innerHTML = formHtml;
+                },
+                
+                saveNewRow: async function(tableName) {
+                    this.showLoading();
+                    
+                    try {
+                        const supabase = getSupabase();
+                        const newData = {};
+                        
+                        // Recoger datos del formulario
+                        if (document.getElementById('addNombre')) {
+                            newData.nombre = document.getElementById('addNombre').value;
+                        }
+                        if (document.getElementById('addEmail')) {
+                            newData.email = document.getElementById('addEmail').value;
+                        }
+                        if (document.getElementById('addRol')) {
+                            newData.rol = document.getElementById('addRol').value;
+                        }
+                        if (document.getElementById('addPrecio')) {
+                            newData.precio_venta = parseFloat(document.getElementById('addPrecio').value);
+                        }
+                        
+                        // Agregar empresa_id si no es Director Corporativo
+                        if (_currentUser.rol !== 'Director Corporativo' && tableName !== 'empresas') {
+                            newData.empresa_id = _currentUser.empresa_id;
+                        }
+                        
+                        // Agregar campos por defecto
+                        newData.activo = true;
+                        newData.creado_en = new Date().toISOString();
+                        newData.actualizado_en = new Date().toISOString();
+                        
+                        const { data, error } = await supabase
+                            .from(tableName)
+                            .insert([newData])
+                            .select();
+                        
+                        this.hideLoading();
+                        
+                        if (error) {
+                            alert('Error al guardar: ' + error.message);
+                            return;
+                        }
+                        
+                        alert('✅ Registro guardado exitosamente');
+                        document.getElementById('addModal').style.display = 'none';
+                        this.loadTableData(tableName);
+                        
+                    } catch (error) {
+                        this.hideLoading();
+                        alert('Error: ' + error.message);
+                    }
+                },
+                
+                editRow: async function(tableName, rowId) {
+                    this.showLoading();
+                    
+                    try {
+                        const supabase = getSupabase();
+                        const { data, error } = await supabase
+                            .from(tableName)
+                            .select('*')
+                            .eq(rowId.includes('-') ? 'id' : 'codigo', rowId)
+                            .single();
+                        
+                        this.hideLoading();
+                        
+                        if (error || !data) {
+                            alert('No se pudo cargar el registro');
+                            return;
+                        }
+                        
+                        const newValue = prompt(`Editar registro (ID: ${rowId})\nIngrese el nuevo valor para "nombre":`, data.nombre || '');
+                        
+                        if (newValue !== null) {
+                            this.showLoading();
+                            
+                            const { error: updateError } = await supabase
+                                .from(tableName)
+                                .update({ 
+                                    nombre: newValue,
+                                    actualizado_en: new Date().toISOString()
+                                })
+                                .eq(rowId.includes('-') ? 'id' : 'codigo', rowId);
+                            
+                            this.hideLoading();
+                            
+                            if (updateError) {
+                                alert('Error al actualizar: ' + updateError.message);
+                            } else {
+                                alert('✅ Registro actualizado');
+                                this.loadTableData(tableName);
+                            }
+                        }
+                        
+                    } catch (error) {
+                        this.hideLoading();
+                        alert('Error: ' + error.message);
+                    }
+                },
+                
+                deleteRow: async function(tableName, rowId) {
+                    if (!confirm('¿Está seguro de eliminar este registro?')) {
+                        return;
+                    }
+                    
+                    this.showLoading();
+                    
+                    try {
+                        const supabase = getSupabase();
+                        const { error } = await supabase
+                            .from(tableName)
+                            .delete()
+                            .eq(rowId.includes('-') ? 'id' : 'codigo', rowId);
+                        
+                        this.hideLoading();
+                        
+                        if (error) {
+                            alert('Error al eliminar: ' + error.message);
+                            return;
+                        }
+                        
+                        alert('✅ Registro eliminado');
+                        this.loadTableData(tableName);
+                        
+                    } catch (error) {
+                        this.hideLoading();
+                        alert('Error: ' + error.message);
+                    }
+                },
+                
+                exportData: function() {
+                    if (!_currentTable) {
+                        alert('Seleccione una tabla primero');
+                        return;
+                    }
+                    
+                    alert(`Exportando datos de ${_currentTable}...\n\nEn una versión completa, esto generaría un archivo CSV/Excel con todos los datos de la tabla.`);
+                },
+                
+                // =============================================
                 // FUNCIONES AUXILIARES
                 // =============================================
                 recoverPassword: async function() {
@@ -1492,7 +2026,6 @@
                         try {
                             const supabase = getSupabase();
                             
-                            // Buscar usuario
                             const { data: usuario } = await supabase
                                 .from('usuarios')
                                 .select('*')
@@ -1500,9 +2033,7 @@
                                 .single();
                             
                             if (usuario) {
-                                // En un sistema real, aquí enviarías un email
-                                // Por ahora, mostramos la contraseña (solo para desarrollo)
-                                alert(`Usuario encontrado:\nEmail: ${usuario.email}\n\nEn un sistema real, se enviaría un enlace de recuperación.`);
+                                alert(`Solicitud recibida para: ${usuario.email}\n\nEn un sistema real, se enviaría un enlace de recuperación al email registrado.`);
                             } else {
                                 alert('Usuario no encontrado');
                             }
@@ -1511,6 +2042,29 @@
                             alert('Error de conexión.');
                         }
                     }
+                },
+                
+                logout: function() {
+                    _currentUser = null;
+                    localStorage.removeItem('nexial_user');
+                    localStorage.removeItem('nexial_session');
+                    
+                    this.updateUIAfterLogout();
+                    this.closeDashboardModal();
+                    
+                    alert('✅ Sesión cerrada exitosamente');
+                },
+                
+                updateUIAfterLogin: function() {
+                    document.getElementById('loginBtn').style.display = 'none';
+                    document.getElementById('logoutBtn').style.display = 'block';
+                    document.getElementById('dashboardLink').style.display = 'block';
+                },
+                
+                updateUIAfterLogout: function() {
+                    document.getElementById('loginBtn').style.display = 'block';
+                    document.getElementById('logoutBtn').style.display = 'none';
+                    document.getElementById('dashboardLink').style.display = 'none';
                 },
                 
                 showLoading: function() {
@@ -1544,17 +2098,22 @@
                 initialize: async function() {
                     createParticles();
                     
-                    console.log('🚀 Nexial Suite v4.1 - Simplified Auth');
+                    console.log('🚀 Nexial Suite v5.0 - Compatible con SQL');
                     console.log('🔗 Supabase:', SUPABASE_URL);
-                    console.log('📊 PostgreSQL con triggers automáticos');
-                    console.log('🔒 Autenticación simplificada con tabla usuarios');
+                    console.log('📊 PostgreSQL con triggers automáticos y RLS');
+                    console.log('🔒 Autenticación compatible con estructura SQL');
                     
-                    // Verificar si ya hay sesión
+                    // Verificar sesión activa
                     const session = localStorage.getItem('nexial_session');
-                    if (session === 'true') {
-                        const user = localStorage.getItem('nexial_user');
-                        if (user) {
-                            console.log('👤 Sesión activa:', JSON.parse(user).email);
+                    const userData = localStorage.getItem('nexial_user');
+                    
+                    if (session === 'true' && userData) {
+                        try {
+                            _currentUser = JSON.parse(userData);
+                            this.updateUIAfterLogin();
+                            console.log('👤 Sesión restaurada:', _currentUser.email);
+                        } catch (e) {
+                            console.error('Error restaurando sesión:', e);
                         }
                     }
                     
@@ -1565,6 +2124,10 @@
                     
                     document.getElementById('registerModal')?.addEventListener('click', (e) => {
                         if (e.target === e.currentTarget) this.closeRegisterModal();
+                    });
+                    
+                    document.getElementById('dashboardModal')?.addEventListener('click', (e) => {
+                        if (e.target === e.currentTarget) this.closeDashboardModal();
                     });
                     
                     // Enter en login
