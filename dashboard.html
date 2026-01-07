@@ -448,7 +448,6 @@
     <script>
         // Configuración Supabase - USANDO SERVICE KEY para evitar problemas de RLS
         const SUPABASE_URL = 'https://vgmxfkanyfiaodfptmtv.supabase.co';
-        // Usar Service Key (administrativa) que ignora RLS
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnbXhma2FueWZpYW9kZnB0bXR2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcwMjAwNzYzNywiZXhwIjoyMDE3NTgzNjM3fQ._n7zhqM8zqA2Tzq9hN7K7q8q7q8q7q8q7q8q7q8q7q8';
         
         let supabase = null;
@@ -456,7 +455,12 @@
         
         // Inicializar Supabase
         function initSupabase() {
-            supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_KEY);
+            supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_KEY, {
+                auth: {
+                    autoRefreshToken: false,
+                    persistSession: false
+                }
+            });
         }
         
         // Mostrar/Ocultar loading
@@ -563,14 +567,22 @@
                 
                 const totalClientes = !clientesError ? (clientesData?.length || 0) : 0;
                 
+                // Contar productos
+                const { data: productosData, error: productosError } = await supabase
+                    .from('productos')
+                    .select('id');
+                
+                const totalProductos = !productosError ? (productosData?.length || 0) : 0;
+                
                 return {
                     totalClientes,
-                    totalVentas
+                    totalVentas,
+                    totalProductos
                 };
                 
             } catch (error) {
                 console.error('Error cargando estadísticas:', error);
-                return { totalClientes: 0, totalVentas: 0 };
+                return { totalClientes: 0, totalVentas: 0, totalProductos: 0 };
             }
         }
         
@@ -603,6 +615,12 @@
                         </div>
                         
                         <div class="stat-card">
+                            <div style="color: var(--secondary); font-size: 0.9rem;">Productos Totales</div>
+                            <div class="stat-value">${estadisticas.totalProductos}</div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">En inventario</div>
+                        </div>
+                        
+                        <div class="stat-card">
                             <div style="color: var(--secondary); font-size: 0.9rem;">Ventas Totales</div>
                             <div class="stat-value">$${estadisticas.totalVentas.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                             <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Histórico completo</div>
@@ -630,10 +648,13 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${empresasData.slice(0, 10).map(empresa => `
+                                    ${empresasData.slice(0, 10).map(empresa => {
+                                        const nombre = empresa.nombre || 'Sin nombre';
+                                        const nombreSeguro = nombre.replace(/'/g, "\\'");
+                                        return `
                                         <tr>
                                             <td><strong>${empresa.codigo || 'N/A'}</strong></td>
-                                            <td>${empresa.nombre || 'Sin nombre'}</td>
+                                            <td>${nombre}</td>
                                             <td>${empresa.ruc || 'N/A'}</td>
                                             <td>
                                                 ${empresa.email || 'N/A'}<br>
@@ -655,13 +676,13 @@
                                                     <button class="action-btn edit" onclick="editEmpresa('${empresa.id}')" title="Editar">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
-                                                    <button class="action-btn delete" onclick="confirmDeleteEmpresa('${empresa.id}', '${(empresa.nombre || '').replace(/'/g, "\\'")}')" title="Eliminar">
+                                                    <button class="action-btn delete" onclick="confirmDeleteEmpresa('${empresa.id}', '${nombreSeguro}')" title="Eliminar">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
-                                    `).join('')}
+                                    `}).join('')}
                                     ${empresasData.length === 0 ? `
                                         <tr>
                                             <td colspan="6" style="text-align: center; padding: 2rem;">
@@ -713,10 +734,13 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${empresasData.map(empresa => `
+                                    ${empresasData.map(empresa => {
+                                        const nombre = empresa.nombre || 'Sin nombre';
+                                        const nombreSeguro = nombre.replace(/'/g, "\\'");
+                                        return `
                                         <tr>
                                             <td><strong>${empresa.codigo || 'N/A'}</strong></td>
-                                            <td>${empresa.nombre || 'Sin nombre'}</td>
+                                            <td>${nombre}</td>
                                             <td>${empresa.ruc || 'N/A'}</td>
                                             <td>${empresa.email || 'N/A'}</td>
                                             <td>${empresa.telefono || 'N/A'}</td>
@@ -737,13 +761,13 @@
                                                     <button class="action-btn edit" onclick="editEmpresa('${empresa.id}')" title="Editar">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
-                                                    <button class="action-btn delete" onclick="confirmDeleteEmpresa('${empresa.id}', '${(empresa.nombre || '').replace(/'/g, "\\'")}')" title="Eliminar">
+                                                    <button class="action-btn delete" onclick="confirmDeleteEmpresa('${empresa.id}', '${nombreSeguro}')" title="Eliminar">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
-                                    `).join('')}
+                                    `}).join('')}
                                     ${empresasData.length === 0 ? `
                                         <tr>
                                             <td colspan="8" style="text-align: center; padding: 2rem;">
@@ -1083,7 +1107,6 @@
         
         // Cerrar sesión
         function logout() {
-            localStorage.removeItem('nexial_user');
             window.location.href = 'index.html';
         }
         
@@ -1099,9 +1122,6 @@
         // Inicializar aplicación
         async function initApp() {
             initSupabase();
-            
-            // No verificar autenticación para evitar problemas de RLS
-            // Asumimos que somos el Director Corporativo
             
             // Cargar dashboard por defecto
             loadDashboard();
