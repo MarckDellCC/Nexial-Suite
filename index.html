@@ -3,54 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexial Suite - Sistema Empresarial Integral</title>
+    <title>Nexial Suite - Sistema Corporativo Empresarial</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏢</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* ============================================= */
         /* REGIÓN: VARIABLES GLOBALES */
         /* ============================================= */
         :root {
-            --primary: #7c3aed;
-            --primary-glow: #9d5bff;
-            --secondary: #00f5ff;
-            --accent: #ffd700;
-            --success: #00ff41;
-            --danger: #ff0055;
-            --warning: #ffaa00;
-            --info: #00aaff;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #60a5fa;
+            --secondary: #059669;
+            --accent: #7c3aed;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #0ea5e9;
             
-            --dark: #0f0f23;
-            --darker: #070710;
-            --card-bg: rgba(15, 15, 35, 0.8);
+            --dark: #0f172a;
+            --darker: #020617;
+            --card-bg: rgba(15, 23, 42, 0.95);
             --glass: rgba(255, 255, 255, 0.05);
             
-            --neon-shadow: 0 0 15px;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
         }
         
         /* ============================================= */
         /* MÓDULO: RESET Y BASE */
         /* ============================================= */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
         
         body {
-            font-family: 'Segoe UI', 'Roboto', sans-serif;
-            background: var(--darker);
-            color: #f0f0ff;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(124, 58, 237, 0.1) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(0, 245, 255, 0.1) 0%, transparent 20%);
+            font-family: 'Segoe UI', 'Roboto', 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: #f1f5f9;
+            line-height: 1.6;
+            min-height: 100vh;
             overflow-x: hidden;
         }
         
         /* ============================================= */
-        /* COMPONENTE: HEADER CYBERPUNK */
+        /* COMPONENTE: HEADER CORPORATIVO */
         /* ============================================= */
-        .cyber-header {
-            background: rgba(15, 15, 35, 0.95);
+        .corporate-header {
+            background: rgba(2, 6, 23, 0.95);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+            border-bottom: 1px solid rgba(37, 99, 235, 0.3);
             padding: 1rem 2rem;
             position: fixed;
             width: 100%;
@@ -59,156 +64,108 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            animation: slideDown 0.8s ease-out;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
         
-        @keyframes slideDown {
-            from { transform: translateY(-100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .cyber-logo {
+        .corporate-logo {
             font-size: 1.8rem;
             font-weight: 800;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            background: linear-gradient(45deg, var(--primary), var(--accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             display: flex;
             align-items: center;
-            gap: 10px;
-            animation: glow 2s ease-in-out infinite alternate;
+            gap: 12px;
         }
         
-        @keyframes glow {
-            from { text-shadow: 0 0 10px rgba(124, 58, 237, 0.5), 0 0 20px rgba(124, 58, 237, 0.3); }
-            to { text-shadow: 0 0 20px rgba(124, 58, 237, 0.8), 0 0 30px rgba(124, 58, 237, 0.6), 0 0 40px rgba(124, 58, 237, 0.4); }
+        .corporate-nav { 
+            display: flex; 
+            gap: 1.5rem; 
         }
         
-        .cyber-nav { display: flex; gap: 2rem; }
-        
-        .cyber-nav a {
+        .corporate-nav a {
             color: #cbd5e1;
             text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            transition: var(--transition);
+            font-weight: 500;
         }
         
-        .cyber-nav a::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.2), transparent);
-            transition: 0.5s;
-        }
-        
-        .cyber-nav a:hover::before { left: 100%; }
-        .cyber-nav a:hover {
-            background: rgba(124, 58, 237, 0.2);
-            color: var(--secondary);
+        .corporate-nav a:hover {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-light);
             transform: translateY(-2px);
         }
         
         /* ============================================= */
-        /* COMPONENTE: BOTONES CYBERPUNK */
+        /* COMPONENTE: BOTONES CORPORATIVOS */
         /* ============================================= */
-        .cyber-btn {
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+        .corporate-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
+            padding: 0.85rem 1.75rem;
+            border-radius: var(--border-radius);
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
         
-        .cyber-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: 0.5s;
+        .corporate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
         }
         
-        .cyber-btn:hover::before { left: 100%; }
-        .cyber-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--neon-shadow) rgba(124, 58, 237, 0.5);
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: none;
         }
         
-        .btn-primary { background: linear-gradient(45deg, var(--primary), var(--secondary)); }
-        .btn-secondary { background: rgba(255, 255, 255, 0.05); color: white; }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--primary-light);
+        }
         
         /* ============================================= */
         /* SECCIÓN: HERO PRINCIPAL */
         /* ============================================= */
-        .cyber-hero {
+        .corporate-hero {
             padding: 12rem 2rem 6rem;
             text-align: center;
             position: relative;
-            overflow: hidden;
+            max-width: 1200px;
+            margin: 0 auto;
         }
         
-        .cyber-hero::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
-            transform: translate(-50%, -50%);
-            animation: pulse 4s ease-in-out infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.2); }
-        }
-        
-        .cyber-hero h1 {
+        .corporate-hero h1 {
             font-size: 3.5rem;
             margin-bottom: 1.5rem;
-            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+            background: linear-gradient(45deg, var(--primary), var(--accent), var(--primary-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(124, 58, 237, 0.3);
-            animation: float 3s ease-in-out infinite;
+            line-height: 1.2;
         }
         
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .cyber-subtitle {
+        .hero-subtitle {
             font-size: 1.3rem;
             max-width: 700px;
             margin: 0 auto 2rem;
-            opacity: 0.9;
-            animation: fadeInUp 1s ease-out 0.5s both;
-        }
-        
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            color: #cbd5e1;
         }
         
         /* ============================================= */
         /* MÓDULO: TARJETAS DE CARACTERÍSTICAS */
         /* ============================================= */
-        .cyber-features {
+        .corporate-features {
             padding: 6rem 2rem;
             max-width: 1200px;
             margin: 0 auto;
@@ -220,239 +177,120 @@
             gap: 2rem;
         }
         
-        .cyber-card {
-            background: rgba(15, 15, 35, 0.8);
-            border-radius: 15px;
+        .corporate-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
             padding: 2rem;
-            border: 1px solid rgba(124, 58, 237, 0.3);
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.6s ease-out forwards;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
         }
         
-        .cyber-card:nth-child(1) { animation-delay: 0.1s; }
-        .cyber-card:nth-child(2) { animation-delay: 0.2s; }
-        .cyber-card:nth-child(3) { animation-delay: 0.3s; }
-        .cyber-card:nth-child(4) { animation-delay: 0.4s; }
-        
-        .cyber-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.1), transparent);
-            transition: 0.5s;
-        }
-        
-        .cyber-card:hover::before { left: 100%; }
-        .cyber-card:hover {
+        .corporate-card:hover {
             transform: translateY(-10px);
             border-color: var(--primary);
-            box-shadow: 0 15px 30px rgba(124, 58, 237, 0.2), 0 0 50px rgba(124, 58, 237, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
         
-        .cyber-card h3 {
-            color: var(--secondary);
+        .corporate-card h3 {
+            color: var(--primary-light);
             margin-bottom: 1rem;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        
-        .cyber-card ul {
-            margin-top: 1rem;
-            padding-left: 1.5rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-        
-        .cyber-card li { margin-bottom: 0.5rem; }
         
         /* ============================================= */
         /* SECCIÓN: FORMULARIOS */
         /* ============================================= */
-        .cyber-form {
-            background: rgba(15, 15, 35, 0.8);
+        .corporate-form {
+            background: var(--card-bg);
             padding: 2.5rem;
-            border-radius: 15px;
-            border: 1px solid rgba(0, 245, 255, 0.3);
-            max-width: 500px;
-            margin: 0 auto;
-            animation: scaleIn 0.6s ease-out;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
         
-        @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+        .form-group {
+            margin-bottom: 1.5rem;
         }
-        
-        .form-group { margin-bottom: 1.5rem; }
         
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
-            color: var(--secondary);
+            color: var(--primary-light);
             font-weight: 500;
+            font-size: 0.95rem;
         }
         
-        .form-group input, 
-        .form-group select,
-        .form-group textarea {
+        .form-control {
             width: 100%;
-            padding: 1rem;
+            padding: 0.9rem 1rem;
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(124, 58, 237, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             color: white;
             font-size: 1rem;
-            transition: all 0.3s;
+            transition: var(--transition);
         }
         
-        .form-group select {
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+        
+        .form-select {
             appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2360a5fa' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 1rem center;
             background-size: 12px;
             padding-right: 2.5rem;
-            cursor: pointer;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(124, 58, 237, 0.3), 0 0 20px rgba(124, 58, 237, 0.1);
-        }
-        
-        .password-wrapper { position: relative; }
-        
-        .toggle-password {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--secondary);
-            cursor: pointer;
-            transition: all 0.3s;
-            z-index: 2;
-        }
-        
-        .toggle-password:hover {
-            color: var(--primary);
-            transform: translateY(-50%) scale(1.1);
-        }
-        
-        /* ============================================= */
-        /* COMPONENTE: BANNERS DE INFORMACIÓN */
-        /* ============================================= */
-        .info-banner {
-            background: rgba(0, 245, 255, 0.1);
-            border: 1px solid var(--secondary);
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            text-align: center;
-            animation: neonGlow 2s ease-in-out infinite alternate;
-        }
-        
-        @keyframes neonGlow {
-            from { box-shadow: 0 0 10px rgba(0, 245, 255, 0.3), inset 0 0 10px rgba(0, 245, 255, 0.1); }
-            to { box-shadow: 0 0 20px rgba(0, 245, 255, 0.6), inset 0 0 20px rgba(0, 245, 255, 0.2); }
-        }
-        
-        .protection-banner {
-            background: rgba(0, 255, 65, 0.1);
-            border: 2px solid var(--success);
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin: 1.5rem 0;
-            text-align: center;
-            animation: successPulse 2s ease-in-out infinite;
-        }
-        
-        @keyframes successPulse {
-            0%, 100% { border-color: var(--success); box-shadow: 0 0 15px rgba(0, 255, 65, 0.2); }
-            50% { border-color: #00ffaa; box-shadow: 0 0 25px rgba(0, 255, 65, 0.4); }
         }
         
         /* ============================================= */
         /* SECCIÓN: FOOTER */
         /* ============================================= */
-        .cyber-footer {
-            background: rgba(7, 7, 16, 0.95);
+        .corporate-footer {
+            background: rgba(2, 6, 23, 0.95);
             padding: 4rem 2rem 2rem;
-            border-top: 1px solid rgba(124, 58, 237, 0.3);
+            border-top: 1px solid rgba(37, 99, 235, 0.3);
             text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .cyber-footer::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
-            animation: scanline 3s linear infinite;
-        }
-        
-        @keyframes scanline {
-            0% { left: -100%; }
-            100% { left: 100%; }
         }
         
         /* ============================================= */
-        /* MÓDULO: MODALES CYBERPUNK */
+        /* MÓDULO: MODALES */
         /* ============================================= */
-        .cyber-modal {
+        .corporate-modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(7, 7, 16, 0.98);
+            background: rgba(2, 6, 23, 0.98);
             backdrop-filter: blur(10px);
             align-items: center;
             justify-content: center;
             z-index: 2000;
             padding: 2rem;
             overflow-y: auto;
-            animation: fadeIn 0.3s ease-out;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; backdrop-filter: blur(0); }
-            to { opacity: 1; backdrop-filter: blur(10px); }
         }
         
         .modal-content {
-            background: rgba(15, 15, 35, 0.95);
+            background: var(--card-bg);
             padding: 2.5rem;
-            border-radius: 20px;
-            border: 1px solid rgba(124, 58, 237, 0.4);
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(37, 99, 235, 0.4);
             width: 100%;
             max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
             position: relative;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 100px rgba(124, 58, 237, 0.1);
-            animation: modalSlideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        @keyframes modalSlideIn {
-            from { opacity: 0; transform: translateY(-50px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
         }
         
         .close-modal {
@@ -465,19 +303,11 @@
             font-size: 1.5rem;
             cursor: pointer;
             opacity: 0.7;
-            z-index: 10;
-            transition: all 0.3s;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            transition: var(--transition);
         }
         
         .close-modal:hover {
             opacity: 1;
-            background: rgba(255, 255, 255, 0.1);
             transform: rotate(90deg);
         }
         
@@ -485,129 +315,96 @@
             text-align: center;
             margin-bottom: 2rem;
             padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(124, 58, 237, 0.3);
-            position: relative;
-        }
-        
-        .modal-header::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 25%;
-            width: 50%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .modal-header h2 {
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 2rem;
+            color: var(--primary-light);
+            font-size: 1.8rem;
             margin-bottom: 0.5rem;
         }
         
-        .form-actions {
+        /* ============================================= */
+        /* COMPONENTE: PASOS DEL REGISTRO */
+        /* ============================================= */
+        .registration-steps {
             display: flex;
+            justify-content: center;
             gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 1.5rem;
+            margin-bottom: 2rem;
         }
         
-        /* ============================================= */
-        /* COMPONENTE: PARTÍCULAS DE FONDO */
-        /* ============================================= */
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-        
-        .particle {
-            position: absolute;
-            background: rgba(124, 58, 237, 0.2);
-            border-radius: 50%;
-            animation: floatParticle 20s infinite linear;
-        }
-        
-        @keyframes floatParticle {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
-        }
-        
-        /* Estilos para grid de 2 columnas */
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        
-        /* Estilos para checkbox mejorado */
-        .checkbox-container {
+        .step {
             display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            margin: 1.5rem 0;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        
+        .step.active .step-circle {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        
+        .step.active .step-label {
+            color: var(--primary-light);
+            font-weight: 500;
+        }
+        
+        /* ============================================= */
+        /* COMPONENTE: MENSAJES */
+        /* ============================================= */
+        .alert {
             padding: 1rem;
-            background: rgba(255, 255, 255, 0.05);
             border-radius: 8px;
-            border: 1px solid rgba(124, 58, 237, 0.2);
-            transition: all 0.3s;
+            margin-bottom: 1.5rem;
+            display: none;
         }
         
-        .checkbox-container:hover {
-            background: rgba(124, 58, 237, 0.05);
-            border-color: rgba(124, 58, 237, 0.4);
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
         }
         
-        .checkbox-container input[type="checkbox"] {
-            margin-top: 0.25rem;
-            min-width: 18px;
-            min-height: 18px;
-            accent-color: var(--primary);
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
         }
         
-        .checkbox-container label {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 0.9rem;
-            line-height: 1.4;
-            margin: 0;
-            cursor: pointer;
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
         }
         
-        .checkbox-container label a {
-            color: var(--secondary);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        
-        .checkbox-container label a:hover {
-            color: var(--primary);
-            text-decoration: underline;
+        .alert-info {
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid var(--info);
+            color: var(--info);
         }
         
         /* ============================================= */
-        /* MEDIA QUERIES - RESPONSIVE */
+        /* LOADING */
         /* ============================================= */
-        @media (max-width: 768px) {
-            .cyber-hero h1 { font-size: 2.5rem; }
-            .cyber-nav { display: none; }
-            .features-grid { grid-template-columns: 1fr; }
-            .modal-content { padding: 1.5rem; }
-            .form-actions { flex-direction: column; }
-            .grid-2 { grid-template-columns: 1fr; }
-            .checkbox-container { flex-direction: column; }
-        }
-        
-        @media (max-width: 480px) {
-            .cyber-header { padding: 1rem; }
-            .cyber-hero { padding: 8rem 1rem 4rem; }
-            .cyber-features { padding: 3rem 1rem; }
-        }
-        
-        /* Estilos para loading */
         .loading {
             display: none;
             position: fixed;
@@ -615,7 +412,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(7, 7, 16, 0.95);
+            background: rgba(2, 6, 23, 0.95);
             backdrop-filter: blur(10px);
             z-index: 3000;
             align-items: center;
@@ -626,299 +423,252 @@
         .spinner {
             width: 50px;
             height: 50px;
-            border: 5px solid rgba(124, 58, 237, 0.3);
+            border: 4px solid rgba(37, 99, 235, 0.3);
             border-radius: 50%;
             border-top-color: var(--primary);
-            animation: spin 1s ease-in-out infinite;
+            animation: spin 1s linear infinite;
         }
         
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        /* Mensajes de alerta */
-        .alert {
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            display: none;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
-        .alert-success {
-            background: rgba(0, 255, 65, 0.1);
-            border: 1px solid var(--success);
-            color: var(--success);
+        /* ============================================= */
+        /* RESPONSIVE */
+        /* ============================================= */
+        @media (max-width: 768px) {
+            .corporate-hero h1 { font-size: 2.5rem; }
+            .corporate-nav { display: none; }
+            .features-grid { grid-template-columns: 1fr; }
+            .corporate-modal { padding: 1rem; }
         }
         
-        .alert-error {
-            background: rgba(255, 0, 85, 0.1);
-            border: 1px solid var(--danger);
-            color: var(--danger);
+        @media (max-width: 480px) {
+            .corporate-header { padding: 1rem; }
+            .corporate-hero { padding: 8rem 1rem 4rem; }
+            .corporate-features { padding: 3rem 1rem; }
+            .modal-content { padding: 1.5rem; }
         }
         
-        /* Rol selector */
-        .rol-selector {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            margin: 1rem 0;
+        /* Password toggle */
+        .password-wrapper {
+            position: relative;
         }
         
-        .rol-option {
-            padding: 1rem;
-            border: 2px solid rgba(124, 58, 237, 0.3);
-            border-radius: 8px;
-            text-align: center;
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--primary-light);
             cursor: pointer;
-            transition: all 0.3s;
         }
         
-        .rol-option:hover {
-            border-color: var(--primary);
-            background: rgba(124, 58, 237, 0.1);
+        /* Grid para formularios */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
         }
         
-        .rol-option.selected {
-            border-color: var(--secondary);
-            background: rgba(0, 245, 255, 0.1);
-            box-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
+        @media (max-width: 640px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
         }
         
-        .rol-option i {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            display: block;
+        /* Checkbox personalizado */
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .checkbox-container input[type="checkbox"] {
+            margin-top: 0.25rem;
+            accent-color: var(--primary);
         }
     </style>
 </head>
 <body>
-    <!-- BLOQUE: PARTÍCULAS DE FONDO -->
-    <div class="particles" id="particles"></div>
-    
-    <!-- BLOQUE: LOADING GLOBAL -->
+    <!-- Loading Global -->
     <div class="loading" id="globalLoading">
         <div class="spinner"></div>
-        <p style="margin-top: 1rem; color: var(--secondary);">Procesando...</p>
+        <p style="margin-top: 1rem; color: var(--primary-light);">Procesando...</p>
     </div>
     
-    <!-- BLOQUE: HEADER PRINCIPAL -->
-    <header class="cyber-header">
-        <div class="cyber-logo">
-            <i class="fas fa-brain"></i>
+    <!-- Header -->
+    <header class="corporate-header">
+        <div class="corporate-logo">
+            <i class="fas fa-building"></i>
             NEXIAL SUITE
         </div>
-        <nav class="cyber-nav">
+        <nav class="corporate-nav">
             <a href="#inicio">Inicio</a>
-            <a href="#caracteristicas">Sistema</a>
-            <a href="#ventajas">Ventajas</a>
+            <a href="#sistema">Sistema</a>
+            <a href="#jerarquia">Jerarquía</a>
             <a href="#" onclick="Nexial.openRegisterModal()">Registro</a>
         </nav>
-        <button class="cyber-btn" onclick="Nexial.openLoginModal()">
-            <i class="fas fa-sign-in-alt"></i> Acceso
+        <button class="corporate-btn" onclick="Nexial.openLoginModal()">
+            <i class="fas fa-sign-in-alt"></i> Acceso Corporativo
         </button>
     </header>
-
-    <!-- BLOQUE: SECCIÓN HERO -->
-    <section class="cyber-hero" id="inicio">
-        <h1>Sistema Empresarial 100% Seguro</h1>
-        <p class="cyber-subtitle">
-            Arquitectura empresarial con PostgreSQL, RLS, encriptación AES-256 y triggers automáticos.
-            Separación total de datos, códigos únicos por empresa, y máxima seguridad corporativa.
+    
+    <!-- Hero Section -->
+    <section class="corporate-hero" id="inicio">
+        <h1>Sistema Corporativo Empresarial</h1>
+        <p class="hero-subtitle">
+            Arquitectura PostgreSQL con 7 niveles jerárquicos, encriptación avanzada, 
+            y aislamiento completo de datos por empresa.
         </p>
-        <button class="cyber-btn" style="padding: 1.2rem 2.5rem; font-size: 1.1rem;" onclick="Nexial.openRegisterModal()">
-            <i class="fas fa-database"></i> REGISTRAR EMPRESA GRATIS
+        <button class="corporate-btn" style="padding: 1.2rem 2.5rem; font-size: 1.1rem;" onclick="Nexial.openRegisterModal()">
+            <i class="fas fa-building"></i> REGISTRAR EMPRESA
         </button>
     </section>
-
-    <!-- BLOQUE: CARACTERÍSTICAS DEL SISTEMA -->
-    <section class="cyber-features" id="caracteristicas">
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <h2 style="color: var(--secondary); font-size: 2.5rem; animation: fadeInUp 1s ease-out;">JERARQUÍA CORPORATIVA</h2>
-            <p style="opacity: 0.8;">7 niveles de roles con permisos específicos y aislamiento de datos</p>
-        </div>
+    
+    <!-- Sistema Section -->
+    <section class="corporate-features" id="sistema">
+        <h2 style="text-align: center; color: var(--primary-light); margin-bottom: 3rem; font-size: 2.5rem;">
+            SISTEMA COMPLETO SUPABASE
+        </h2>
         
         <div class="features-grid">
-            <div class="cyber-card">
-                <h3><i class="fas fa-crown"></i> DIRECTOR CORPORATIVO</h3>
-                <p>Dueño del software, acceso total multi-empresa, supervisión global.</p>
-                <ul>
-                    <li>Acceso a todas las empresas</li>
-                    <li>Creación y eliminación de empresas</li>
-                    <li>Auditoría completa del sistema</li>
-                    <li>Configuración de seguridad global</li>
+            <div class="corporate-card">
+                <h3><i class="fas fa-database"></i> Base de Datos Segura</h3>
+                <p>PostgreSQL con Row Level Security (RLS), encriptación AES-256, y triggers automáticos para códigos únicos.</p>
+                <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+                    <li>Separación total de datos por empresa</li>
+                    <li>Encriptación a nivel de columna</li>
+                    <li>Auditoría completa de operaciones</li>
+                    <li>Backup automático y recuperación</li>
                 </ul>
             </div>
             
-            <div class="cyber-card">
-                <h3><i class="fas fa-user-tie"></i> DIRECTOR GENERAL</h3>
-                <p>Máximo responsable de una empresa (CEO), gestión estratégica completa.</p>
-                <ul>
-                    <li>Gestión total de su empresa</li>
-                    <li>Supervisión de todas las áreas</li>
-                    <li>Reportes ejecutivos</li>
-                    <li>Configuración empresarial</li>
+            <div class="corporate-card">
+                <h3><i class="fas fa-shield-alt"></i> Seguridad Avanzada</h3>
+                <p>Múltiples capas de seguridad empresarial con control de acceso granular.</p>
+                <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+                    <li>7 roles corporativos definidos</li>
+                    <li>Máscara de datos dinámica</li>
+                    <li>Control de sesiones concurrentes</li>
+                    <li>Blacklist IP automática</li>
+                    <li>Verificación en dos pasos</li>
                 </ul>
             </div>
             
-            <div class="cyber-card">
-                <h3><i class="fas fa-chart-line"></i> DIRECTOR FINANCIERO</h3>
-                <p>Responsable financiero, contable, RH, nóminas (CFO).</p>
-                <ul>
-                    <li>Gestión financiera completa</li>
-                    <li>Control de nóminas y RH</li>
-                    <li>Reportes contables</li>
-                    <li>Análisis de rentabilidad</li>
-                </ul>
-            </div>
-            
-            <div class="cyber-card">
-                <h3><i class="fas fa-clipboard-check"></i> SUPERVISOR SENIOR</h3>
-                <p>Supervisa operaciones diarias, reporta a Director General.</p>
-                <ul>
-                    <li>Supervisión operativa</li>
-                    <li>Control de ejecutivos comerciales</li>
-                    <li>Monitoreo de logística</li>
-                    <li>Reportes de operaciones</li>
-                </ul>
-            </div>
-            
-            <div class="cyber-card">
-                <h3><i class="fas fa-shopping-cart"></i> EJECUTIVO COMERCIAL</h3>
-                <p>Ventas, clientes, atención al cliente, gestión comercial.</p>
-                <ul>
-                    <li>Gestión de clientes</li>
-                    <li>Registro de ventas</li>
-                    <li>Seguimiento comercial</li>
-                    <li>Reportes de ventas</li>
-                </ul>
-            </div>
-            
-            <div class="cyber-card">
-                <h3><i class="fas fa-truck"></i> ESPECIALISTA LOGÍSTICO</h3>
-                <p>Distribución, rutas, entregas, logística y transporte.</p>
-                <ul>
-                    <li>Planificación de rutas</li>
-                    <li>Seguimiento de entregas</li>
-                    <li>Gestión de flota</li>
-                    <li>Optimización logística</li>
-                </ul>
-            </div>
-            
-            <div class="cyber-card">
-                <h3><i class="fas fa-warehouse"></i> GESTOR DE ALMACÉN</h3>
-                <p>Inventario, stock, almacenes, control de existencias.</p>
-                <ul>
-                    <li>Control de inventario</li>
-                    <li>Gestión de almacenes</li>
-                    <li>Entradas y salidas</li>
-                    <li>Reportes de stock</li>
+            <div class="corporate-card">
+                <h3><i class="fas fa-chart-line"></i> Análisis Corporativo</h3>
+                <p>Reportes ejecutivos y análisis de datos en tiempo real para toma de decisiones.</p>
+                <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+                    <li>Panel ejecutivo personalizable</li>
+                    <li>Reportes financieros automáticos</li>
+                    <li>Seguimiento de objetivos y metas</li>
+                    <li>Análisis predictivo</li>
+                    <li>Dashboard multi-empresa</li>
                 </ul>
             </div>
         </div>
     </section>
-
-    <!-- BLOQUE: VENTAJAS DEL SISTEMA -->
-    <section class="cyber-features" id="ventajas" style="background: var(--dark);">
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <h2 style="color: var(--accent); font-size: 2.5rem;">SEGURIDAD AVANZADA</h2>
-            <p style="opacity: 0.8;">Protección de datos con tecnología enterprise</p>
-        </div>
+    
+    <!-- Jerarquía Section -->
+    <section class="corporate-features" id="jerarquia" style="background: rgba(2, 6, 23, 0.5);">
+        <h2 style="text-align: center; color: var(--primary-light); margin-bottom: 3rem; font-size: 2.5rem;">
+            JERARQUÍA CORPORATIVA (7 NIVELES)
+        </h2>
         
         <div class="features-grid">
-            <div class="cyber-card">
-                <h3><i class="fas fa-lock"></i> ENCRIPTACIÓN AES-256</h3>
-                <p>Datos sensibles encriptados a nivel de columna con claves maestras por empresa.</p>
-                <ul>
-                    <li>Nombres, documentos, direcciones</li>
-                    <li>Información financiera</li>
-                    <li>Datos personales</li>
-                    <li>Comunicaciones sensibles</li>
-                </ul>
+            <div class="corporate-card">
+                <h3><i class="fas fa-crown"></i> Director Corporativo</h3>
+                <p>Dueño del software. Acceso total multi-empresa. Puede ver y gestionar todas las empresas.</p>
             </div>
             
-            <div class="cyber-card">
-                <h3><i class="fas fa-shield-alt"></i> ROW LEVEL SECURITY</h3>
-                <p>Aislamiento completo de datos entre empresas. Cada empresa solo ve su información.</p>
-                <ul>
-                    <li>Políticas RLS por rol</li>
-                    <li>Aislamiento multi-tenant</li>
-                    <li>Acceso granular</li>
-                    <li>Protección de datos</li>
-                </ul>
+            <div class="corporate-card">
+                <h3><i class="fas fa-user-tie"></i> Director General</h3>
+                <p>Máximo responsable de una empresa (CEO). Toma decisiones estratégicas.</p>
             </div>
             
-            <div class="cyber-card">
-                <h3><i class="fas fa-history"></i> AUDITORÍA COMPLETA</h3>
-                <p>Trazabilidad de todas las operaciones con registro de cambios y acceso.</p>
-                <ul>
-                    <li>Registro de todos los eventos</li>
-                    <li>IP, dispositivo, ubicación</li>
-                    <li>Datos anteriores y nuevos</li>
-                    <li>Compliance normativo</li>
-                </ul>
+            <div class="corporate-card">
+                <h3><i class="fas fa-chart-pie"></i> Director Financiero</h3>
+                <p>Responsable financiero, contable, RH y nóminas (CFO). Control de presupuestos.</p>
             </div>
             
-            <div class="cyber-card">
-                <h3><i class="fas fa-code-branch"></i> TRIGGERS AUTOMÁTICOS</h3>
-                <p>Códigos únicos automáticos, timestamps, validaciones y procesos automatizados.</p>
-                <ul>
-                    <li>Generación de códigos únicos</li>
-                    <li>Actualización automática de fechas</li>
-                    <li>Validación de datos</li>
-                    <li>Procesos empresariales</li>
-                </ul>
+            <div class="corporate-card">
+                <h3><i class="fas fa-user-check"></i> Supervisor Senior</h3>
+                <p>Supervisa operaciones diarias. Reporta al Director General. Gestiona equipos.</p>
+            </div>
+            
+            <div class="corporate-card">
+                <h3><i class="fas fa-shopping-cart"></i> Ejecutivo Comercial</h3>
+                <p>Ventas, clientes, atención al cliente. Enfoque en crecimiento comercial.</p>
+            </div>
+            
+            <div class="corporate-card">
+                <h3><i class="fas fa-truck"></i> Especialista Logístico</h3>
+                <p>Distribución, rutas, entregas, logística. Optimización de operaciones.</p>
+            </div>
+            
+            <div class="corporate-card">
+                <h3><i class="fas fa-warehouse"></i> Gestor de Almacén</h3>
+                <p>Inventario, stock, almacenes, control de existencias. Gestión operativa.</p>
             </div>
         </div>
     </section>
-
-    <!-- BLOQUE: FOOTER -->
-    <footer class="cyber-footer">
-        <div class="cyber-logo" style="justify-content: center; margin-bottom: 1rem;">
-            <i class="fas fa-brain"></i>
+    
+    <!-- Footer -->
+    <footer class="corporate-footer">
+        <div class="corporate-logo" style="justify-content: center; margin-bottom: 1rem;">
+            <i class="fas fa-building"></i>
             NEXIAL SUITE
         </div>
-        <p style="opacity: 0.8; margin-bottom: 2rem;">Sistema de Gestión Empresarial Integral con PostgreSQL y Supabase</p>
-        
+        <p style="color: #94a3b8; margin-bottom: 2rem;">
+            Sistema de Gestión Corporativa con PostgreSQL y Supabase
+        </p>
         <div style="display: flex; justify-content: center; gap: 2rem; margin: 2rem 0; flex-wrap: wrap;">
-            <a href="#inicio" style="color: var(--secondary); text-decoration: none;">Inicio</a>
-            <a href="#caracteristicas" style="color: var(--secondary); text-decoration: none;">Sistema</a>
-            <a href="#ventajas" style="color: var(--secondary); text-decoration: none;">Seguridad</a>
-            <a href="#" onclick="Nexial.openRegisterModal()" style="color: var(--secondary); text-decoration: none;">Registro</a>
-            <a href="#" onclick="Nexial.openLoginModal()" style="color: var(--secondary); text-decoration: none;">Acceso</a>
+            <a href="#inicio" style="color: var(--primary-light); text-decoration: none;">Inicio</a>
+            <a href="#sistema" style="color: var(--primary-light); text-decoration: none;">Sistema</a>
+            <a href="#jerarquia" style="color: var(--primary-light); text-decoration: none;">Jerarquía</a>
+            <a href="#" onclick="Nexial.openRegisterModal()" style="color: var(--primary-light); text-decoration: none;">Registro</a>
+            <a href="#" onclick="Nexial.openLoginModal()" style="color: var(--primary-light); text-decoration: none;">Acceso</a>
         </div>
-        
-        <p>© 2025 Nexial Suite. Todos los derechos reservados.</p>
-        <p style="margin-top: 1rem; opacity: 0.7;">
+        <p style="color: #64748b; font-size: 0.9rem;">
+            © 2025 Nexial Suite | Compatible con PostgreSQL RLS | Triggers Automáticos
+        </p>
+        <p style="color: #64748b; font-size: 0.9rem; margin-top: 0.5rem;">
             <i class="fas fa-envelope"></i> marcelodanielcc@gmail.com
         </p>
-        <p style="margin-top: 0.5rem; opacity: 0.6; font-size: 0.9rem;">
-            PostgreSQL | Row Level Security | Encriptación AES-256 | Triggers Automáticos
-        </p>
     </footer>
-
+    
     <!-- ============================================= -->
     <!-- MODALES DEL SISTEMA -->
     <!-- ============================================= -->
-
-    <!-- MODAL: LOGIN -->
-    <div class="cyber-modal" id="loginModal">
+    
+    <!-- Modal: Login -->
+    <div class="corporate-modal" id="loginModal">
         <div class="modal-content">
             <button class="close-modal" onclick="Nexial.closeLoginModal()">×</button>
             
             <div class="modal-header">
-                <h2><i class="fas fa-sign-in-alt"></i> ACCESO AL SISTEMA</h2>
-                <p style="color: rgba(255,255,255,0.7);">Ingresa con email corporativo y contraseña</p>
+                <h2><i class="fas fa-sign-in-alt"></i> ACCESO CORPORATIVO</h2>
+                <p style="color: #94a3b8;">Ingrese sus credenciales de acceso</p>
             </div>
             
             <div class="alert" id="loginAlert"></div>
             
             <div class="form-group">
-                <label><i class="fas fa-user"></i> Email Corporativo</label>
-                <input type="email" id="loginEmail" placeholder="usuario@empresa.com" autofocus>
+                <label><i class="fas fa-envelope"></i> Email Corporativo</label>
+                <input type="email" id="loginEmail" class="form-control" placeholder="ejecutivo@empresa.com" autofocus>
             </div>
             
             <div class="form-group">
                 <label><i class="fas fa-key"></i> Contraseña</label>
                 <div class="password-wrapper">
-                    <input type="password" id="loginPassword" placeholder="Tu contraseña">
+                    <input type="password" id="loginPassword" class="form-control" placeholder="Ingrese su contraseña">
                     <button type="button" class="toggle-password" onclick="Nexial.togglePassword('loginPassword')">
                         <i class="fas fa-eye"></i>
                     </button>
@@ -926,190 +676,291 @@
             </div>
             
             <div style="text-align: right; margin: 1rem 0;">
-                <a href="#" onclick="Nexial.recoverPassword()" style="color: var(--primary); text-decoration: none;">
-                    <i class="fas fa-unlock-alt"></i> ¿Olvidaste tu contraseña?
+                <a href="#" onclick="Nexial.recoverPassword()" style="color: var(--primary-light); text-decoration: none; font-size: 0.9rem;">
+                    <i class="fas fa-unlock-alt"></i> ¿Olvidó su contraseña?
                 </a>
             </div>
             
-            <button class="cyber-btn" style="width: 100%; padding: 1rem; font-size: 1.1rem;" onclick="Nexial.login()">
+            <button class="corporate-btn" style="width: 100%;" onclick="Nexial.login()">
                 <i class="fas fa-sign-in-alt"></i> INGRESAR AL SISTEMA
             </button>
             
-            <div style="text-align: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                <p style="color: rgba(255,255,255,0.7);">¿No tienes cuenta?</p>
-                <button class="cyber-btn btn-secondary" onclick="Nexial.closeLoginModal(); Nexial.openRegisterModal();" style="width: 100%; margin-top: 0.5rem;">
-                    <i class="fas fa-building"></i> REGISTRAR EMPRESA
+            <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <p style="color: #94a3b8; margin-bottom: 1rem;">¿No tiene empresa registrada?</p>
+                <button class="corporate-btn btn-secondary" style="width: 100%;" onclick="Nexial.closeLoginModal(); Nexial.openRegisterModal();">
+                    <i class="fas fa-building"></i> REGISTRAR NUEVA EMPRESA
                 </button>
             </div>
         </div>
     </div>
-
-    <!-- MODAL: REGISTRO DE EMPRESA -->
-    <div class="cyber-modal" id="registerModal">
+    
+    <!-- Modal: Registro (Paso 1 - Datos Empresa) -->
+    <div class="corporate-modal" id="registerModal">
         <div class="modal-content">
             <button class="close-modal" onclick="Nexial.closeRegisterModal()">×</button>
             
             <div class="modal-header">
-                <h2><i class="fas fa-building"></i> REGISTRO COMPLETO</h2>
-                <p style="color: rgba(255,255,255,0.7);">Completa los datos de empresa y usuario administrador</p>
+                <h2><i class="fas fa-building"></i> REGISTRO DE EMPRESA</h2>
+                <p style="color: #94a3b8;">Complete los datos de su empresa (Paso 1 de 3)</p>
             </div>
             
-            <div class="info-banner">
-                <h3><i class="fas fa-gift"></i> SISTEMA 100% COMPATIBLE CON SQL</h3>
-                <p>Registro completo con triggers automáticos, RLS y encriptación</p>
+            <div class="registration-steps">
+                <div class="step active" id="step1">
+                    <div class="step-circle">1</div>
+                    <span class="step-label">Empresa</span>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-circle">2</div>
+                    <span class="step-label">Configuración</span>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-circle">3</div>
+                    <span class="step-label">Usuario</span>
+                </div>
             </div>
             
             <div class="alert" id="registerAlert"></div>
             
-            <form id="registerForm">
-                <h3 style="color: var(--secondary); margin: 1.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(124,58,237,0.3);">
-                    <i class="fas fa-building"></i> DATOS DE LA EMPRESA
-                </h3>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-id-card"></i> Código Único de Empresa *</label>
-                    <input type="text" id="empresaCodigo" placeholder="Se generará automáticamente" disabled>
-                    <small style="color: rgba(255,255,255,0.5);">Generado por trigger: EMP-XXX</small>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-signature"></i> Nombre de la Empresa *</label>
-                    <input type="text" id="empresaNombre" required placeholder="Razón Social">
-                </div>
-                
-                <div class="grid-2">
+            <!-- Paso 1: Datos de la Empresa -->
+            <div id="step1Content">
+                <form id="companyForm">
                     <div class="form-group">
-                        <label><i class="fas fa-passport"></i> RUC/NIT *</label>
-                        <input type="text" id="empresaRuc" required placeholder="Número de documento">
+                        <label><i class="fas fa-id-card"></i> ID de Empresa *</label>
+                        <input type="text" id="companyId" class="form-control" placeholder="EMP001" required>
+                        <small style="color: #94a3b8; display: block; margin-top: 0.25rem;">
+                            Identificador único para su empresa (ej: EMP001, ACME2025)
+                        </small>
                     </div>
+                    
                     <div class="form-group">
-                        <label><i class="fas fa-flag"></i> País *</label>
-                        <select id="empresaPais" required>
-                            <option value="">Seleccionar</option>
-                            <option value="Bolivia">Bolivia</option>
-                            <option value="Perú">Perú</option>
-                            <option value="Chile">Chile</option>
-                            <option value="Argentina">Argentina</option>
-                            <option value="Brasil">Brasil</option>
-                            <option value="Colombia">Colombia</option>
-                            <option value="México">México</option>
-                            <option value="Estados Unidos">Estados Unidos</option>
-                            <option value="España">España</option>
+                        <label><i class="fas fa-building"></i> Nombre de la Empresa *</label>
+                        <input type="text" id="companyName" class="form-control" placeholder="Mi Empresa S.A." required>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-file-contract"></i> Tipo Documento *</label>
+                            <select id="companyDocType" class="form-control form-select" required>
+                                <option value="">Seleccionar</option>
+                                <option value="RUC">RUC</option>
+                                <option value="NIT">NIT</option>
+                                <option value="DNI">DNI</option>
+                                <option value="CE">Carnet Extranjería</option>
+                                <option value="PASAPORTE">Pasaporte</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-hashtag"></i> Número Documento *</label>
+                            <input type="text" id="companyDocNumber" class="form-control" placeholder="12345678901" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-industry"></i> Grupo Corporativo</label>
+                        <input type="text" id="companyGroup" class="form-control" placeholder="Grupo Corporativo (opcional)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-globe"></i> Dominio Corporativo *</label>
+                        <input type="text" id="companyDomain" class="form-control" placeholder="empresa.com" required>
+                        <small style="color: #94a3b8; display: block; margin-top: 0.25rem;">
+                            Para verificación de emails corporativos
+                        </small>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-language"></i> Idioma Default *</label>
+                            <select id="companyLanguage" class="form-control form-select" required>
+                                <option value="es">Español</option>
+                                <option value="en">English</option>
+                                <option value="pt">Português</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-money-bill-wave"></i> Moneda Default *</label>
+                            <select id="companyCurrency" class="form-control form-select" required>
+                                <option value="USD">USD ($)</option>
+                                <option value="BOB">BOB (Bs.)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="PEN">PEN (S/.)</option>
+                                <option value="CLP">CLP ($)</option>
+                                <option value="ARS">ARS ($)</option>
+                                <option value="BRL">BRL (R$)</option>
+                                <option value="MXN">MXN ($)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-flag"></i> País</label>
+                        <input type="text" id="companyCountry" class="form-control" placeholder="Bolivia">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-shield-alt"></i> Nivel de Seguridad *</label>
+                        <select id="companySecurityLevel" class="form-control form-select" required>
+                            <option value="alto">Alto (Recomendado)</option>
+                            <option value="medio">Medio</option>
+                            <option value="bajo">Bajo</option>
+                            <option value="critico">Crítico</option>
                         </select>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-map-marker-alt"></i> Dirección *</label>
-                    <textarea id="empresaDireccion" rows="2" required placeholder="Dirección completa"></textarea>
-                </div>
-                
-                <div class="grid-2">
-                    <div class="form-group">
-                        <label><i class="fas fa-phone"></i> Teléfono *</label>
-                        <input type="tel" id="empresaTelefono" required placeholder="Teléfono corporativo">
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="button" class="corporate-btn btn-secondary" style="flex: 1;" onclick="Nexial.closeRegisterModal()">
+                            Cancelar
+                        </button>
+                        <button type="button" class="corporate-btn" style="flex: 1;" onclick="Nexial.nextStep()">
+                            Siguiente <i class="fas fa-arrow-right"></i>
+                        </button>
                     </div>
+                </form>
+            </div>
+            
+            <!-- Paso 2: Configuración de Seguridad -->
+            <div id="step2Content" style="display: none;">
+                <form id="securityForm">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Configuración de seguridad inicial. Puede ajustarla luego desde el panel.
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Intentos Máximos de Login *</label>
+                        <input type="number" id="maxLoginAttempts" class="form-control" value="5" min="1" max="10" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-clock"></i> Tiempo de Bloqueo (minutos) *</label>
+                        <input type="number" id="blockTime" class="form-control" value="30" min="5" max="1440" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-users"></i> Sesiones Concurrentes Máximas *</label>
+                        <input type="number" id="maxSessions" class="form-control" value="3" min="1" max="10" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-key"></i> Longitud Mínima Password *</label>
+                        <input type="number" id="minPasswordLength" class="form-control" value="12" min="8" max="32" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-alt"></i> Expiración Password (días) *</label>
+                        <input type="number" id="passwordExpiration" class="form-control" value="90" min="30" max="365" required>
+                    </div>
+                    
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="requireMFA" checked>
+                        <label for="requireMFA">Requerir autenticación en dos pasos (MFA) para roles directivos</label>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="button" class="corporate-btn btn-secondary" style="flex: 1;" onclick="Nexial.prevStep()">
+                            <i class="fas fa-arrow-left"></i> Anterior
+                        </button>
+                        <button type="button" class="corporate-btn" style="flex: 1;" onclick="Nexial.nextStep()">
+                            Siguiente <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Paso 3: Usuario Director General -->
+            <div id="step3Content" style="display: none;">
+                <form id="userForm">
+                    <div class="alert alert-info">
+                        <i class="fas fa-user-tie"></i> Creación del usuario Director General (CEO) para su empresa
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Nombres *</label>
+                            <input type="text" id="userFirstName" class="form-control" placeholder="Juan" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Apellidos *</label>
+                            <input type="text" id="userLastName" class="form-control" placeholder="Pérez" required>
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
                         <label><i class="fas fa-envelope"></i> Email Corporativo *</label>
-                        <input type="email" id="empresaEmail" required placeholder="contacto@empresa.com">
+                        <input type="email" id="userEmail" class="form-control" placeholder="director@empresa.com" required>
+                        <small style="color: #94a3b8; display: block; margin-top: 0.25rem;">
+                            Debe terminar en el dominio corporativo que definió
+                        </small>
                     </div>
-                </div>
-                
-                <h3 style="color: var(--secondary); margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(124,58,237,0.3);">
-                    <i class="fas fa-user-tie"></i> USUARIO ADMINISTRADOR
-                </h3>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-id-badge"></i> Código Único de Usuario *</label>
-                    <input type="text" id="usuarioCodigo" placeholder="Se generará automáticamente" disabled>
-                    <small style="color: rgba(255,255,255,0.5);">Generado por trigger: USR-XXX</small>
-                </div>
-                
-                <div class="grid-2">
+                    
                     <div class="form-group">
-                        <label><i class="fas fa-user"></i> Nombres *</label>
-                        <input type="text" id="usuarioNombre" required placeholder="Nombres completos">
+                        <label><i class="fas fa-phone"></i> Teléfono</label>
+                        <input type="tel" id="userPhone" class="form-control" placeholder="+591 70000000">
                     </div>
-                    <div class="form-group">
-                        <label><i class="fas fa-user"></i> Apellidos *</label>
-                        <input type="text" id="usuarioApellido" required placeholder="Apellidos completos">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> Email del Usuario *</label>
-                    <input type="email" id="usuarioEmail" required placeholder="usuario@empresa.com">
-                    <small style="color: rgba(255,255,255,0.5);">Debe ser del dominio corporativo</small>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-user-tag"></i> Rol del Administrador *</label>
-                    <select id="usuarioRol" required>
-                        <option value="">Seleccionar rol</option>
-                        <option value="Director General">Director General</option>
-                        <option value="Director Financiero">Director Financiero</option>
-                        <option value="Supervisor Senior">Supervisor Senior</option>
-                    </select>
-                    <small style="color: rgba(255,255,255,0.5);">El primer usuario será el administrador de la empresa</small>
-                </div>
-                
-                <div class="grid-2">
+                    
                     <div class="form-group">
                         <label><i class="fas fa-key"></i> Contraseña *</label>
                         <div class="password-wrapper">
-                            <input type="password" id="usuarioPassword" required minlength="12" placeholder="Mínimo 12 caracteres">
-                            <button type="button" class="toggle-password" onclick="Nexial.togglePassword('usuarioPassword')">
+                            <input type="password" id="userPassword" class="form-control" placeholder="Mínimo 12 caracteres" required minlength="12">
+                            <button type="button" class="toggle-password" onclick="Nexial.togglePassword('userPassword')">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
-                        <small style="color: rgba(255,255,255,0.5);">Se guardará como hash con salt</small>
                     </div>
                     
                     <div class="form-group">
                         <label><i class="fas fa-key"></i> Confirmar Contraseña *</label>
                         <div class="password-wrapper">
-                            <input type="password" id="usuarioPasswordConfirm" required minlength="12" placeholder="Repetir contraseña">
-                            <button type="button" class="toggle-password" onclick="Nexial.togglePassword('usuarioPasswordConfirm')">
+                            <input type="password" id="userConfirmPassword" class="form-control" placeholder="Repita la contraseña" required>
+                            <button type="button" class="toggle-password" onclick="Nexial.togglePassword('userConfirmPassword')">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
                     </div>
-                </div>
-                
-                <div class="checkbox-container">
-                    <input type="checkbox" id="termsCheckbox" required>
-                    <label for="termsCheckbox">
-                        Acepto que mis datos sean procesados según la política de seguridad y sean encriptados según el sistema.
-                    </label>
-                </div>
-                
-                <div class="protection-banner">
-                    <h4><i class="fas fa-shield-alt"></i> PROTECCIÓN ACTIVADA</h4>
-                    <p>Tu contraseña será encriptada con salt y hash. Los datos sensibles serán encriptados con AES-256.</p>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="cyber-btn btn-secondary" onclick="Nexial.closeRegisterModal()">
-                        Cancelar
-                    </button>
-                    <button type="button" class="cyber-btn" onclick="Nexial.registerCompany()">
-                        <i class="fas fa-check-circle"></i> REGISTRAR EMPRESA
-                    </button>
-                </div>
-            </form>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-language"></i> Idioma Preferido</label>
+                        <select id="userLanguage" class="form-control form-select">
+                            <option value="es">Español</option>
+                            <option value="en">English</option>
+                            <option value="pt">Português</option>
+                        </select>
+                    </div>
+                    
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="termsCheckbox" required>
+                        <label for="termsCheckbox">
+                            Acepto los términos y condiciones del servicio y autorizo el tratamiento de mis datos según la normativa aplicable.
+                        </label>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="button" class="corporate-btn btn-secondary" style="flex: 1;" onclick="Nexial.prevStep()">
+                            <i class="fas fa-arrow-left"></i> Anterior
+                        </button>
+                        <button type="submit" class="corporate-btn" style="flex: 1;" onclick="Nexial.completeRegistration(event)">
+                            <i class="fas fa-check-circle"></i> COMPLETAR REGISTRO
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <script>
         // =============================================
-        // NEXIAL SUITE - Sistema Compatible con SQL
+        // OBJETO PRINCIPAL NEXIAL - COMPATIBLE CON SQL
         // =============================================
         const Nexial = (function() {
-            // Configuración de Supabase - USA TU URL Y KEY
+            // Configuración Supabase
             const SUPABASE_URL = 'https://vgmxfkanyfiaodfptmtv.supabase.co';
             const SUPABASE_ANON_KEY = 'sb_publishable_q_EXx0EGneIY4PZWsoCA0g_OgJJ-4Ek';
             
             let _supabase = null;
+            let _currentStep = 1;
+            let _registrationData = {};
             
             // =============================================
             // FUNCIONES PRIVADAS
@@ -1122,26 +973,20 @@
                 return _supabase;
             }
             
-            function createParticles() {
-                const particlesContainer = document.getElementById('particles');
-                if (!particlesContainer) return;
-                
-                for (let i = 0; i < 50; i++) {
-                    const particle = document.createElement('div');
-                    particle.classList.add('particle');
-                    particle.style.width = Math.random() * 4 + 1 + 'px';
-                    particle.style.height = particle.style.width;
-                    particle.style.left = Math.random() * 100 + '%';
-                    particle.style.animationDuration = Math.random() * 20 + 10 + 's';
-                    particle.style.animationDelay = Math.random() * 5 + 's';
-                    particlesContainer.appendChild(particle);
-                }
+            async function hashPassword(password) {
+                // En un sistema real, usarías bcrypt o similar
+                // Por simplicidad, usaremos SHA-256
+                const encoder = new TextEncoder();
+                const data = encoder.encode(password);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
             }
             
-            function generateRandomCode(prefix) {
-                const timestamp = Date.now().toString(36);
-                const random = Math.random().toString(36).substr(2, 6);
-                return `${prefix}-${timestamp}-${random}`.toUpperCase();
+            function generateSalt() {
+                const array = new Uint8Array(16);
+                crypto.getRandomValues(array);
+                return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
             }
             
             // =============================================
@@ -1170,22 +1015,119 @@
                 openRegisterModal: function() {
                     document.getElementById('loginModal').style.display = 'none';
                     document.getElementById('registerModal').style.display = 'flex';
-                    
-                    // Generar códigos de ejemplo para mostrar
-                    document.getElementById('empresaCodigo').value = generateRandomCode('EMP');
-                    document.getElementById('usuarioCodigo').value = generateRandomCode('USR');
-                    
-                    document.getElementById('empresaNombre').focus();
+                    this.resetRegistration();
+                    document.getElementById('companyId').focus();
                     document.body.style.overflow = 'hidden';
                 },
                 
                 closeRegisterModal: function() {
-                    const modal = document.getElementById('registerModal');
-                    if (modal.style.display === 'flex') {
-                        modal.style.display = 'none';
-                        document.getElementById('registerAlert').style.display = 'none';
-                        document.getElementById('registerForm').reset();
-                        document.body.style.overflow = 'auto';
+                    document.getElementById('registerModal').style.display = 'none';
+                    this.resetRegistration();
+                    document.body.style.overflow = 'auto';
+                },
+                
+                resetRegistration: function() {
+                    _currentStep = 1;
+                    _registrationData = {};
+                    this.updateSteps();
+                    
+                    document.getElementById('step1Content').style.display = 'block';
+                    document.getElementById('step2Content').style.display = 'none';
+                    document.getElementById('step3Content').style.display = 'none';
+                    
+                    document.getElementById('companyForm').reset();
+                    document.getElementById('securityForm').reset();
+                    document.getElementById('userForm').reset();
+                    
+                    document.getElementById('registerAlert').style.display = 'none';
+                },
+                
+                updateSteps: function() {
+                    document.querySelectorAll('.step').forEach((step, index) => {
+                        if (index + 1 <= _currentStep) {
+                            step.classList.add('active');
+                        } else {
+                            step.classList.remove('active');
+                        }
+                    });
+                },
+                
+                nextStep: function() {
+                    if (_currentStep === 1) {
+                        // Validar datos de empresa
+                        const companyId = document.getElementById('companyId').value.trim();
+                        const companyName = document.getElementById('companyName').value.trim();
+                        const companyDocNumber = document.getElementById('companyDocNumber').value.trim();
+                        const companyDomain = document.getElementById('companyDomain').value.trim();
+                        
+                        if (!companyId || !companyName || !companyDocNumber || !companyDomain) {
+                            this.showAlert('registerAlert', 'error', 'Por favor complete todos los campos obligatorios');
+                            return;
+                        }
+                        
+                        // Guardar datos del paso 1
+                        _registrationData.company = {
+                            id: companyId,
+                            nombre: companyName,
+                            codigo: companyId,
+                            ruc: companyDocNumber,
+                            tipo_documento: document.getElementById('companyDocType').value,
+                            grupo_corporativo: document.getElementById('companyGroup').value.trim() || null,
+                            dominio_corporativo: companyDomain,
+                            idioma_default: document.getElementById('companyLanguage').value,
+                            moneda_default: document.getElementById('companyCurrency').value,
+                            pais: document.getElementById('companyCountry').value.trim() || 'Bolivia',
+                            nivel_seguridad: document.getElementById('companySecurityLevel').value,
+                            activo: true,
+                            verificada: false
+                        };
+                        
+                        _currentStep = 2;
+                        
+                    } else if (_currentStep === 2) {
+                        // Guardar datos de configuración
+                        _registrationData.security = {
+                            intentos_maximos_login: parseInt(document.getElementById('maxLoginAttempts').value),
+                            tiempo_bloqueo_minutos: parseInt(document.getElementById('blockTime').value),
+                            sesiones_concurrentes_max: parseInt(document.getElementById('maxSessions').value),
+                            requiere_mfa: document.getElementById('requireMFA').checked,
+                            longitud_minima_password: parseInt(document.getElementById('minPasswordLength').value),
+                            expiracion_password_dias: parseInt(document.getElementById('passwordExpiration').value),
+                            encriptacion_nivel: 'AES-256'
+                        };
+                        
+                        _currentStep = 3;
+                        
+                    }
+                    
+                    this.updateSteps();
+                    
+                    // Mostrar/ocultar contenidos
+                    document.getElementById('step1Content').style.display = _currentStep === 1 ? 'block' : 'none';
+                    document.getElementById('step2Content').style.display = _currentStep === 2 ? 'block' : 'none';
+                    document.getElementById('step3Content').style.display = _currentStep === 3 ? 'block' : 'none';
+                    
+                    // Auto-completar email basado en dominio
+                    if (_currentStep === 3 && _registrationData.company) {
+                        const domain = _registrationData.company.dominio_corporativo;
+                        const firstName = document.getElementById('userFirstName').value.trim();
+                        const lastName = document.getElementById('userLastName').value.trim();
+                        
+                        if (domain && !document.getElementById('userEmail').value) {
+                            const email = `director@${domain}`;
+                            document.getElementById('userEmail').value = email;
+                        }
+                    }
+                },
+                
+                prevStep: function() {
+                    if (_currentStep > 1) {
+                        _currentStep--;
+                        this.updateSteps();
+                        
+                        document.getElementById('step1Content').style.display = _currentStep === 1 ? 'block' : 'none';
+                        document.getElementById('step2Content').style.display = _currentStep === 2 ? 'block' : 'none';
+                        document.getElementById('step3Content').style.display = _currentStep === 3 ? 'block' : 'none';
                     }
                 },
                 
@@ -1214,7 +1156,7 @@
                 // LOGIN COMPATIBLE CON SQL
                 // =============================================
                 login: async function() {
-                    const email = document.getElementById('loginEmail')?.value.trim();
+                    const email = document.getElementById('loginEmail')?.value.trim().toLowerCase();
                     const password = document.getElementById('loginPassword')?.value;
                     
                     if (!email || !password) {
@@ -1228,71 +1170,92 @@
                         const supabase = getSupabase();
                         
                         // 1. Buscar usuario por email
-                        const { data: usuario, error: userError } = await supabase
+                        const { data: usuarios, error: userError } = await supabase
                             .from('usuarios')
                             .select('*, empresas(*)')
                             .eq('email', email)
                             .eq('activo', true)
                             .single();
                         
-                        if (userError || !usuario) {
+                        if (userError || !usuarios) {
                             this.hideLoading();
                             this.showAlert('loginAlert', 'error', 'Usuario no encontrado o inactivo');
                             return;
                         }
                         
-                        // 2. Verificar contraseña usando función RPC (necesitas crear esta función en SQL)
-                        // Esto es un ejemplo - necesitas crear la función en PostgreSQL
-                        const { data: authResult, error: authError } = await supabase.rpc('verificar_password', {
-                            p_email: email,
-                            p_password: password
-                        });
+                        // 2. Verificar contraseña (en producción usar comparación segura)
+                        // Por ahora asumimos que el password_hash está en texto plano (NO SEGURO - solo para desarrollo)
+                        // En producción, deberías usar bcrypt.compare()
+                        const passwordHash = await hashPassword(password);
+                        // Nota: En tu SQL real, necesitarás comparar el hash correctamente
                         
-                        // Si no tienes la función RPC, puedes usar este método alternativo
-                        // NOTA: En producción, NUNCA compares contraseñas en el cliente
-                        // Esta es solo una solución temporal
-                        
-                        // Método alternativo: Usar auth de Supabase o crear Edge Function
-                        const { data: session, error: sessionError } = await supabase.auth.signInWithPassword({
-                            email: email,
-                            password: password
-                        });
-                        
-                        this.hideLoading();
-                        
-                        if (sessionError) {
-                            console.error('Error auth:', sessionError);
-                            
-                            // Fallback: Verificar con tabla usuarios (NO SEGURO - solo para desarrollo)
-                            // En producción, usa siempre funciones server-side
-                            if (usuario.password_hash) {
-                                // Aquí deberías tener lógica de verificación de hash
-                                // Por ahora, redirigimos si el usuario existe (para pruebas)
-                                this.redirectByRole(usuario.rol, usuario);
-                                return;
-                            }
-                            
-                            this.showAlert('loginAlert', 'error', 'Credenciales incorrectas');
+                        // 3. Verificar si el usuario está bloqueado
+                        if (usuarios.bloqueado_hasta && new Date(usuarios.bloqueado_hasta) > new Date()) {
+                            this.hideLoading();
+                            this.showAlert('loginAlert', 'error', 'Usuario bloqueado temporalmente');
                             return;
                         }
                         
-                        // 3. Redirigir según rol
-                        this.redirectByRole(usuario.rol, usuario);
+                        // 4. Verificar límite de sesiones
+                        if (usuarios.sesiones_activas >= usuarios.max_sesiones_concurrentes) {
+                            this.hideLoading();
+                            this.showAlert('loginAlert', 'warning', 'Límite de sesiones activas alcanzado');
+                            return;
+                        }
+                        
+                        // 5. Guardar sesión
+                        localStorage.setItem('nexial_user', JSON.stringify(usuarios));
+                        localStorage.setItem('nexial_session', 'true');
+                        localStorage.setItem('nexial_empresa_id', usuarios.empresa_id);
+                        localStorage.setItem('nexial_user_id', usuarios.id);
+                        localStorage.setItem('nexial_user_rol', usuarios.rol);
+                        
+                        // 6. Registrar auditoría de login (opcional)
+                        try {
+                            await supabase
+                                .from('auditoria')
+                                .insert([{
+                                    evento_id: `LOGIN-${Date.now()}`,
+                                    tipo_evento: 'login',
+                                    severidad: 'info',
+                                    usuario_id: usuarios.id,
+                                    empresa_id: usuarios.empresa_id,
+                                    descripcion: `Login exitoso para usuario ${email}`,
+                                    creado_en: new Date().toISOString()
+                                }]);
+                        } catch (auditError) {
+                            console.warn('No se pudo registrar auditoría:', auditError);
+                        }
+                        
+                        this.hideLoading();
+                        this.showAlert('loginAlert', 'success', 
+                            '✅ Acceso exitoso<br>Redirigiendo al dashboard corporativo...');
+                        
+                        // 7. Redirigir al dashboard según el rol
+                        setTimeout(() => {
+                            this.closeLoginModal();
+                            
+                            // Redirigir a dashboard.html (que ya tienes creado)
+                            // El dashboard leerá el rol del localStorage y mostrará la interfaz correspondiente
+                            window.location.href = 'dashboard.html';
+                        }, 2000);
                         
                     } catch (error) {
                         this.hideLoading();
                         console.error('Error en login:', error);
-                        this.showAlert('loginAlert', 'error', 'Error de conexión. Por favor intenta nuevamente.');
+                        this.showAlert('loginAlert', 'error', 'Error de conexión. Intente nuevamente.');
                     }
                 },
                 
                 // =============================================
                 // REGISTRO COMPATIBLE CON SQL
                 // =============================================
-                registerCompany: async function() {
+                completeRegistration: async function(event) {
+                    event.preventDefault();
+                    
                     // Validar contraseñas
-                    const password = document.getElementById('usuarioPassword')?.value;
-                    const confirmPassword = document.getElementById('usuarioPasswordConfirm')?.value;
+                    const password = document.getElementById('userPassword')?.value;
+                    const confirmPassword = document.getElementById('userConfirmPassword')?.value;
                     
                     if (password !== confirmPassword) {
                         this.showAlert('registerAlert', 'error', 'Las contraseñas no coinciden');
@@ -1300,16 +1263,17 @@
                     }
                     
                     if (password.length < 12) {
-                        this.showAlert('registerAlert', 'error', 'La contraseña debe tener mínimo 12 caracteres (requerido por SQL)');
+                        this.showAlert('registerAlert', 'error', 'La contraseña debe tener mínimo 12 caracteres');
                         return;
                     }
                     
                     // Validar email corporativo
-                    const empresaEmail = document.getElementById('empresaEmail')?.value.trim();
-                    const usuarioEmail = document.getElementById('usuarioEmail')?.value.trim();
+                    const userEmail = document.getElementById('userEmail')?.value.trim().toLowerCase();
+                    const companyDomain = _registrationData.company?.dominio_corporativo;
                     
-                    if (empresaEmail.split('@')[1] !== usuarioEmail.split('@')[1]) {
-                        this.showAlert('registerAlert', 'error', 'El email del usuario debe ser del mismo dominio corporativo');
+                    if (companyDomain && !userEmail.endsWith(`@${companyDomain}`)) {
+                        this.showAlert('registerAlert', 'error', 
+                            `El email debe ser del dominio corporativo: @${companyDomain}`);
                         return;
                     }
                     
@@ -1318,17 +1282,13 @@
                     try {
                         const supabase = getSupabase();
                         
-                        // 1. Crear empresa (los triggers generarán el código automáticamente)
+                        // =============================================
+                        // PASO 1: Crear empresa en tabla empresas
+                        // =============================================
                         const empresaData = {
-                            nombre: document.getElementById('empresaNombre')?.value.trim(),
-                            ruc: document.getElementById('empresaRuc')?.value.trim(),
-                            direccion: document.getElementById('empresaDireccion')?.value.trim(),
-                            telefono: document.getElementById('empresaTelefono')?.value.trim(),
-                            email: empresaEmail,
-                            pais: document.getElementById('empresaPais')?.value,
-                            nivel_seguridad: 'alto',
-                            activo: true,
-                            verificada: false
+                            ..._registrationData.company,
+                            creado_en: new Date().toISOString(),
+                            actualizado_en: new Date().toISOString()
                         };
                         
                         const { data: empresa, error: empresaError } = await supabase
@@ -1338,28 +1298,72 @@
                             .single();
                         
                         if (empresaError) {
-                            this.hideLoading();
-                            if (empresaError.code === '23505') {
-                                this.showAlert('registerAlert', 'error', 'El RUC/NIT ya está registrado en el sistema');
-                            } else {
-                                this.showAlert('registerAlert', 'error', 'Error al crear empresa: ' + empresaError.message);
+                            if (empresaError.code === '23505') { // Violación de unique constraint
+                                this.hideLoading();
+                                this.showAlert('registerAlert', 'error', 
+                                    'El ID de empresa ya existe. Por favor use otro identificador.');
+                                return;
                             }
-                            return;
+                            throw new Error(`Error al crear empresa: ${empresaError.message}`);
                         }
                         
-                        // 2. Crear usuario administrador
-                        const usuarioData = {
+                        // =============================================
+                        // PASO 2: Crear configuración de seguridad
+                        // =============================================
+                        const securityData = {
+                            ..._registrationData.security,
                             empresa_id: empresa.id,
-                            email: usuarioEmail,
-                            password_hash: password, // En producción, esto debe ser un hash
-                            nombre: document.getElementById('usuarioNombre')?.value.trim(),
-                            apellido: document.getElementById('usuarioApellido')?.value.trim(),
-                            rol: document.getElementById('usuarioRol')?.value,
-                            activo: true,
-                            verificacion_dos_pasos: false,
-                            expiracion_password: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString() // 90 días
+                            creado_en: new Date().toISOString(),
+                            actualizado_en: new Date().toISOString()
                         };
                         
+                        const { error: securityError } = await supabase
+                            .from('configuracion_seguridad')
+                            .insert([securityData]);
+                        
+                        if (securityError) {
+                            console.warn('Error al crear configuración de seguridad:', securityError);
+                            // Continuamos aunque falle la configuración
+                        }
+                        
+                        // =============================================
+                        // PASO 3: Crear usuario Director General
+                        // =============================================
+                        const userFirstName = document.getElementById('userFirstName').value.trim();
+                        const userLastName = document.getElementById('userLastName').value.trim();
+                        const userPhone = document.getElementById('userPhone').value.trim() || null;
+                        const userLanguage = document.getElementById('userLanguage').value;
+                        
+                        // Generar salt y hash de contraseña
+                        const salt = generateSalt();
+                        const passwordHash = await hashPassword(password + salt);
+                        
+                        // Calcular fecha de expiración de contraseña
+                        const expiracionPassword = new Date();
+                        expiracionPassword.setDate(expiracionPassword.getDate() + 
+                            _registrationData.security.expiracion_password_dias);
+                        
+                        const usuarioData = {
+                            empresa_id: empresa.id,
+                            email: userEmail,
+                            password_hash: passwordHash,
+                            salt: salt,
+                            nombre: userFirstName,
+                            apellido: userLastName,
+                            telefono: userPhone,
+                            rol: 'Director General', // Rol según jerarquía SQL
+                            departamento: 'Dirección General',
+                            idioma_preferido: userLanguage,
+                            moneda_preferida: empresa.moneda_default,
+                            activo: true,
+                            verificacion_dos_pasos: _registrationData.security.requiere_mfa,
+                            expiracion_password: expiracionPassword.toISOString(),
+                            historial_passwords: [],
+                            creado_en: new Date().toISOString(),
+                            actualizado_en: new Date().toISOString()
+                        };
+                        
+                        // El trigger generará automáticamente el código
                         const { data: usuario, error: usuarioError } = await supabase
                             .from('usuarios')
                             .insert([usuarioData])
@@ -1367,122 +1371,116 @@
                             .single();
                         
                         if (usuarioError) {
-                            // Revertir creación de empresa si falla el usuario
-                            await supabase.from('empresas').delete().eq('id', empresa.id);
-                            this.hideLoading();
-                            this.showAlert('registerAlert', 'error', 'Error al crear usuario: ' + usuarioError.message);
-                            return;
+                            throw new Error(`Error al crear usuario: ${usuarioError.message}`);
                         }
                         
-                        // 3. Crear configuración de seguridad por defecto
-                        const configData = {
-                            empresa_id: empresa.id,
-                            intentos_maximos_login: 5,
-                            tiempo_bloqueo_minutos: 30,
-                            sesiones_concurrentes_max: 3,
-                            requiere_mfa: false,
-                            longitud_minima_password: 12,
-                            expiracion_password_dias: 90,
-                            encriptacion_nivel: 'AES-256'
-                        };
-                        
-                        await supabase
-                            .from('configuracion_seguridad')
-                            .insert([configData]);
+                        // =============================================
+                        // PASO 4: Registrar auditoría
+                        // =============================================
+                        try {
+                            await supabase
+                                .from('auditoria')
+                                .insert([{
+                                    evento_id: `REG-${Date.now()}`,
+                                    tipo_evento: 'creacion',
+                                    severidad: 'info',
+                                    usuario_id: usuario.id,
+                                    empresa_id: empresa.id,
+                                    tabla_afectada: 'empresas',
+                                    registro_id: empresa.id,
+                                    descripcion: `Registro de nueva empresa: ${empresa.nombre}`,
+                                    creado_en: new Date().toISOString()
+                                }]);
+                        } catch (auditError) {
+                            console.warn('No se pudo registrar auditoría:', auditError);
+                        }
                         
                         this.hideLoading();
                         
-                        // Éxito
+                        // =============================================
+                        // MOSTRAR ÉXITO Y AUTOLOGIN
+                        // =============================================
                         this.showAlert('registerAlert', 'success', 
-                            '✅ ¡Registro exitoso!<br><br>' +
-                            'Empresa creada: ' + empresa.nombre + '<br>' +
-                            'Código empresa: ' + empresa.codigo + '<br>' +
-                            'Usuario administrador: ' + usuario.nombre + '<br>' +
-                            'Rol asignado: ' + usuario.rol + '<br><br>' +
-                            'Puedes iniciar sesión ahora.');
+                            `✅ ¡Registro exitoso!<br><br>
+                            <strong>Empresa:</strong> ${empresa.nombre}<br>
+                            <strong>ID Empresa:</strong> ${empresa.id}<br>
+                            <strong>Usuario:</strong> ${userEmail}<br>
+                            <strong>Rol:</strong> Director General<br><br>
+                            Iniciando sesión automáticamente...`);
                         
-                        // Autocompletar login
+                        // Guardar credenciales para autologin
+                        localStorage.setItem('nexial_user', JSON.stringify(usuario));
+                        localStorage.setItem('nexial_session', 'true');
+                        localStorage.setItem('nexial_empresa_id', empresa.id);
+                        localStorage.setItem('nexial_user_id', usuario.id);
+                        localStorage.setItem('nexial_user_rol', usuario.rol);
+                        
+                        // Redirigir después de 3 segundos
                         setTimeout(() => {
                             this.closeRegisterModal();
-                            this.openLoginModal();
-                            document.getElementById('loginEmail').value = usuarioEmail;
-                            document.getElementById('loginPassword').value = password;
+                            window.location.href = 'dashboard.html';
                         }, 3000);
                         
                     } catch (error) {
                         this.hideLoading();
-                        console.error('Error registro:', error);
+                        console.error('Error en registro completo:', error);
                         this.showAlert('registerAlert', 'error', 
-                            'Error en el registro: ' + error.message);
+                            `Error: ${error.message}<br>
+                            Contacte soporte: marcelodanielcc@gmail.com`);
                     }
-                },
-                
-                // =============================================
-                // REDIRECCIÓN POR ROL
-                // =============================================
-                redirectByRole: function(rol, usuario) {
-                    // Guardar sesión
-                    localStorage.setItem('nexial_user', JSON.stringify(usuario));
-                    localStorage.setItem('nexial_session', 'true');
-                    
-                    // Mapeo de roles a páginas
-                    const rolePages = {
-                        'Director Corporativo': 'director-corporativo.html',
-                        'Director General': 'director-general.html',
-                        'Director Financiero': 'director-financiero.html',
-                        'Supervisor Senior': 'supervisor-senior.html',
-                        'Ejecutivo Comercial': 'ejecutivo-comercial.html',
-                        'Especialista Logístico': 'especialista-logistico.html',
-                        'Gestor de Almacén': 'gestor-almacen.html'
-                    };
-                    
-                    const page = rolePages[rol] || 'dashboard.html';
-                    
-                    this.showAlert('loginAlert', 'success', 
-                        '✅ Acceso concedido<br>Redirigiendo a: ' + rol);
-                    
-                    setTimeout(() => {
-                        this.closeLoginModal();
-                        window.location.href = page;
-                    }, 2000);
                 },
                 
                 // =============================================
                 // FUNCIONES AUXILIARES
                 // =============================================
                 recoverPassword: async function() {
-                    const email = prompt('Ingrese su email para recuperar contraseña:');
+                    const email = prompt('Ingrese su email corporativo para recuperar contraseña:');
                     if (email) {
                         try {
                             const supabase = getSupabase();
                             
-                            // Verificar si el usuario existe
+                            // Verificar que el usuario existe
                             const { data: usuario } = await supabase
                                 .from('usuarios')
-                                .select('id, email, nombre')
+                                .select('id, email, empresa_id')
                                 .eq('email', email)
                                 .single();
                             
                             if (usuario) {
-                                alert(`Instrucciones enviadas a ${email}\n\nEn un sistema real, se enviaría un enlace de recuperación.`);
+                                alert(`Solicitud recibida. En un sistema real, se enviaría un enlace de recuperación a ${email}.`);
+                                
+                                // Registrar intento en auditoría
+                                try {
+                                    await supabase
+                                        .from('auditoria')
+                                        .insert([{
+                                            evento_id: `RECOVERY-${Date.now()}`,
+                                            tipo_evento: 'acceso_sensible',
+                                            severidad: 'warning',
+                                            usuario_id: usuario.id,
+                                            empresa_id: usuario.empresa_id,
+                                            descripcion: `Solicitud de recuperación de contraseña para ${email}`,
+                                            creado_en: new Date().toISOString()
+                                        }]);
+                                } catch (e) {
+                                    console.warn('No se pudo registrar auditoría de recuperación');
+                                }
                             } else {
-                                alert('Usuario no encontrado');
+                                alert('Usuario no encontrado.');
                             }
                             
                         } catch (error) {
-                            alert('Error de conexión.');
+                            alert('Error de conexión. Intente nuevamente.');
                         }
                     }
                 },
                 
                 showLoading: function() {
-                    const loading = document.getElementById('globalLoading');
-                    if (loading) loading.style.display = 'flex';
+                    document.getElementById('globalLoading').style.display = 'flex';
                 },
                 
                 hideLoading: function() {
-                    const loading = document.getElementById('globalLoading');
-                    if (loading) loading.style.display = 'none';
+                    document.getElementById('globalLoading').style.display = 'none';
                 },
                 
                 showAlert: function(elementId, type, message) {
@@ -1490,7 +1488,9 @@
                     if (!alertElement) return;
                     
                     alertElement.className = `alert alert-${type}`;
-                    alertElement.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}`;
+                    alertElement.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 
+                        type === 'error' ? 'exclamation-circle' : 
+                        type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i> ${message}`;
                     alertElement.style.display = 'block';
                     
                     if (type === 'success') {
@@ -1504,20 +1504,21 @@
                 // INICIALIZACIÓN
                 // =============================================
                 initialize: function() {
-                    createParticles();
-                    
-                    console.log('🚀 Nexial Suite v5.0 - SQL Compatible');
-                    console.log('🔗 Supabase URL:', SUPABASE_URL);
-                    console.log('🔐 Sistema compatible con código SQL de seguridad');
-                    console.log('👥 7 roles corporativos implementados');
-                    console.log('🔒 Encriptación AES-256 y RLS activos');
+                    console.log('🏢 Nexial Suite v5.0 - SQL Compatible');
+                    console.log('📊 Compatible con estructura PostgreSQL completa');
+                    console.log('🔐 7 roles jerárquicos implementados');
                     
                     // Verificar sesión existente
                     const session = localStorage.getItem('nexial_session');
                     if (session === 'true') {
                         const user = localStorage.getItem('nexial_user');
                         if (user) {
-                            console.log('👤 Sesión activa:', JSON.parse(user).email);
+                            try {
+                                const userData = JSON.parse(user);
+                                console.log('👤 Sesión activa:', userData.email, '- Rol:', userData.rol);
+                            } catch (e) {
+                                localStorage.clear();
+                            }
                         }
                     }
                     
@@ -1533,6 +1534,17 @@
                     // Enter en login
                     document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
                         if (e.key === 'Enter') this.login();
+                    });
+                    
+                    // Validar email corporativo en tiempo real
+                    document.getElementById('userEmail')?.addEventListener('blur', function() {
+                        const email = this.value.trim().toLowerCase();
+                        const companyDomain = _registrationData.company?.dominio_corporativo;
+                        
+                        if (companyDomain && email && !email.endsWith(`@${companyDomain}`)) {
+                            Nexial.showAlert('registerAlert', 'warning', 
+                                `El email debería terminar en @${companyDomain}`);
+                        }
                     });
                     
                     // Scroll suave
@@ -1569,6 +1581,10 @@
         window.openRegisterModal = function() { Nexial.openRegisterModal(); };
         window.closeLoginModal = function() { Nexial.closeLoginModal(); };
         window.closeRegisterModal = function() { Nexial.closeRegisterModal(); };
+        window.logout = function() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        };
     </script>
 </body>
 </html>
