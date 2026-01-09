@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexial Suite - Director Corporativo</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👑</text></svg>">
     <style>
         * {
             margin: 0;
@@ -139,6 +140,11 @@
             color: rgba(255, 255, 255, 0.4);
             font-size: 12px;
         }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -179,168 +185,179 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // CONFIGURACIÓN SUPABASE
-        const SUPABASE_URL = 'https://tjtpdxeoxissrpdrhqbc.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_yH2lzZ_AWTvHsxW4TI2yYw_KnY5krtq';
-        
-        // Inicializar Supabase
-        const supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-            auth: {
-                persistSession: true,
-                autoRefreshToken: true
-            }
-        });
-        
-        // Elementos del DOM
-        const loginForm = document.getElementById('loginForm');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const loginBtn = document.getElementById('loginBtn');
-        const btnText = document.getElementById('btnText');
-        const errorMessage = document.getElementById('errorMessage');
-        const loading = document.getElementById('loading');
-        
-        // Verificar si hay sesión activa
-        async function checkExistingSession() {
-            const { data: { session } } = await supabase.auth.getSession();
+        // IIFE para evitar conflictos de variables
+        (function() {
+            // CONFIGURACIÓN SUPABASE
+            const SUPABASE_URL = 'https://tjtpdxeoxissrpdrhqbc.supabase.co';
+            const SUPABASE_ANON_KEY = 'sb_publishable_yH2lzZ_AWTvHsxW4TI2yYw_KnY5krtq';
             
-            if (session) {
-                // Verificar si el usuario es Director Corporativo
-                const { data: userData, error } = await supabase
-                    .from('usuarios')
-                    .select('id, rol, activo')
-                    .eq('id', session.user.id)
-                    .single();
+            // Elementos del DOM
+            const loginForm = document.getElementById('loginForm');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const loginBtn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('btnText');
+            const errorMessage = document.getElementById('errorMessage');
+            const loading = document.getElementById('loading');
+            
+            // Variable para Supabase (usamos var para evitar errores de redeclaración)
+            var supabase = null;
+            
+            // Inicializar Supabase
+            function initSupabase() {
+                supabase = window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                    auth: {
+                        persistSession: true,
+                        autoRefreshToken: true
+                    }
+                });
+            }
+            
+            // Verificar si hay sesión activa
+            async function checkExistingSession() {
+                if (!supabase) return;
                 
-                if (!error && userData && userData.rol === 'Director Corporativo' && userData.activo) {
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    
+                    if (session) {
+                        // Verificar si el usuario es Director Corporativo
+                        const { data: userData, error } = await supabase
+                            .from('usuarios')
+                            .select('id, rol, activo, empresa_id')
+                            .eq('id', session.user.id)
+                            .single();
+                        
+                        if (!error && userData && userData.rol === 'Director Corporativo' && userData.activo) {
+                            // Redirigir al dashboard
+                            window.location.href = 'dashboard.html';
+                        } else {
+                            // Cerrar sesión si no es Director Corporativo
+                            await supabase.auth.signOut();
+                        }
+                    }
+                } catch (error) {
+                    console.log('No hay sesión activa:', error.message);
+                }
+            }
+            
+            // Manejar el login
+            async function handleLogin(email, password) {
+                showLoading();
+                
+                try {
+                    // Iniciar sesión con Supabase Auth
+                    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                        email,
+                        password
+                    });
+                    
+                    if (authError) {
+                        if (authError.message.includes('Invalid login credentials')) {
+                            throw new Error('Credenciales incorrectas');
+                        } else if (authError.message.includes('Email not confirmed')) {
+                            throw new Error('Email no confirmado');
+                        } else {
+                            throw new Error('Error de autenticación: ' + authError.message);
+                        }
+                    }
+                    
+                    // Verificar que el usuario exista en la tabla usuarios
+                    const { data: userData, error: userError } = await supabase
+                        .from('usuarios')
+                        .select('*')
+                        .eq('email', email)
+                        .eq('activo', true)
+                        .single();
+                    
+                    if (userError || !userData) {
+                        await supabase.auth.signOut();
+                        throw new Error('Usuario no encontrado en el sistema');
+                    }
+                    
+                    // Verificar rol de Director Corporativo
+                    if (userData.rol !== 'Director Corporativo') {
+                        await supabase.auth.signOut();
+                        throw new Error('Acceso solo para Directores Corporativos');
+                    }
+                    
+                    // Registrar auditoría del login
+                    try {
+                        await supabase.from('auditoria').insert({
+                            evento_id: `LOGIN-${Date.now()}`,
+                            tipo_evento: 'login',
+                            severidad: 'info',
+                            usuario_id: userData.id,
+                            empresa_id: userData.empresa_id,
+                            tabla_afectada: 'usuarios',
+                            registro_id: userData.id,
+                            datos_nuevos: { login_time: new Date().toISOString() },
+                            descripcion: 'Inicio de sesión de Director Corporativo',
+                            user_agent: navigator.userAgent
+                        });
+                    } catch (auditError) {
+                        console.log('Error en auditoría:', auditError.message);
+                    }
+                    
                     // Redirigir al dashboard
                     window.location.href = 'dashboard.html';
+                    
+                } catch (error) {
+                    showError(error.message);
+                } finally {
+                    hideLoading();
                 }
-            }
-        }
-        
-        // Manejar el login
-        async function handleLogin(email, password) {
-            showLoading();
-            
-            try {
-                // Iniciar sesión con Supabase Auth
-                const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-                    email,
-                    password
-                });
-                
-                if (authError) {
-                    if (authError.message.includes('Invalid login credentials')) {
-                        throw new Error('Credenciales incorrectas. Verifique su email y contraseña.');
-                    } else if (authError.message.includes('Email not confirmed')) {
-                        throw new Error('Email no confirmado. Verifique su bandeja de entrada.');
-                    } else {
-                        throw new Error('Error de autenticación: ' + authError.message);
-                    }
-                }
-                
-                // Verificar que el usuario exista en la tabla usuarios
-                const { data: userData, error: userError } = await supabase
-                    .from('usuarios')
-                    .select('*')
-                    .eq('id', authData.user.id)
-                    .single();
-                
-                if (userError || !userData) {
-                    throw new Error('Usuario no encontrado en el sistema. Contacte al administrador.');
-                }
-                
-                // Verificar rol de Director Corporativo
-                if (userData.rol !== 'Director Corporativo') {
-                    await supabase.auth.signOut();
-                    throw new Error('Acceso denegado. Esta área es exclusiva para Directores Corporativos.');
-                }
-                
-                // Verificar si el usuario está activo
-                if (!userData.activo) {
-                    throw new Error('Usuario inactivo. Contacte al administrador del sistema.');
-                }
-                
-                // Registrar auditoría del login
-                await supabase.from('auditoria').insert({
-                    evento_id: `LOGIN-${Date.now()}`,
-                    tipo_evento: 'login',
-                    severidad: 'info',
-                    usuario_id: userData.id,
-                    empresa_id: userData.empresa_id,
-                    tabla_afectada: 'usuarios',
-                    registro_id: userData.id,
-                    datos_nuevos: { login_time: new Date().toISOString() },
-                    descripcion: 'Inicio de sesión de Director Corporativo',
-                    ip_address: null,
-                    user_agent: navigator.userAgent
-                });
-                
-                // Redirigir al dashboard
-                window.location.href = 'dashboard.html';
-                
-            } catch (error) {
-                showError(error.message);
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // Mostrar/ocultar loading
-        function showLoading() {
-            loginBtn.disabled = true;
-            btnText.textContent = 'Verificando...';
-            loading.style.display = 'block';
-            errorMessage.style.display = 'none';
-        }
-        
-        function hideLoading() {
-            loginBtn.disabled = false;
-            btnText.textContent = 'Iniciar Sesión';
-            loading.style.display = 'none';
-        }
-        
-        // Mostrar error
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-        }
-        
-        // Event Listeners
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const email = emailInput.value.trim();
-            const password = passwordInput.value.trim();
-            
-            if (!email || !password) {
-                showError('Por favor complete todos los campos.');
-                return;
             }
             
-            await handleLogin(email, password);
-        });
-        
-        // Permitir login con Enter
-        passwordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                loginForm.requestSubmit();
+            // Mostrar/ocultar loading
+            function showLoading() {
+                loginBtn.disabled = true;
+                btnText.textContent = 'Verificando...';
+                loading.style.display = 'block';
+                errorMessage.style.display = 'none';
             }
-        });
-        
-        // Verificar sesión existente al cargar
-        document.addEventListener('DOMContentLoaded', checkExistingSession);
-        
-        // Animación del spinner
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+            
+            function hideLoading() {
+                loginBtn.disabled = false;
+                btnText.textContent = 'Iniciar Sesión';
+                loading.style.display = 'none';
             }
-        `;
-        document.head.appendChild(style);
+            
+            // Mostrar error
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+            
+            // Event Listeners
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = emailInput.value.trim();
+                const password = passwordInput.value.trim();
+                
+                if (!email || !password) {
+                    showError('Por favor complete todos los campos.');
+                    return;
+                }
+                
+                await handleLogin(email, password);
+            });
+            
+            // Permitir login con Enter
+            passwordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    loginForm.requestSubmit();
+                }
+            });
+            
+            // Inicializar cuando el DOM esté listo
+            document.addEventListener('DOMContentLoaded', function() {
+                initSupabase();
+                checkExistingSession();
+            });
+            
+        })(); // Fin de la IIFE
     </script>
 </body>
 </html>
