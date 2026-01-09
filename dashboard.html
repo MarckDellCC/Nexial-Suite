@@ -3,204 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexial Suite - Director Corporativo</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Dashboard - Director Corporativo</title>
     <style>
-        :root {
-            --primary: #7c3aed;
-            --primary-glow: #9d5bff;
-            --secondary: #00f5ff;
-            --danger: #ff0055;
-            --success: #00ff41;
-            --warning: #ffaa00;
-            --dark: #0f0f23;
-            --darker: #070710;
-            --card-bg: rgba(15, 15, 35, 0.8);
-        }
-        
+        /* RESET Y ESTILOS BASE */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
         }
         
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: var(--darker);
-            color: #fff;
-            overflow-x: hidden;
+            background: #0f0f23;
+            color: #ffffff;
+            min-height: 100vh;
         }
         
-        .dashboard {
+        /* LAYOUT PRINCIPAL */
+        .app-container {
             display: flex;
             min-height: 100vh;
         }
         
+        /* SIDEBAR */
         .sidebar {
-            width: 280px;
-            background: var(--dark);
-            border-right: 1px solid rgba(124, 58, 237, 0.3);
-            padding: 2rem 1.5rem;
+            width: 260px;
+            background: #1a1a2e;
+            border-right: 1px solid rgba(124, 58, 237, 0.2);
+            padding: 24px 0;
             position: fixed;
             height: 100vh;
+            overflow-y: auto;
         }
         
         .logo {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--secondary);
-            margin-bottom: 2rem;
+            padding: 0 24px 24px;
+            border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+            margin-bottom: 24px;
+        }
+        
+        .logo h1 {
+            color: #7c3aed;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .logo .badge {
+            display: inline-block;
+            background: rgba(124, 58, 237, 0.2);
+            color: #9d5bff;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
         }
         
         .user-info {
-            background: rgba(124, 58, 237, 0.1);
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            border: 1px solid rgba(124, 58, 237, 0.3);
+            padding: 0 24px 24px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .user-badge {
-            display: inline-block;
-            padding: 0.3rem 1rem;
-            background: var(--primary);
-            color: white;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+        .user-info h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+            color: #ffffff;
         }
         
-        .user-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-        
-        .user-role {
-            color: var(--secondary);
-            font-size: 0.9rem;
+        .user-info p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
         }
         
         .nav-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            padding: 0 24px;
         }
         
-        .nav-link {
+        .nav-item {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 0.8rem 1rem;
-            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 16px;
+            color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
             border-radius: 8px;
-            transition: all 0.3s;
+            margin-bottom: 8px;
             cursor: pointer;
+            transition: all 0.2s;
         }
         
-        .nav-link:hover, .nav-link.active {
-            background: rgba(124, 58, 237, 0.2);
-            color: var(--secondary);
+        .nav-item:hover {
+            background: rgba(124, 58, 237, 0.1);
+            color: #9d5bff;
+        }
+        
+        .nav-item.active {
+            background: rgba(124, 58, 237, 0.15);
+            color: #7c3aed;
+            font-weight: 500;
+        }
+        
+        .nav-item i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
         }
         
         .logout-btn {
-            margin-top: 2rem;
-            width: 100%;
-            padding: 0.8rem;
+            margin: 24px;
+            width: calc(100% - 48px);
+            padding: 12px;
             background: rgba(255, 0, 85, 0.1);
-            border: 1px solid rgba(255, 0, 85, 0.3);
-            color: var(--danger);
+            border: 1px solid rgba(255, 0, 85, 0.2);
+            color: #ff0055;
             border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .logout-btn:hover {
             background: rgba(255, 0, 85, 0.2);
         }
         
+        .logout-btn i {
+            margin-right: 8px;
+        }
+        
+        /* CONTENIDO PRINCIPAL */
         .main-content {
             flex: 1;
-            margin-left: 280px;
-            padding: 2rem;
+            margin-left: 260px;
+            padding: 24px;
+            min-height: 100vh;
         }
         
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(124, 58, 237, 0.2);
         }
         
-        .page-title {
-            font-size: 1.8rem;
-            color: var(--secondary);
+        .header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #ffffff;
         }
         
+        /* ESTADÍSTICAS */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
         }
         
         .stat-card {
-            background: var(--card-bg);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(124, 58, 237, 0.1);
             border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid rgba(124, 58, 237, 0.2);
+            padding: 20px;
+            transition: all 0.2s;
+        }
+        
+        .stat-card:hover {
+            border-color: rgba(124, 58, 237, 0.3);
+        }
+        
+        .stat-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-bottom: 8px;
         }
         
         .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin: 0.5rem 0;
-            color: var(--secondary);
+            font-size: 28px;
+            font-weight: 600;
+            color: #7c3aed;
+            margin-bottom: 4px;
         }
         
-        .table-card {
-            background: var(--card-bg);
+        /* TABLA DE EMPRESAS */
+        .table-container {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(124, 58, 237, 0.1);
             border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid rgba(124, 58, 237, 0.2);
-            margin-top: 2rem;
+            padding: 24px;
         }
         
         .table-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 24px;
         }
         
-        .btn {
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
+        .table-header h3 {
+            font-size: 18px;
             font-weight: 600;
-            transition: all 0.3s;
-            display: inline-flex;
+            color: #ffffff;
+        }
+        
+        .primary-btn {
+            padding: 10px 20px;
+            background: #7c3aed;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
             align-items: center;
-            gap: 0.5rem;
         }
         
-        .btn-primary {
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            color: white;
+        .primary-btn:hover {
+            background: #6d28d9;
+            transform: translateY(-1px);
         }
         
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .primary-btn i {
+            margin-right: 8px;
         }
         
         .table-wrapper {
@@ -214,60 +245,101 @@
         
         .data-table th {
             background: rgba(124, 58, 237, 0.1);
-            color: var(--secondary);
-            padding: 1rem;
+            color: #9d5bff;
+            font-weight: 500;
             text-align: left;
+            padding: 16px;
+            font-size: 14px;
+            white-space: nowrap;
         }
         
         .data-table td {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+        
+        .data-table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: rgba(0, 255, 65, 0.1);
+            color: #00ff41;
+        }
+        
+        .status-inactive {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
         }
         
         .action-buttons {
             display: flex;
-            gap: 0.5rem;
+            gap: 8px;
         }
         
         .action-btn {
-            width: 35px;
-            height: 35px;
-            border-radius: 6px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            font-size: 14px;
         }
         
-        .action-btn.view { background: rgba(0, 255, 65, 0.1); color: var(--success); }
-        .action-btn.edit { background: rgba(0, 170, 255, 0.1); color: var(--secondary); }
-        .action-btn.delete { background: rgba(255, 0, 85, 0.1); color: var(--danger); }
-        .action-btn.access { background: rgba(157, 0, 255, 0.1); color: #9d5bff; }
+        .action-btn.view {
+            background: rgba(0, 255, 65, 0.1);
+            color: #00ff41;
+        }
         
+        .action-btn.edit {
+            background: rgba(0, 170, 255, 0.1);
+            color: #00aaff;
+        }
+        
+        .action-btn.delete {
+            background: rgba(255, 0, 85, 0.1);
+            color: #ff0055;
+        }
+        
+        .action-btn.access {
+            background: rgba(157, 91, 255, 0.1);
+            color: #9d5bff;
+        }
+        
+        /* MODALES */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(7, 7, 16, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(15, 15, 35, 0.95);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            padding: 20px;
         }
         
         .modal {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 2rem;
-            width: 90%;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 32px;
+            width: 100%;
+            max-width: 500px;
             border: 1px solid rgba(124, 58, 237, 0.3);
         }
         
@@ -275,36 +347,96 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 24px;
+        }
+        
+        .modal-header h3 {
+            font-size: 20px;
+            color: #ffffff;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 24px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
         }
         
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 20px;
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
-            color: var(--secondary);
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
         }
         
-        .form-group input, .form-group select, .form-group textarea {
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
-            padding: 0.8rem;
-            background: var(--dark);
-            border: 1px solid rgba(124, 58, 237, 0.3);
-            border-radius: 6px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
             color: white;
-            font-size: 1rem;
+            font-size: 14px;
         }
         
-        .loading {
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #7c3aed;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+        
+        .secondary-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* LOADING Y NOTIFICACIONES */
+        .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(7, 7, 16, 0.95);
+            background: rgba(15, 15, 35, 0.9);
             display: none;
             align-items: center;
             justify-content: center;
@@ -312,317 +444,218 @@
         }
         
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(124, 58, 237, 0.3);
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(124, 58, 237, 0.3);
             border-radius: 50%;
-            border-top-color: var(--primary);
+            border-top-color: #7c3aed;
             animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
         
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 1rem 1.5rem;
+            padding: 16px 24px;
             border-radius: 8px;
             z-index: 3000;
             display: flex;
             align-items: center;
-            gap: 1rem;
-            animation: slideIn 0.3s ease-out;
+            gap: 12px;
+            max-width: 400px;
         }
         
         .notification.success {
             background: rgba(0, 255, 65, 0.1);
-            border: 1px solid var(--success);
-            color: var(--success);
+            border: 1px solid #00ff41;
+            color: #00ff41;
         }
         
         .notification.error {
             background: rgba(255, 0, 85, 0.1);
-            border: 1px solid var(--danger);
-            color: var(--danger);
+            border: 1px solid #ff0055;
+            color: #ff0055;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 220px;
+            }
+            
+            .main-content {
+                margin-left: 220px;
+                padding: 16px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* ANIMACIONES */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
         @keyframes slideIn {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
-        }
-        
-        .confirmation-dialog {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(7, 7, 16, 0.95);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        
-        .confirmation-content {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 2rem;
-            max-width: 400px;
-            width: 90%;
-            border: 1px solid rgba(124, 58, 237, 0.3);
-            text-align: center;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .status-active { background: rgba(0, 255, 65, 0.1); color: var(--success); }
-        .status-inactive { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.5); }
-        
-        .login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(7, 7, 16, 0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-        }
-        
-        .login-box {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 2.5rem;
-            width: 90%;
-            max-width: 400px;
-            border: 1px solid rgba(124, 58, 237, 0.3);
-            text-align: center;
-        }
-        
-        .login-title {
-            color: var(--secondary);
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
-        }
-        
-        .login-input {
-            width: 100%;
-            padding: 0.8rem;
-            margin-bottom: 1rem;
-            background: var(--dark);
-            border: 1px solid rgba(124, 58, 237, 0.3);
-            border-radius: 6px;
-            color: white;
-            font-size: 1rem;
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <!-- Overlay de login para verificar sesión -->
-    <div class="login-overlay" id="loginOverlay">
-        <div class="login-box">
-            <h2 class="login-title">Verificando Director Corporativo</h2>
-            <div id="loginMessage" style="color: var(--secondary); margin-bottom: 1.5rem;">
-                <i class="fas fa-spinner fa-spin"></i> Verificando credenciales...
-            </div>
-            <button class="btn btn-primary" onclick="window.location.href='index.html'" style="width: 100%;">
-                <i class="fas fa-sign-in-alt"></i> Volver al Login
-            </button>
-        </div>
-    </div>
-    
-    <div class="dashboard" id="dashboard" style="display: none;">
+    <div class="app-container">
+        <!-- SIDEBAR -->
         <div class="sidebar">
             <div class="logo">
-                <i class="fas fa-brain"></i>
-                <span>NEXIAL SUITE</span>
+                <h1>Nexial Suite</h1>
+                <div class="badge">DIRECTOR CORPORATIVO</div>
             </div>
             
             <div class="user-info">
-                <div class="user-badge">DIRECTOR CORPORATIVO</div>
-                <div class="user-name" id="userName">Cargando...</div>
-                <div class="user-role">Control Total del Sistema</div>
+                <h3 id="userName">Cargando...</h3>
+                <p id="userRole">Dueño del Software</p>
             </div>
             
             <div class="nav-menu">
-                <a class="nav-link active" onclick="loadDashboard()">
+                <a class="nav-item active" onclick="loadDashboard()">
                     <i class="fas fa-tachometer-alt"></i>
-                    Panel de Control
+                    Dashboard
                 </a>
-                <a class="nav-link" onclick="loadEmpresas()">
+                <a class="nav-item" onclick="loadEmpresas()">
                     <i class="fas fa-building"></i>
-                    Gestión de Empresas
+                    Todas las Empresas
                 </a>
             </div>
             
             <button class="logout-btn" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                <i class="fas fa-sign-out-alt"></i>
+                Cerrar Sesión
             </button>
         </div>
         
+        <!-- CONTENIDO PRINCIPAL -->
         <div class="main-content" id="mainContent">
+            <!-- El contenido se carga dinámicamente aquí -->
+        </div>
+    </div>
+    
+    <!-- MODAL PARA EMPRESA -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modalContent">
             <!-- Contenido dinámico -->
         </div>
     </div>
     
-    <div class="loading" id="loading">
+    <!-- LOADING -->
+    <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
     </div>
     
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal" id="modalContent">
-            <!-- Contenido del modal -->
-        </div>
-    </div>
-    
-    <div class="confirmation-dialog" id="confirmationDialog">
-        <div class="confirmation-content">
-            <h3 style="color: var(--secondary); margin-bottom: 1rem;" id="confirmationTitle"></h3>
-            <p style="color: rgba(255,255,255,0.7); margin-bottom: 1.5rem;" id="confirmationMessage"></p>
-            <div style="display: flex; gap: 1rem; justify-content: center;">
-                <button class="btn btn-secondary" onclick="hideConfirmation()">Cancelar</button>
-                <button class="btn btn-primary" id="confirmActionBtn">Confirmar</button>
-            </div>
-        </div>
-    </div>
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     
     <script>
-        // CONFIGURACIÓN SUPABASE CORREGIDA
-        const SUPABASE_URL = 'https://vgmxfkanyfiaodfptmtv.supabase.co';
-        
-        // IMPORTANTE: Usa ANON KEY para autenticación, no SERVICE KEY
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnbXhma2FueWZpYW9kZnB0bXR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDIwMDc2MzcsImV4cCI6MjAxNzU4MzYzN30.ZrD0BqCFv29sqLIKPqLZc4nR4EoJrxpbv8N2GsD6Z_M';
+        // CONFIGURACIÓN SUPABASE
+        const SUPABASE_URL = 'https://tjtpdxeoxissrpdrhqbc.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_yH2lzZ_AWTvHsxW4TI2yYw_KnY5krtq';
         
         let supabase = null;
-        let empresas = [];
         let currentUser = null;
+        let empresas = [];
         
-        // Inicializar Supabase con autenticación
-        function initSupabase() {
-            supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-                auth: {
-                    persistSession: true,
-                    autoRefreshToken: true,
-                    detectSessionInUrl: true
-                }
-            });
-        }
-        
-        // Verificar si el usuario está autenticado y es Director Corporativo
-        async function checkUserRole() {
-            showLoading();
+        // INICIALIZACIÓN
+        async function initApp() {
             try {
-                // Obtener sesión actual
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                // Configurar Supabase
+                supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                    auth: {
+                        persistSession: true,
+                        autoRefreshToken: true
+                    }
+                });
                 
-                if (sessionError || !session) {
-                    throw new Error('No hay sesión activa');
+                // Verificar sesión
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session) {
+                    window.location.href = 'login.html';
+                    return;
                 }
                 
-                // Obtener información del usuario desde la tabla 'usuarios'
-                const { data: userData, error: userError } = await supabase
+                // Verificar usuario y rol
+                const { data: userData, error } = await supabase
                     .from('usuarios')
                     .select('*')
                     .eq('id', session.user.id)
                     .single();
                 
-                if (userError || !userData) {
-                    throw new Error('Usuario no encontrado en la base de datos');
+                if (error || !userData) {
+                    window.location.href = 'login.html';
+                    return;
                 }
                 
-                // Verificar si es Director Corporativo
                 if (userData.rol !== 'Director Corporativo') {
-                    throw new Error('Acceso denegado. Solo para Directores Corporativos');
+                    alert('Acceso denegado. Solo para Directores Corporativos.');
+                    await supabase.auth.signOut();
+                    window.location.href = 'login.html';
+                    return;
                 }
                 
-                // Verificar si el usuario está activo
                 if (!userData.activo) {
-                    throw new Error('Usuario inactivo. Contacte al administrador');
+                    alert('Usuario inactivo. Contacte al administrador.');
+                    await supabase.auth.signOut();
+                    window.location.href = 'login.html';
+                    return;
                 }
                 
                 currentUser = userData;
                 document.getElementById('userName').textContent = `${userData.nombre} ${userData.apellido || ''}`;
                 
-                // Registrar auditoría de acceso
-                await registrarAuditoria('login', 'info', userData.id, userData.empresa_id, 
-                    'usuarios', userData.id, null, null, 'Acceso al panel de Director Corporativo');
-                
-                // Ocultar login y mostrar dashboard
-                document.getElementById('loginOverlay').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'flex';
-                hideLoading();
-                
                 // Cargar dashboard inicial
                 loadDashboard();
                 
             } catch (error) {
-                console.error('Error verificando usuario:', error);
-                document.getElementById('loginMessage').innerHTML = `
-                    <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
-                    <div>${error.message}</div>
-                    <small style="color: rgba(255,255,255,0.5); margin-top: 0.5rem;">Redirigiendo al login...</small>
-                `;
-                
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 3000);
+                console.error('Error inicializando app:', error);
+                window.location.href = 'login.html';
             }
         }
         
-        // Función para registrar auditoría
-        async function registrarAuditoria(tipo_evento, severidad, usuario_id, empresa_id, 
-                                         tabla_afectada, registro_id, datos_anteriores, 
-                                         datos_nuevos, descripcion) {
-            try {
-                const { error } = await supabase
-                    .from('auditoria')
-                    .insert({
-                        evento_id: `EVT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                        tipo_evento: tipo_evento,
-                        severidad: severidad,
-                        usuario_id: usuario_id,
-                        empresa_id: empresa_id,
-                        tabla_afectada: tabla_afectada,
-                        registro_id: registro_id,
-                        datos_anteriores: datos_anteriores,
-                        datos_nuevos: datos_nuevos,
-                        descripcion: descripcion,
-                        ip_address: null, // Se puede obtener con servicios externos
-                        user_agent: navigator.userAgent,
-                        creado_en: new Date().toISOString()
-                    });
-                
-                if (error) console.error('Error registrando auditoría:', error);
-            } catch (error) {
-                console.error('Error en auditoría:', error);
-            }
-        }
-        
-        // Mostrar/Ocultar loading
+        // FUNCIONES DE INTERFAZ
         function showLoading() {
-            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('loadingOverlay').style.display = 'flex';
         }
         
         function hideLoading() {
-            document.getElementById('loading').style.display = 'none';
+            document.getElementById('loadingOverlay').style.display = 'none';
         }
         
-        // Mostrar notificación
         function showNotification(type, message) {
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
+            notification.style.animation = 'slideIn 0.3s ease-out';
             notification.innerHTML = `
                 <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
                 <span>${message}</span>
@@ -635,15 +668,8 @@
             }, 5000);
         }
         
-        // Modal functions
-        function showModal(title, content) {
-            document.getElementById('modalContent').innerHTML = `
-                <div class="modal-header">
-                    <h2 style="color: var(--secondary);">${title}</h2>
-                    <button onclick="closeModal()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">×</button>
-                </div>
-                ${content}
-            `;
+        function showModal(content) {
+            document.getElementById('modalContent').innerHTML = content;
             document.getElementById('modalOverlay').style.display = 'flex';
         }
         
@@ -651,160 +677,63 @@
             document.getElementById('modalOverlay').style.display = 'none';
         }
         
-        // Confirmación
-        function showConfirmation(title, message, onConfirm) {
-            document.getElementById('confirmationTitle').textContent = title;
-            document.getElementById('confirmationMessage').innerHTML = message;
-            document.getElementById('confirmationDialog').style.display = 'flex';
-            
-            document.getElementById('confirmActionBtn').onclick = function() {
-                hideConfirmation();
-                onConfirm();
-            };
-        }
-        
-        function hideConfirmation() {
-            document.getElementById('confirmationDialog').style.display = 'none';
-        }
-        
-        // Cargar empresas desde Supabase
-        async function loadEmpresasFromSupabase() {
-            showLoading();
-            try {
-                const { data, error } = await supabase
-                    .from('empresas')
-                    .select('*')
-                    .order('creado_en', { ascending: false });
-                
-                if (error) throw error;
-                
-                empresas = data || [];
-                return empresas;
-                
-            } catch (error) {
-                console.error('Error cargando empresas:', error);
-                showNotification('error', 'Error cargando empresas: ' + error.message);
-                return [];
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // Cargar estadísticas compatibles con estructura SQL
-        async function loadEstadisticas() {
-            try {
-                // Obtener todas las empresas para el Director Corporativo
-                const { data: empresasData, error: empresasError } = await supabase
-                    .from('empresas')
-                    .select('id');
-                
-                if (empresasError) throw empresasError;
-                
-                let totalEmpresas = empresasData?.length || 0;
-                let totalVentas = 0;
-                let totalClientes = 0;
-                let totalProductos = 0;
-                
-                // Para cada empresa, obtener estadísticas
-                for (const empresa of empresasData) {
-                    // Ventas por empresa
-                    const { data: ventasData } = await supabase
-                        .from('ventas')
-                        .select('total')
-                        .eq('empresa_id', empresa.id);
-                    
-                    if (ventasData) {
-                        totalVentas += ventasData.reduce((sum, v) => {
-                            const valor = parseFloat(v.total) || 0;
-                            return sum + valor;
-                        }, 0);
-                    }
-                    
-                    // Clientes por empresa
-                    const { data: clientesData } = await supabase
-                        .from('clientes')
-                        .select('id')
-                        .eq('empresa_id', empresa.id);
-                    
-                    if (clientesData) {
-                        totalClientes += clientesData.length;
-                    }
-                    
-                    // Productos por empresa
-                    const { data: productosData } = await supabase
-                        .from('productos')
-                        .select('id')
-                        .eq('empresa_id', empresa.id);
-                    
-                    if (productosData) {
-                        totalProductos += productosData.length;
-                    }
-                }
-                
-                return {
-                    totalEmpresas,
-                    totalClientes,
-                    totalVentas,
-                    totalProductos
-                };
-                
-            } catch (error) {
-                console.error('Error cargando estadísticas:', error);
-                return { totalEmpresas: 0, totalClientes: 0, totalVentas: 0, totalProductos: 0 };
-            }
-        }
-        
-        // Dashboard principal
+        // CARGAR DASHBOARD
         async function loadDashboard() {
             showLoading();
+            
             try {
-                const empresasData = await loadEmpresasFromSupabase();
-                const estadisticas = await loadEstadisticas();
+                // Obtener estadísticas
+                const totalEmpresas = await getTotalEmpresas();
+                const empresasActivas = await getEmpresasActivas();
+                const totalUsuarios = await getTotalUsuarios();
+                const totalVentas = await getTotalVentas();
                 
-                document.getElementById('mainContent').innerHTML = `
+                const content = `
                     <div class="header">
-                        <h1 class="page-title">Panel de Control - Director Corporativo</h1>
-                        <button class="btn btn-primary" onclick="loadEmpresas()">
-                            <i class="fas fa-building"></i> Gestionar Empresas
+                        <h2>Dashboard Corporativo</h2>
+                        <button class="primary-btn" onclick="showNuevaEmpresaModal()">
+                            <i class="fas fa-plus"></i>
+                            Nueva Empresa
                         </button>
                     </div>
                     
                     <div class="stats-grid">
                         <div class="stat-card">
-                            <div style="color: var(--secondary); font-size: 0.9rem;">Empresas Totales</div>
-                            <div class="stat-value">${estadisticas.totalEmpresas}</div>
-                            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Sistema multi-tenant</div>
+                            <div class="stat-label">Empresas Totales</div>
+                            <div class="stat-value">${totalEmpresas}</div>
+                            <div style="color: rgba(255,255,255,0.4); font-size: 13px;">En el sistema</div>
                         </div>
                         
                         <div class="stat-card">
-                            <div style="color: var(--secondary); font-size: 0.9rem;">Clientes Totales</div>
-                            <div class="stat-value">${estadisticas.totalClientes}</div>
-                            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">En todas las empresas</div>
+                            <div class="stat-label">Empresas Activas</div>
+                            <div class="stat-value">${empresasActivas}</div>
+                            <div style="color: rgba(255,255,255,0.4); font-size: 13px;">Operando actualmente</div>
                         </div>
                         
                         <div class="stat-card">
-                            <div style="color: var(--secondary); font-size: 0.9rem;">Productos Totales</div>
-                            <div class="stat-value">${estadisticas.totalProductos}</div>
-                            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">En inventario</div>
+                            <div class="stat-label">Usuarios Totales</div>
+                            <div class="stat-value">${totalUsuarios}</div>
+                            <div style="color: rgba(255,255,255,0.4); font-size: 13px;">En todas las empresas</div>
                         </div>
                         
                         <div class="stat-card">
-                            <div style="color: var(--secondary); font-size: 0.9rem;">Ventas Totales</div>
-                            <div class="stat-value">$${estadisticas.totalVentas.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
-                            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Histórico completo</div>
+                            <div class="stat-label">Ventas Totales</div>
+                            <div class="stat-value">$${totalVentas.toLocaleString()}</div>
+                            <div style="color: rgba(255,255,255,0.4); font-size: 13px;">Histórico completo</div>
                         </div>
                     </div>
                     
-                    <div class="table-card">
+                    <div class="table-container">
                         <div class="table-header">
-                            <h3 style="color: var(--secondary);">Empresas Recientes</h3>
-                            <button class="btn btn-primary" onclick="showNuevaEmpresaModal()">
-                                <i class="fas fa-plus"></i> Nueva Empresa
+                            <h3>Empresas Recientes</h3>
+                            <button class="primary-btn" onclick="loadEmpresas()">
+                                <i class="fas fa-eye"></i>
+                                Ver Todas
                             </button>
                         </div>
                         
                         <div class="table-wrapper">
-                            <table class="data-table">
+                            <table class="data-table" id="empresasTable">
                                 <thead>
                                     <tr>
                                         <th>Código</th>
@@ -815,54 +744,18 @@
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    ${empresasData.slice(0, 10).map(empresa => {
-                                        const nombre = empresa.nombre || 'Sin nombre';
-                                        const nombreSeguro = nombre.replace(/'/g, "\\'");
-                                        return `
-                                        <tr>
-                                            <td><strong>${empresa.codigo || 'N/A'}</strong></td>
-                                            <td>${nombre}</td>
-                                            <td>${empresa.ruc || 'N/A'}</td>
-                                            <td>
-                                                ${empresa.email || 'N/A'}<br>
-                                                <small>${empresa.telefono || ''}</small>
-                                            </td>
-                                            <td>
-                                                <span class="status-badge ${empresa.activo ? 'status-active' : 'status-inactive'}">
-                                                    ${empresa.activo ? 'Activa' : 'Inactiva'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="action-btn access" onclick="accessEmpresa('${empresa.id}')" title="Acceder como Admin">
-                                                        <i class="fas fa-sign-in-alt"></i>
-                                                    </button>
-                                                    <button class="action-btn view" onclick="viewEmpresa('${empresa.id}')" title="Ver Detalles">
-                                                        <i class="fas fa-eye"></i>
-                                                    </button>
-                                                    <button class="action-btn edit" onclick="editEmpresa('${empresa.id}')" title="Editar">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="action-btn delete" onclick="confirmDeleteEmpresa('${empresa.id}', '${nombreSeguro}')" title="Eliminar">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `}).join('')}
-                                    ${empresasData.length === 0 ? `
-                                        <tr>
-                                            <td colspan="6" style="text-align: center; padding: 2rem;">
-                                                No hay empresas registradas
-                                            </td>
-                                        </tr>
-                                    ` : ''}
+                                <tbody id="empresasBody">
+                                    <!-- Se carga dinámicamente -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 `;
+                
+                document.getElementById('mainContent').innerHTML = content;
+                
+                // Cargar empresas recientes
+                await loadEmpresasRecientes();
                 
             } catch (error) {
                 console.error('Error cargando dashboard:', error);
@@ -872,23 +765,135 @@
             }
         }
         
-        // Gestión de empresas
+        // FUNCIONES DE DATOS
+        async function getTotalEmpresas() {
+            const { count, error } = await supabase
+                .from('empresas')
+                .select('*', { count: 'exact', head: true });
+            
+            return error ? 0 : count;
+        }
+        
+        async function getEmpresasActivas() {
+            const { count, error } = await supabase
+                .from('empresas')
+                .select('*', { count: 'exact', head: true })
+                .eq('activo', true);
+            
+            return error ? 0 : count;
+        }
+        
+        async function getTotalUsuarios() {
+            const { count, error } = await supabase
+                .from('usuarios')
+                .select('*', { count: 'exact', head: true });
+            
+            return error ? 0 : count;
+        }
+        
+        async function getTotalVentas() {
+            const { data, error } = await supabase
+                .from('ventas')
+                .select('total');
+            
+            if (error) return 0;
+            
+            return data.reduce((sum, venta) => {
+                const total = parseFloat(venta.total) || 0;
+                return sum + total;
+            }, 0);
+        }
+        
+        async function loadEmpresasRecientes() {
+            try {
+                const { data, error } = await supabase
+                    .from('empresas')
+                    .select('*')
+                    .order('creado_en', { ascending: false })
+                    .limit(10);
+                
+                if (error) throw error;
+                
+                empresas = data;
+                const tbody = document.getElementById('empresasBody');
+                
+                if (!tbody) return;
+                
+                tbody.innerHTML = empresas.map(empresa => `
+                    <tr>
+                        <td><strong>${empresa.codigo || 'N/A'}</strong></td>
+                        <td>${empresa.nombre || 'Sin nombre'}</td>
+                        <td>${empresa.identificacion_tributaria || 'N/A'}</td>
+                        <td>
+                            <div>${empresa.email || 'N/A'}</div>
+                            <small style="color: rgba(255,255,255,0.5)">${empresa.telefono || ''}</small>
+                        </td>
+                        <td>
+                            <span class="status-badge ${empresa.activo ? 'status-active' : 'status-inactive'}">
+                                ${empresa.activo ? 'Activa' : 'Inactiva'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn view" onclick="verEmpresa('${empresa.id}')" title="Ver detalles">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn edit" onclick="editarEmpresa('${empresa.id}')" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn delete" onclick="eliminarEmpresa('${empresa.id}')" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button class="action-btn access" onclick="accederEmpresa('${empresa.id}')" title="Acceder">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error cargando empresas:', error);
+            }
+        }
+        
+        // GESTIÓN DE EMPRESAS
         async function loadEmpresas() {
             showLoading();
+            
             try {
-                const empresasData = await loadEmpresasFromSupabase();
+                const { data, error } = await supabase
+                    .from('empresas')
+                    .select('*')
+                    .order('creado_en', { ascending: false });
                 
-                document.getElementById('mainContent').innerHTML = `
+                if (error) throw error;
+                
+                empresas = data;
+                
+                const content = `
                     <div class="header">
-                        <h1 class="page-title">Gestión Completa de Empresas</h1>
-                        <button class="btn btn-primary" onclick="showNuevaEmpresaModal()">
-                            <i class="fas fa-plus"></i> Nueva Empresa
+                        <h2>Gestión de Empresas</h2>
+                        <button class="primary-btn" onclick="showNuevaEmpresaModal()">
+                            <i class="fas fa-plus"></i>
+                            Nueva Empresa
                         </button>
                     </div>
                     
-                    <div class="table-card">
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h3>Todas las Empresas (${data.length})</h3>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="searchInput" placeholder="Buscar empresa..." style="padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-size: 14px;" onkeyup="filtrarEmpresas()">
+                                <button class="primary-btn" onclick="exportarEmpresas()">
+                                    <i class="fas fa-download"></i>
+                                    Exportar
+                                </button>
+                            </div>
+                        </div>
+                        
                         <div class="table-wrapper">
-                            <table class="data-table">
+                            <table class="data-table" id="empresasTable">
                                 <thead>
                                     <tr>
                                         <th>Código</th>
@@ -901,53 +906,16 @@
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    ${empresasData.map(empresa => {
-                                        const nombre = empresa.nombre || 'Sin nombre';
-                                        const nombreSeguro = nombre.replace(/'/g, "\\'");
-                                        return `
-                                        <tr>
-                                            <td><strong>${empresa.codigo || 'N/A'}</strong></td>
-                                            <td>${nombre}</td>
-                                            <td>${empresa.ruc || 'N/A'}</td>
-                                            <td>${empresa.email || 'N/A'}</td>
-                                            <td>${empresa.telefono || 'N/A'}</td>
-                                            <td>${empresa.pais || 'N/A'}</td>
-                                            <td>
-                                                <span class="status-badge ${empresa.activo ? 'status-active' : 'status-inactive'}">
-                                                    ${empresa.activo ? 'Activa' : 'Inactiva'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="action-btn access" onclick="accessEmpresa('${empresa.id}')" title="Acceder como Admin">
-                                                        <i class="fas fa-sign-in-alt"></i>
-                                                    </button>
-                                                    <button class="action-btn view" onclick="viewEmpresa('${empresa.id}')" title="Ver Detalles">
-                                                        <i class="fas fa-eye"></i>
-                                                    </button>
-                                                    <button class="action-btn edit" onclick="editEmpresa('${empresa.id}')" title="Editar">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="action-btn delete" onclick="confirmDeleteEmpresa('${empresa.id}', '${nombreSeguro}')" title="Eliminar">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `}).join('')}
-                                    ${empresasData.length === 0 ? `
-                                        <tr>
-                                            <td colspan="8" style="text-align: center; padding: 2rem;">
-                                                No hay empresas registradas
-                                            </td>
-                                        </tr>
-                                    ` : ''}
+                                <tbody id="empresasBody">
+                                    <!-- Se carga dinámicamente -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 `;
+                
+                document.getElementById('mainContent').innerHTML = content;
+                await loadEmpresasRecientes();
                 
             } catch (error) {
                 console.error('Error cargando empresas:', error);
@@ -957,44 +925,71 @@
             }
         }
         
-        // Modal para nueva empresa (compatible con SQL)
+        function filtrarEmpresas() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const tbody = document.getElementById('empresasBody');
+            
+            if (!tbody) return;
+            
+            const rows = tbody.getElementsByTagName('tr');
+            
+            for (let row of rows) {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            }
+        }
+        
+        function exportarEmpresas() {
+            const csv = empresas.map(empresa => 
+                `"${empresa.codigo || ''}","${empresa.nombre || ''}","${empresa.identificacion_tributaria || ''}","${empresa.email || ''}","${empresa.telefono || ''}","${empresa.pais || ''}","${empresa.activo ? 'Activa' : 'Inactiva'}"`
+            ).join('\n');
+            
+            const header = 'Código,Nombre,RUC,Email,Teléfono,País,Estado\n';
+            const blob = new Blob([header + csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `empresas_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+        
+        // MODAL NUEVA EMPRESA
         function showNuevaEmpresaModal() {
-            showModal('Registrar Nueva Empresa', `
-                <form id="formNuevaEmpresa" onsubmit="event.preventDefault(); crearEmpresa();">
+            const modalContent = `
+                <div class="modal-header">
+                    <h3>Registrar Nueva Empresa</h3>
+                    <button class="close-btn" onclick="closeModal()">×</button>
+                </div>
+                
+                <form id="formEmpresa" onsubmit="event.preventDefault(); guardarEmpresa();">
+                    <div class="form-group">
+                        <label>Código de Empresa *</label>
+                        <input type="text" id="codigo" placeholder="EMP-001" required>
+                    </div>
+                    
                     <div class="form-group">
                         <label>Nombre de la Empresa *</label>
-                        <input type="text" id="empresaNombre" placeholder="Mi Empresa S.A." required>
+                        <input type="text" id="nombre" placeholder="Mi Empresa S.A." required>
                     </div>
                     
                     <div class="form-group">
-                        <label>Código Único *</label>
-                        <input type="text" id="empresaCodigo" placeholder="EMP-001" required>
-                        <small style="color: rgba(255,255,255,0.5);">Código único para identificar la empresa</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>RUC *</label>
-                        <input type="text" id="empresaRUC" placeholder="12345678901" required>
+                        <label>Identificación Tributaria (RUC) *</label>
+                        <input type="text" id="ruc" placeholder="12345678901" required>
                     </div>
                     
                     <div class="form-group">
                         <label>Email de Contacto *</label>
-                        <input type="email" id="empresaEmail" placeholder="contacto@empresa.com" required>
+                        <input type="email" id="email" placeholder="contacto@empresa.com" required>
                     </div>
                     
                     <div class="form-group">
                         <label>Teléfono *</label>
-                        <input type="text" id="empresaTelefono" placeholder="+591 70000000" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Dirección</label>
-                        <textarea id="empresaDireccion" placeholder="Calle Principal #123" rows="2"></textarea>
+                        <input type="text" id="telefono" placeholder="+591 70000000" required>
                     </div>
                     
                     <div class="form-group">
                         <label>País</label>
-                        <select id="empresaPais">
+                        <select id="pais">
                             <option value="Bolivia">Bolivia</option>
                             <option value="Perú">Perú</option>
                             <option value="Chile">Chile</option>
@@ -1009,138 +1004,71 @@
                     </div>
                     
                     <div class="form-group">
-                        <label>Grupo Corporativo</label>
-                        <input type="text" id="empresaGrupo" placeholder="Grupo Corporativo">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Dominio Corporativo</label>
-                        <input type="text" id="empresaDominio" placeholder="empresa.com">
-                        <small style="color: rgba(255,255,255,0.5);">Para validación de emails corporativos</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Nivel de Seguridad</label>
-                        <select id="empresaNivelSeguridad">
-                            <option value="alto">Alto</option>
-                            <option value="medio">Medio</option>
-                            <option value="bajo">Bajo</option>
-                            <option value="critico">Crítico</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Idioma por Defecto</label>
-                        <select id="empresaIdioma">
-                            <option value="es">Español</option>
-                            <option value="en">Inglés</option>
-                            <option value="pt">Portugués</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Moneda por Defecto</label>
-                        <select id="empresaMoneda">
-                            <option value="USD">USD - Dólar Americano</option>
-                            <option value="BOB">BOB - Boliviano</option>
-                            <option value="EUR">EUR - Euro</option>
-                            <option value="PEN">PEN - Sol Peruano</option>
-                            <option value="CLP">CLP - Peso Chileno</option>
-                            <option value="ARS">ARS - Peso Argentino</option>
-                            <option value="BRL">BRL - Real Brasileño</option>
-                            <option value="COP">COP - Peso Colombiano</option>
-                            <option value="MXN">MXN - Peso Mexicano</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Zona Horaria</label>
-                        <select id="empresaZonaHoraria">
-                            <option value="UTC-4">UTC-4 (Bolivia)</option>
-                            <option value="UTC-5">UTC-5 (Perú, Colombia, Ecuador)</option>
-                            <option value="UTC-6">UTC-6 (México Central)</option>
-                            <option value="UTC-3">UTC-3 (Argentina, Brasil)</option>
-                            <option value="UTC+0">UTC+0 (Londres)</option>
-                            <option value="UTC+1">UTC+1 (Madrid)</option>
-                            <option value="UTC-8">UTC-8 (Pacífico USA)</option>
-                            <option value="UTC-5">UTC-5 (EST - Nueva York)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
                         <label>Estado Inicial</label>
-                        <select id="empresaEstado">
-                            <option value="true" selected>Activa</option>
+                        <select id="activo">
+                            <option value="true">Activa</option>
                             <option value="false">Inactiva</option>
                         </select>
                     </div>
                     
-                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                        <button type="button" class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">Cancelar</button>
-                        <button type="submit" class="btn btn-primary" style="flex: 1;">Crear Empresa</button>
+                    <div class="modal-footer">
+                        <button type="button" class="secondary-btn" onclick="closeModal()">Cancelar</button>
+                        <button type="submit" class="primary-btn" style="flex: 1;">Crear Empresa</button>
                     </div>
                 </form>
-            `);
+            `;
+            
+            showModal(modalContent);
         }
         
-        // Crear empresa en Supabase (compatible con estructura SQL)
-        async function crearEmpresa() {
+        async function guardarEmpresa() {
             showLoading();
             
-            const empresaData = {
-                id: generateUUID(),
-                codigo: document.getElementById('empresaCodigo').value.trim(),
-                nombre: document.getElementById('empresaNombre').value.trim(),
-                ruc: document.getElementById('empresaRUC').value.trim(),
-                email: document.getElementById('empresaEmail').value.trim(),
-                telefono: document.getElementById('empresaTelefono').value.trim(),
-                direccion: document.getElementById('empresaDireccion').value.trim(),
-                pais: document.getElementById('empresaPais').value,
-                grupo_corporativo: document.getElementById('empresaGrupo').value.trim() || null,
-                dominio_corporativo: document.getElementById('empresaDominio').value.trim() || null,
-                nivel_seguridad: document.getElementById('empresaNivelSeguridad').value,
-                idioma_default: document.getElementById('empresaIdioma').value,
-                moneda_default: document.getElementById('empresaMoneda').value,
-                zona_horaria: document.getElementById('empresaZonaHoraria').value,
-                activo: document.getElementById('empresaEstado').value === 'true',
-                verificada: false,
-                creado_en: new Date().toISOString(),
-                actualizado_en: new Date().toISOString()
-            };
-            
             try {
+                const empresaData = {
+                    id: generateUUID(),
+                    codigo: document.getElementById('codigo').value.trim(),
+                    nombre: document.getElementById('nombre').value.trim(),
+                    identificacion_tributaria: document.getElementById('ruc').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    telefono: document.getElementById('telefono').value.trim(),
+                    pais: document.getElementById('pais').value,
+                    activo: document.getElementById('activo').value === 'true',
+                    verificada: false,
+                    creado_en: new Date().toISOString(),
+                    actualizado_en: new Date().toISOString()
+                };
+                
                 // Verificar si el código ya existe
-                const { data: existingCode } = await supabase
+                const { data: existing } = await supabase
                     .from('empresas')
                     .select('id')
                     .eq('codigo', empresaData.codigo)
                     .single();
                 
-                if (existingCode) {
+                if (existing) {
                     throw new Error('El código de empresa ya existe');
                 }
                 
-                // Verificar si el RUC ya existe
-                const { data: existingRuc } = await supabase
-                    .from('empresas')
-                    .select('id')
-                    .eq('ruc', empresaData.ruc)
-                    .single();
-                
-                if (existingRuc) {
-                    throw new Error('El RUC ya está registrado');
-                }
-                
-                const { data, error } = await supabase
+                // Crear empresa
+                const { error } = await supabase
                     .from('empresas')
                     .insert([empresaData]);
                 
                 if (error) throw error;
                 
                 // Registrar auditoría
-                await registrarAuditoria('creacion', 'info', currentUser.id, empresaData.id,
-                    'empresas', empresaData.id, null, empresaData, 
-                    `Empresa creada: ${empresaData.nombre}`);
+                await supabase.from('auditoria').insert({
+                    evento_id: `EMP-CREATE-${Date.now()}`,
+                    tipo_evento: 'creacion',
+                    severidad: 'info',
+                    usuario_id: currentUser.id,
+                    empresa_id: empresaData.id,
+                    tabla_afectada: 'empresas',
+                    registro_id: empresaData.id,
+                    datos_nuevos: empresaData,
+                    descripcion: `Empresa creada: ${empresaData.nombre}`
+                });
                 
                 showNotification('success', 'Empresa creada exitosamente');
                 closeModal();
@@ -1148,14 +1076,14 @@
                 
             } catch (error) {
                 console.error('Error creando empresa:', error);
-                showNotification('error', 'Error creando empresa: ' + error.message);
+                showNotification('error', 'Error: ' + error.message);
             } finally {
                 hideLoading();
             }
         }
         
-        // Ver empresa completa
-        async function viewEmpresa(id) {
+        // VER EMPRESA
+        async function verEmpresa(id) {
             showLoading();
             
             try {
@@ -1167,69 +1095,89 @@
                 
                 if (error) throw error;
                 
-                showModal(`Empresa: ${empresa.nombre || 'Sin nombre'}`, `
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                const modalContent = `
+                    <div class="modal-header">
+                        <h3>${empresa.nombre}</h3>
+                        <button class="close-btn" onclick="closeModal()">×</button>
+                    </div>
+                    
+                    <div style="display: grid; gap: 20px;">
                         <div>
-                            <h4 style="color: var(--secondary); margin-bottom: 1rem;">Información General</h4>
-                            <p><strong>Código:</strong> ${empresa.codigo || 'N/A'}</p>
-                            <p><strong>RUC:</strong> ${empresa.ruc || 'N/A'}</p>
-                            <p><strong>Email:</strong> ${empresa.email || 'N/A'}</p>
-                            <p><strong>Teléfono:</strong> ${empresa.telefono || 'N/A'}</p>
-                            <p><strong>Dirección:</strong> ${empresa.direccion || 'N/A'}</p>
-                            <p><strong>País:</strong> ${empresa.pais || 'N/A'}</p>
-                            <p><strong>Grupo Corporativo:</strong> ${empresa.grupo_corporativo || 'N/A'}</p>
-                            <p><strong>Dominio Corporativo:</strong> ${empresa.dominio_corporativo || 'N/A'}</p>
+                            <h4 style="color: #7c3aed; margin-bottom: 10px;">Información General</h4>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                                <div>
+                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Código</div>
+                                    <div style="font-weight: 500;">${empresa.codigo || 'N/A'}</div>
+                                </div>
+                                <div>
+                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">RUC</div>
+                                    <div style="font-weight: 500;">${empresa.identificacion_tributaria || 'N/A'}</div>
+                                </div>
+                                <div>
+                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Email</div>
+                                    <div style="font-weight: 500;">${empresa.email || 'N/A'}</div>
+                                </div>
+                                <div>
+                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Teléfono</div>
+                                    <div style="font-weight: 500;">${empresa.telefono || 'N/A'}</div>
+                                </div>
+                                <div>
+                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">País</div>
+                                    <div style="font-weight: 500;">${empresa.pais || 'N/A'}</div>
+                                </div>
+                                <div>
+                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Estado</div>
+                                    <div>
+                                        <span class="status-badge ${empresa.activo ? 'status-active' : 'status-inactive'}">
+                                            ${empresa.activo ? 'Activa' : 'Inactiva'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
                         <div>
-                            <h4 style="color: var(--secondary); margin-bottom: 1rem;">Configuración</h4>
-                            <p><strong>Nivel Seguridad:</strong> ${empresa.nivel_seguridad || 'alto'}</p>
-                            <p><strong>Idioma:</strong> ${empresa.idioma_default || 'es'}</p>
-                            <p><strong>Moneda:</strong> ${empresa.moneda_default || 'USD'}</p>
-                            <p><strong>Zona Horaria:</strong> ${empresa.zona_horaria || 'UTC-4'}</p>
-                            <p><strong>Estado:</strong> ${empresa.activo ? 'Activa' : 'Inactiva'}</p>
-                            <p><strong>Verificada:</strong> ${empresa.verificada ? 'Sí' : 'No'}</p>
-                            <p><strong>Creada:</strong> ${empresa.creado_en ? new Date(empresa.creado_en).toLocaleDateString('es-ES', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            }) : 'N/A'}</p>
-                            <p><strong>Actualizada:</strong> ${empresa.actualizado_en ? new Date(empresa.actualizado_en).toLocaleDateString('es-ES', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            }) : 'N/A'}</p>
+                            <h4 style="color: #7c3aed; margin-bottom: 10px;">Configuración</h4>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                                <div>
+                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Idioma</div>
+                                    <div style="font-weight: 500;">${empresa.idioma_default || 'Español'}</div>
+                                </div>
+                                <div>
+                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Moneda</div>
+                                    <div style="font-weight: 500;">${empresa.moneda_default || 'USD'}</div>
+                                </div>
+                                <div>
+                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Zona Horaria</div>
+                                    <div style="font-weight: 500;">${empresa.zona_horaria || 'UTC-4'}</div>
+                                </div>
+                                <div>
+                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Creada el</div>
+                                    <div style="font-weight: 500;">${empresa.creado_en ? new Date(empresa.creado_en).toLocaleDateString() : 'N/A'}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <div style="margin-top: 2rem; padding: 1rem; background: rgba(124, 58, 237, 0.05); border-radius: 8px;">
-                        <h4 style="color: var(--secondary); margin-bottom: 0.5rem;">Acciones Rápidas</h4>
-                        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                            <button class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">Cerrar</button>
-                            <button class="btn btn-primary" onclick="editEmpresa('${empresa.id}')" style="flex: 1;">
-                                <i class="fas fa-edit"></i> Editar Empresa
-                            </button>
-                            <button class="action-btn access" onclick="accessEmpresa('${empresa.id}')" style="flex: 1;">
-                                <i class="fas fa-sign-in-alt"></i> Acceder como Admin
-                            </button>
-                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="secondary-btn" onclick="closeModal()">Cerrar</button>
+                        <button type="button" class="primary-btn" onclick="editarEmpresa('${empresa.id}')">Editar</button>
+                        <button type="button" class="primary-btn" onclick="accederEmpresa('${empresa.id}')">Acceder</button>
                     </div>
-                `);
+                `;
+                
+                showModal(modalContent);
                 
             } catch (error) {
                 console.error('Error cargando empresa:', error);
-                showNotification('error', 'Error cargando empresa: ' + error.message);
+                showNotification('error', 'Error cargando empresa');
             } finally {
                 hideLoading();
             }
         }
         
-        // Editar empresa
-        async function editEmpresa(id) {
+        // EDITAR EMPRESA
+        async function editarEmpresa(id) {
             showLoading();
             
             try {
@@ -1241,43 +1189,41 @@
                 
                 if (error) throw error;
                 
-                showModal(`Editar Empresa: ${empresa.nombre || 'Sin nombre'}`, `
-                    <form id="formEditarEmpresa" onsubmit="event.preventDefault(); guardarEmpresa();">
-                        <input type="hidden" id="editEmpresaId" value="${empresa.id}">
-                        
+                const modalContent = `
+                    <div class="modal-header">
+                        <h3>Editar: ${empresa.nombre}</h3>
+                        <button class="close-btn" onclick="closeModal()">×</button>
+                    </div>
+                    
+                    <form id="formEditarEmpresa" onsubmit="event.preventDefault(); actualizarEmpresa('${empresa.id}');">
                         <div class="form-group">
-                            <label>Nombre de la Empresa *</label>
-                            <input type="text" id="editEmpresaNombre" value="${empresa.nombre || ''}" required>
+                            <label>Código *</label>
+                            <input type="text" id="editCodigo" value="${empresa.codigo || ''}" required>
                         </div>
                         
                         <div class="form-group">
-                            <label>Código Único *</label>
-                            <input type="text" id="editEmpresaCodigo" value="${empresa.codigo || ''}" required>
+                            <label>Nombre *</label>
+                            <input type="text" id="editNombre" value="${empresa.nombre || ''}" required>
                         </div>
                         
                         <div class="form-group">
                             <label>RUC *</label>
-                            <input type="text" id="editEmpresaRUC" value="${empresa.ruc || ''}" required>
+                            <input type="text" id="editRuc" value="${empresa.identificacion_tributaria || ''}" required>
                         </div>
                         
                         <div class="form-group">
-                            <label>Email de Contacto *</label>
-                            <input type="email" id="editEmpresaEmail" value="${empresa.email || ''}" required>
+                            <label>Email *</label>
+                            <input type="email" id="editEmail" value="${empresa.email || ''}" required>
                         </div>
                         
                         <div class="form-group">
                             <label>Teléfono *</label>
-                            <input type="text" id="editEmpresaTelefono" value="${empresa.telefono || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Dirección</label>
-                            <textarea id="editEmpresaDireccion" rows="2">${empresa.direccion || ''}</textarea>
+                            <input type="text" id="editTelefono" value="${empresa.telefono || ''}" required>
                         </div>
                         
                         <div class="form-group">
                             <label>País</label>
-                            <select id="editEmpresaPais">
+                            <select id="editPais">
                                 <option value="Bolivia" ${empresa.pais === 'Bolivia' ? 'selected' : ''}>Bolivia</option>
                                 <option value="Perú" ${empresa.pais === 'Perú' ? 'selected' : ''}>Perú</option>
                                 <option value="Chile" ${empresa.pais === 'Chile' ? 'selected' : ''}>Chile</option>
@@ -1292,129 +1238,65 @@
                         </div>
                         
                         <div class="form-group">
-                            <label>Grupo Corporativo</label>
-                            <input type="text" id="editEmpresaGrupo" value="${empresa.grupo_corporativo || ''}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Dominio Corporativo</label>
-                            <input type="text" id="editEmpresaDominio" value="${empresa.dominio_corporativo || ''}">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Nivel de Seguridad</label>
-                            <select id="editEmpresaNivelSeguridad">
-                                <option value="alto" ${empresa.nivel_seguridad === 'alto' ? 'selected' : ''}>Alto</option>
-                                <option value="medio" ${empresa.nivel_seguridad === 'medio' ? 'selected' : ''}>Medio</option>
-                                <option value="bajo" ${empresa.nivel_seguridad === 'bajo' ? 'selected' : ''}>Bajo</option>
-                                <option value="critico" ${empresa.nivel_seguridad === 'critico' ? 'selected' : ''}>Crítico</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Idioma por Defecto</label>
-                            <select id="editEmpresaIdioma">
-                                <option value="es" ${empresa.idioma_default === 'es' ? 'selected' : ''}>Español</option>
-                                <option value="en" ${empresa.idioma_default === 'en' ? 'selected' : ''}>Inglés</option>
-                                <option value="pt" ${empresa.idioma_default === 'pt' ? 'selected' : ''}>Portugués</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Moneda por Defecto</label>
-                            <select id="editEmpresaMoneda">
-                                <option value="USD" ${empresa.moneda_default === 'USD' ? 'selected' : ''}>USD - Dólar Americano</option>
-                                <option value="BOB" ${empresa.moneda_default === 'BOB' ? 'selected' : ''}>BOB - Boliviano</option>
-                                <option value="EUR" ${empresa.moneda_default === 'EUR' ? 'selected' : ''}>EUR - Euro</option>
-                                <option value="PEN" ${empresa.moneda_default === 'PEN' ? 'selected' : ''}>PEN - Sol Peruano</option>
-                                <option value="CLP" ${empresa.moneda_default === 'CLP' ? 'selected' : ''}>CLP - Peso Chileno</option>
-                                <option value="ARS" ${empresa.moneda_default === 'ARS' ? 'selected' : ''}>ARS - Peso Argentino</option>
-                                <option value="BRL" ${empresa.moneda_default === 'BRL' ? 'selected' : ''}>BRL - Real Brasileño</option>
-                                <option value="COP" ${empresa.moneda_default === 'COP' ? 'selected' : ''}>COP - Peso Colombiano</option>
-                                <option value="MXN" ${empresa.moneda_default === 'MXN' ? 'selected' : ''}>MXN - Peso Mexicano</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Zona Horaria</label>
-                            <select id="editEmpresaZonaHoraria">
-                                <option value="UTC-4" ${empresa.zona_horaria === 'UTC-4' ? 'selected' : ''}>UTC-4 (Bolivia)</option>
-                                <option value="UTC-5" ${empresa.zona_horaria === 'UTC-5' ? 'selected' : ''}>UTC-5 (Perú, Colombia, Ecuador)</option>
-                                <option value="UTC-6" ${empresa.zona_horaria === 'UTC-6' ? 'selected' : ''}>UTC-6 (México Central)</option>
-                                <option value="UTC-3" ${empresa.zona_horaria === 'UTC-3' ? 'selected' : ''}>UTC-3 (Argentina, Brasil)</option>
-                                <option value="UTC+0" ${empresa.zona_horaria === 'UTC+0' ? 'selected' : ''}>UTC+0 (Londres)</option>
-                                <option value="UTC+1" ${empresa.zona_horaria === 'UTC+1' ? 'selected' : ''}>UTC+1 (Madrid)</option>
-                                <option value="UTC-8" ${empresa.zona_horaria === 'UTC-8' ? 'selected' : ''}>UTC-8 (Pacífico USA)</option>
-                                <option value="UTC-5" ${empresa.zona_horaria === 'UTC-5' ? 'selected' : ''}>UTC-5 (EST - Nueva York)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
                             <label>Estado</label>
-                            <select id="editEmpresaEstado">
+                            <select id="editActivo">
                                 <option value="true" ${empresa.activo ? 'selected' : ''}>Activa</option>
                                 <option value="false" ${!empresa.activo ? 'selected' : ''}>Inactiva</option>
                             </select>
                         </div>
                         
-                        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                            <button type="button" class="btn btn-secondary" onclick="closeModal()" style="flex: 1;">Cancelar</button>
-                            <button type="submit" class="btn btn-primary" style="flex: 1;">Guardar Cambios</button>
+                        <div class="modal-footer">
+                            <button type="button" class="secondary-btn" onclick="closeModal()">Cancelar</button>
+                            <button type="submit" class="primary-btn" style="flex: 1;">Guardar Cambios</button>
                         </div>
                     </form>
-                `);
+                `;
+                
+                showModal(modalContent);
                 
             } catch (error) {
                 console.error('Error cargando empresa:', error);
-                showNotification('error', 'Error cargando empresa: ' + error.message);
+                showNotification('error', 'Error cargando empresa');
             } finally {
                 hideLoading();
             }
         }
         
-        // Guardar cambios de empresa
-        async function guardarEmpresa() {
+        async function actualizarEmpresa(id) {
             showLoading();
             
-            const empresaData = {
-                nombre: document.getElementById('editEmpresaNombre').value.trim(),
-                codigo: document.getElementById('editEmpresaCodigo').value.trim(),
-                ruc: document.getElementById('editEmpresaRUC').value.trim(),
-                email: document.getElementById('editEmpresaEmail').value.trim(),
-                telefono: document.getElementById('editEmpresaTelefono').value.trim(),
-                direccion: document.getElementById('editEmpresaDireccion').value.trim(),
-                pais: document.getElementById('editEmpresaPais').value,
-                grupo_corporativo: document.getElementById('editEmpresaGrupo').value.trim() || null,
-                dominio_corporativo: document.getElementById('editEmpresaDominio').value.trim() || null,
-                nivel_seguridad: document.getElementById('editEmpresaNivelSeguridad').value,
-                idioma_default: document.getElementById('editEmpresaIdioma').value,
-                moneda_default: document.getElementById('editEmpresaMoneda').value,
-                zona_horaria: document.getElementById('editEmpresaZonaHoraria').value,
-                activo: document.getElementById('editEmpresaEstado').value === 'true',
-                actualizado_en: new Date().toISOString()
-            };
-            
-            const empresaId = document.getElementById('editEmpresaId').value;
-            
             try {
-                // Obtener datos anteriores para auditoría
-                const { data: empresaAnterior } = await supabase
-                    .from('empresas')
-                    .select('*')
-                    .eq('id', empresaId)
-                    .single();
+                const empresaData = {
+                    codigo: document.getElementById('editCodigo').value.trim(),
+                    nombre: document.getElementById('editNombre').value.trim(),
+                    identificacion_tributaria: document.getElementById('editRuc').value.trim(),
+                    email: document.getElementById('editEmail').value.trim(),
+                    telefono: document.getElementById('editTelefono').value.trim(),
+                    pais: document.getElementById('editPais').value,
+                    activo: document.getElementById('editActivo').value === 'true',
+                    actualizado_en: new Date().toISOString()
+                };
                 
-                const { data, error } = await supabase
+                // Actualizar empresa
+                const { error } = await supabase
                     .from('empresas')
                     .update(empresaData)
-                    .eq('id', empresaId);
+                    .eq('id', id);
                 
                 if (error) throw error;
                 
                 // Registrar auditoría
-                await registrarAuditoria('modificacion', 'warning', currentUser.id, empresaId,
-                    'empresas', empresaId, empresaAnterior, empresaData, 
-                    `Empresa actualizada: ${empresaData.nombre}`);
+                await supabase.from('auditoria').insert({
+                    evento_id: `EMP-UPDATE-${Date.now()}`,
+                    tipo_evento: 'modificacion',
+                    severidad: 'warning',
+                    usuario_id: currentUser.id,
+                    empresa_id: id,
+                    tabla_afectada: 'empresas',
+                    registro_id: id,
+                    datos_nuevos: empresaData,
+                    descripcion: `Empresa actualizada: ${empresaData.nombre}`
+                });
                 
                 showNotification('success', 'Empresa actualizada exitosamente');
                 closeModal();
@@ -1422,30 +1304,18 @@
                 
             } catch (error) {
                 console.error('Error actualizando empresa:', error);
-                showNotification('error', 'Error actualizando empresa: ' + error.message);
+                showNotification('error', 'Error actualizando empresa');
             } finally {
                 hideLoading();
             }
         }
         
-        // Confirmar eliminación
-        function confirmDeleteEmpresa(id, nombre) {
-            showConfirmation(
-                'Eliminar Empresa',
-                `¿Estás seguro de eliminar la empresa "${nombre}"?<br><br>
-                <strong>ADVERTENCIA:</strong> Esta acción eliminará:<br>
-                • Todos los usuarios asociados<br>
-                • Todos los clientes<br>
-                • Todos los productos<br>
-                • Todas las ventas<br>
-                • Todos los registros relacionados<br><br>
-                Esta acción no se puede deshacer.`,
-                () => deleteEmpresa(id)
-            );
-        }
-        
-        // Eliminar empresa
-        async function deleteEmpresa(id) {
+        // ELIMINAR EMPRESA
+        async function eliminarEmpresa(id) {
+            if (!confirm('¿Está seguro de eliminar esta empresa?\n\nEsta acción eliminará todos los datos asociados y NO se puede deshacer.')) {
+                return;
+            }
+            
             showLoading();
             
             try {
@@ -1456,7 +1326,7 @@
                     .eq('id', id)
                     .single();
                 
-                // NOTA: En producción, considerar eliminación en cascada o desactivación
+                // Eliminar empresa
                 const { error } = await supabase
                     .from('empresas')
                     .delete()
@@ -1465,90 +1335,114 @@
                 if (error) throw error;
                 
                 // Registrar auditoría
-                await registrarAuditoria('eliminacion', 'critical', currentUser.id, id,
-                    'empresas', id, empresa, null, 
-                    `Empresa eliminada: ${empresa?.nombre || id}`);
+                await supabase.from('auditoria').insert({
+                    evento_id: `EMP-DELETE-${Date.now()}`,
+                    tipo_evento: 'eliminacion',
+                    severidad: 'critical',
+                    usuario_id: currentUser.id,
+                    empresa_id: id,
+                    tabla_afectada: 'empresas',
+                    registro_id: id,
+                    datos_anteriores: empresa,
+                    descripcion: `Empresa eliminada: ${empresa?.nombre || id}`
+                });
                 
                 showNotification('success', 'Empresa eliminada exitosamente');
                 loadDashboard();
                 
             } catch (error) {
                 console.error('Error eliminando empresa:', error);
-                showNotification('error', 'Error eliminando empresa: ' + error.message);
+                showNotification('error', 'Error eliminando empresa');
             } finally {
                 hideLoading();
             }
         }
         
-        // Acceder como admin de empresa
-        async function accessEmpresa(empresaId) {
+        // ACCEDER A EMPRESA
+        async function accederEmpresa(id) {
+            showLoading();
+            
             try {
-                const empresa = empresas.find(e => e.id === empresaId);
-                if (!empresa) return;
+                const { data: empresa, error } = await supabase
+                    .from('empresas')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
                 
-                // Crear credenciales temporales para acceso como admin de la empresa
-                const tempAccessData = {
-                    empresa_id: empresaId,
+                if (error) throw error;
+                
+                // Guardar información de acceso temporal
+                const accessData = {
+                    empresa_id: id,
                     empresa_nombre: empresa.nombre,
-                    access_time: new Date().toISOString(),
                     director_id: currentUser.id,
+                    access_time: new Date().toISOString(),
                     expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 horas
                 };
                 
-                // Guardar en localStorage para acceso temporal
-                localStorage.setItem('temp_empresa_access', JSON.stringify(tempAccessData));
+                localStorage.setItem('temp_empresa_access', JSON.stringify(accessData));
                 
                 // Registrar auditoría
-                await registrarAuditoria('acceso_sensible', 'info', currentUser.id, empresaId,
-                    'empresas', empresaId, null, tempAccessData, 
-                    `Acceso temporal como admin a empresa: ${empresa.nombre}`);
+                await supabase.from('auditoria').insert({
+                    evento_id: `EMP-ACCESS-${Date.now()}`,
+                    tipo_evento: 'acceso_sensible',
+                    severidad: 'info',
+                    usuario_id: currentUser.id,
+                    empresa_id: id,
+                    tabla_afectada: 'empresas',
+                    registro_id: id,
+                    datos_nuevos: accessData,
+                    descripcion: `Acceso temporal a empresa: ${empresa.nombre}`
+                });
                 
-                showNotification('success', `Acceso temporal configurado para ${empresa.nombre}`);
+                showNotification('success', `Acceso configurado para ${empresa.nombre}`);
                 
-                // Preguntar si abrir nueva pestaña
-                showConfirmation(
-                    'Acceso Temporal',
-                    `Acceso configurado para: <strong>${empresa.nombre}</strong><br><br>
-                    ¿Abrir panel de administración en nueva pestaña?`,
-                    () => {
-                        window.open('empresa-panel.html', '_blank');
-                    }
-                );
+                // Preguntar si abrir panel de empresa
+                if (confirm(`¿Abrir panel de administración de ${empresa.nombre} en nueva pestaña?`)) {
+                    window.open('empresa-panel.html', '_blank');
+                }
                 
             } catch (error) {
                 console.error('Error configurando acceso:', error);
-                showNotification('error', 'Error configurando acceso: ' + error.message);
-            }
-        }
-        
-        // Cerrar sesión
-        async function logout() {
-            showLoading();
-            try {
-                // Registrar auditoría de logout
-                await registrarAuditoria('logout', 'info', currentUser.id, currentUser.empresa_id,
-                    'usuarios', currentUser.id, null, null, 'Cierre de sesión de Director Corporativo');
-                
-                // Cerrar sesión en Supabase
-                const { error } = await supabase.auth.signOut();
-                if (error) throw error;
-                
-                // Limpiar localStorage
-                localStorage.removeItem('temp_empresa_access');
-                
-                // Redirigir al login
-                window.location.href = 'index.html';
-                
-            } catch (error) {
-                console.error('Error cerrando sesión:', error);
-                showNotification('error', 'Error cerrando sesión');
-                window.location.href = 'index.html';
+                showNotification('error', 'Error configurando acceso');
             } finally {
                 hideLoading();
             }
         }
         
-        // Generar UUID
+        // CERRAR SESIÓN
+        async function logout() {
+            showLoading();
+            
+            try {
+                // Registrar auditoría
+                await supabase.from('auditoria').insert({
+                    evento_id: `LOGOUT-${Date.now()}`,
+                    tipo_evento: 'logout',
+                    severidad: 'info',
+                    usuario_id: currentUser.id,
+                    empresa_id: currentUser.empresa_id,
+                    tabla_afectada: 'usuarios',
+                    registro_id: currentUser.id,
+                    descripcion: 'Cierre de sesión de Director Corporativo'
+                });
+                
+                // Cerrar sesión
+                await supabase.auth.signOut();
+                
+                // Limpiar localStorage
+                localStorage.clear();
+                
+                // Redirigir al login
+                window.location.href = 'login.html';
+                
+            } catch (error) {
+                console.error('Error cerrando sesión:', error);
+                window.location.href = 'login.html';
+            }
+        }
+        
+        // FUNCIONES UTILITARIAS
         function generateUUID() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 const r = Math.random() * 16 | 0;
@@ -1557,25 +1451,8 @@
             });
         }
         
-        // Inicializar aplicación
-        async function initApp() {
-            initSupabase();
-            
-            // Verificar sesión y rol
-            await checkUserRole();
-        }
-        
-        // Iniciar cuando el DOM esté listo
+        // INICIAR APLICACIÓN
         document.addEventListener('DOMContentLoaded', initApp);
-        
-        // Manejar cambios de sesión
-        supabase?.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_OUT') {
-                window.location.href = 'index.html';
-            } else if (event === 'TOKEN_REFRESHED') {
-                console.log('Token refrescado');
-            }
-        });
     </script>
 </body>
 </html>
