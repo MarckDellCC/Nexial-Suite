@@ -13,19 +13,32 @@
             line-height: 1.6;
         }
         .header {
-            background: #2c3e50;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: white;
             padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         .header h1 {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 300;
+        }
+        .header h1 small {
+            font-size: 14px;
+            opacity: 0.8;
+            display: block;
+            margin-top: 5px;
+            font-weight: 400;
         }
         .user-info {
             font-size: 14px;
+            text-align: right;
         }
         .logout-btn {
             background: #e74c3c;
@@ -35,6 +48,8 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
+            margin-top: 8px;
+            transition: background 0.3s;
         }
         .logout-btn:hover {
             background: #c0392b;
@@ -44,256 +59,332 @@
             margin: 0 auto;
             padding: 20px;
         }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            border-left: 4px solid #3498db;
+        }
+        .stat-card.critical {
+            border-left-color: #e74c3c;
+        }
+        .stat-card.warning {
+            border-left-color: #f39c12;
+        }
+        .stat-card.success {
+            border-left-color: #27ae60;
+        }
+        .stat-card h3 {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .stat-card .trend {
+            font-size: 13px;
+            color: #27ae60;
+        }
         .section {
             background: white;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            overflow: hidden;
         }
         .section-header {
-            padding: 15px 20px;
+            padding: 20px 25px;
             border-bottom: 1px solid #eee;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: #f8f9fa;
         }
         .section-header h2 {
             font-size: 18px;
-            font-weight: 400;
+            font-weight: 500;
             color: #2c3e50;
         }
-        .add-btn {
-            background: #27ae60;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .add-btn:hover {
-            background: #219653;
-        }
-        .table-container {
-            overflow-x: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th {
-            background: #f8f9fa;
-            padding: 12px 15px;
-            text-align: left;
-            font-weight: 600;
-            color: #2c3e50;
-            border-bottom: 2px solid #eee;
-            font-size: 14px;
-        }
-        td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-        }
-        tr:hover {
-            background: #f8f9fa;
-        }
-        .actions {
-            display: flex;
-            gap: 5px;
-        }
-        .edit-btn, .delete-btn {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .edit-btn {
+        .action-btn {
             background: #3498db;
-            color: white;
-        }
-        .edit-btn:hover {
-            background: #2980b9;
-        }
-        .delete-btn {
-            background: #e74c3c;
-            color: white;
-        }
-        .delete-btn:hover {
-            background: #c0392b;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            width: 500px;
-            margin: 50px auto;
-            border-radius: 4px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .modal-header h3 {
-            font-weight: 400;
-            color: #2c3e50;
-        }
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #7f8c8d;
-        }
-        .modal-body {
-            padding: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #555;
-            font-size: 14px;
-        }
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .form-row {
-            display: flex;
-            gap: 15px;
-        }
-        .form-row .form-group {
-            flex: 1;
-        }
-        .modal-footer {
-            padding: 15px 20px;
-            border-top: 1px solid #eee;
-            text-align: right;
-        }
-        .save-btn {
-            background: #27ae60;
             color: white;
             border: none;
             padding: 10px 20px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
+            transition: background 0.3s;
         }
-        .save-btn:hover {
-            background: #219653;
+        .action-btn:hover {
+            background: #2980b9;
+        }
+        .action-btn.secondary {
+            background: #95a5a6;
+        }
+        .action-btn.secondary:hover {
+            background: #7f8c8d;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table thead {
+            background: #f8f9fa;
+        }
+        .data-table th {
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .data-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
         }
         .security-badge {
             display: inline-block;
-            padding: 3px 8px;
-            border-radius: 3px;
+            padding: 4px 10px;
+            border-radius: 4px;
             font-size: 12px;
             font-weight: 600;
         }
-        .badge-alto { background: #e74c3c; color: white; }
-        .badge-medio { background: #f39c12; color: white; }
-        .badge-bajo { background: #27ae60; color: white; }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+        .security-high {
+            background: #e74c3c;
+            color: white;
         }
-        .stat-card {
-            background: white;
-            padding: 20px;
+        .security-medium {
+            background: #f39c12;
+            color: white;
+        }
+        .security-low {
+            background: #27ae60;
+            color: white;
+        }
+        .security-critical {
+            background: #8e44ad;
+            color: white;
+        }
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border: none;
             border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .stat-card h3 {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 14px;
-            color: #7f8c8d;
-            margin-bottom: 10px;
+            transition: opacity 0.3s;
         }
-        .stat-card .value {
-            font-size: 24px;
-            font-weight: 600;
+        .btn-icon:hover {
+            opacity: 0.8;
+        }
+        .btn-edit {
+            background: #3498db;
+            color: white;
+        }
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-view {
+            background: #27ae60;
+            color: white;
+        }
+        .country-flag {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            vertical-align: middle;
+            margin-right: 8px;
+            border: 1px solid #ddd;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .info-card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        .info-card h3 {
+            font-size: 16px;
             color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .info-list {
+            list-style: none;
+        }
+        .info-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+            display: flex;
+            justify-content: space-between;
+        }
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .info-value {
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px 0;
+            color: #7f8c8d;
+            font-size: 13px;
+            border-top: 1px solid #eee;
+            margin-top: 40px;
         }
         .alert {
-            padding: 12px 15px;
+            padding: 15px 20px;
             border-radius: 4px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             font-size: 14px;
+            display: none;
         }
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
         }
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .demo-notice {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .demo-notice h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .demo-notice p {
+            color: #6c757d;
+            font-size: 14px;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Director Corporativo - Panel de Control Total</h1>
-        <div class="user-info">
-            <span id="currentUser">Usuario: director@corporativo.com</span>
-            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        <div class="header-content">
+            <div>
+                <h1>Director Corporativo
+                    <small>Dueño del software - Acceso total multi-empresa</small>
+                </h1>
+            </div>
+            <div class="user-info">
+                <div>Usuario: director@corporativo.com</div>
+                <div>Último acceso: Hoy, 10:30 AM</div>
+                <button class="logout-btn" onclick="window.location.href='login.html'">Cerrar Sesión</button>
+            </div>
         </div>
     </div>
     
     <div class="container">
-        <div class="stats">
-            <div class="stat-card">
-                <h3>Empresas Activas</h3>
-                <div class="value" id="empresasCount">0</div>
-            </div>
-            <div class="stat-card">
-                <h3>Usuarios Totales</h3>
-                <div class="value" id="usuariosCount">0</div>
-            </div>
-            <div class="stat-card">
-                <h3>Ingresos Mensuales</h3>
-                <div class="value" id="ingresosCount">$0</div>
-            </div>
-            <div class="stat-card">
-                <h3>Alertas de Seguridad</h3>
-                <div class="value" id="alertasCount">0</div>
-            </div>
+        <div class="demo-notice">
+            <h3>⚠️ MODO DEMOSTRACIÓN ESTÁTICO</h3>
+            <p>Esta es una versión estática para GitHub Pages. En un entorno real, esta página se conectaría a Supabase para gestionar empresas con seguridad avanzada, RLS, encriptación AES-256 y auditoría completa.</p>
         </div>
         
-        <div id="alertContainer"></div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Empresas Totales</h3>
+                <div class="value">3</div>
+                <div class="trend">↗ 1 nueva este mes</div>
+            </div>
+            <div class="stat-card success">
+                <h3>Empresas Activas</h3>
+                <div class="value">2</div>
+                <div class="trend">66% del total</div>
+            </div>
+            <div class="stat-card warning">
+                <h3>Config. Seguridad</h3>
+                <div class="value">2/3</div>
+                <div class="trend">67% configuradas</div>
+            </div>
+            <div class="stat-card critical">
+                <h3>Alertas Seguridad</h3>
+                <div class="value">0</div>
+                <div class="trend">✓ Todo estable</div>
+            </div>
+        </div>
         
         <div class="section">
             <div class="section-header">
                 <h2>Gestión de Empresas (Multi-Tenancy)</h2>
-                <button class="add-btn" onclick="openEmpresaModal()">+ Nueva Empresa</button>
+                <button class="action-btn" onclick="showDemoAlert()">+ Nueva Empresa</button>
             </div>
             <div class="table-container">
-                <table id="empresasTable">
+                <table class="data-table">
                     <thead>
                         <tr>
                             <th>Código</th>
-                            <th>Nombre</th>
+                            <th>Nombre de Empresa</th>
                             <th>Identificación</th>
                             <th>País</th>
                             <th>Seguridad</th>
@@ -301,8 +392,52 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="empresasBody">
-                        <!-- Datos cargados por JavaScript -->
+                    <tbody>
+                        <tr>
+                            <td><strong>EMP-001</strong></td>
+                            <td>Corporación Global S.A.</td>
+                            <td>20123456789 (RUC)</td>
+                            <td>🇵🇪 Perú</td>
+                            <td><span class="security-badge security-high">ALTO</span></td>
+                            <td><span class="status-badge status-active">Activa</span></td>
+                            <td>
+                                <div class="actions">
+                                    <button class="btn-icon btn-view" onclick="showDemoAlert()">👁</button>
+                                    <button class="btn-icon btn-edit" onclick="showDemoAlert()">✏</button>
+                                    <button class="btn-icon btn-delete" onclick="showDemoAlert()">🗑</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>EMP-002</strong></td>
+                            <td>Logística Internacional Ltda.</td>
+                            <td>30567891234 (NIT)</td>
+                            <td>🇨🇴 Colombia</td>
+                            <td><span class="security-badge security-medium">MEDIO</span></td>
+                            <td><span class="status-badge status-active">Activa</span></td>
+                            <td>
+                                <div class="actions">
+                                    <button class="btn-icon btn-view" onclick="showDemoAlert()">👁</button>
+                                    <button class="btn-icon btn-edit" onclick="showDemoAlert()">✏</button>
+                                    <button class="btn-icon btn-delete" onclick="showDemoAlert()">🗑</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>EMP-003</strong></td>
+                            <td>Distribuidora Continental</td>
+                            <td>20765432198 (RUT)</td>
+                            <td>🇨🇱 Chile</td>
+                            <td><span class="security-badge security-critical">CRÍTICO</span></td>
+                            <td><span class="status-badge status-inactive">Inactiva</span></td>
+                            <td>
+                                <div class="actions">
+                                    <button class="btn-icon btn-view" onclick="showDemoAlert()">👁</button>
+                                    <button class="btn-icon btn-edit" onclick="showDemoAlert()">✏</button>
+                                    <button class="btn-icon btn-delete" onclick="showDemoAlert()">🗑</button>
+                                </div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -310,636 +445,186 @@
         
         <div class="section">
             <div class="section-header">
-                <h2>Configuración de Seguridad Global</h2>
+                <h2>Configuración de Seguridad por Empresa</h2>
+                <button class="action-btn secondary" onclick="showDemoAlert()">Gestionar Todas</button>
             </div>
             <div class="table-container">
-                <table id="seguridadTable">
+                <table class="data-table">
                     <thead>
                         <tr>
                             <th>Empresa</th>
                             <th>MFA Requerido</th>
                             <th>Intentos Máx.</th>
-                            <th>Sesiones Conc.</th>
+                            <th>Sesiones</th>
                             <th>Horario Acceso</th>
+                            <th>Encriptación</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="seguridadBody">
-                        <!-- Datos cargados por JavaScript -->
+                    <tbody>
+                        <tr>
+                            <td><strong>Corporación Global</strong></td>
+                            <td>✅ Sí</td>
+                            <td>5 intentos</td>
+                            <td>3 concurrentes</td>
+                            <td>08:00 - 18:00</td>
+                            <td>AES-256</td>
+                            <td>
+                                <button class="btn-icon btn-edit" onclick="showDemoAlert()">⚙</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Logística Internacional</strong></td>
+                            <td>❌ No</td>
+                            <td>3 intentos</td>
+                            <td>2 concurrentes</td>
+                            <td>07:00 - 19:00</td>
+                            <td>AES-256</td>
+                            <td>
+                                <button class="btn-icon btn-edit" onclick="showDemoAlert()">⚙</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Distribuidora Continental</strong></td>
+                            <td>⚠ Pendiente</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>
+                                <button class="btn-icon btn-edit" onclick="showDemoAlert()">⚙</button>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-    </div>
-    
-    <!-- Modal para Empresas -->
-    <div id="empresaModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle">Nueva Empresa</h3>
-                <button class="close-btn" onclick="closeEmpresaModal()">&times;</button>
+        
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Sistema de Seguridad</h3>
+                <ul class="info-list">
+                    <li>
+                        <span class="info-label">Nivel de Seguridad:</span>
+                        <span class="info-value">Enterprise Plus</span>
+                    </li>
+                    <li>
+                        <span class="info-label">Row Level Security:</span>
+                        <span class="info-value">✅ Activado</span>
+                    </li>
+                    <li>
+                        <span class="info-label">Encriptación:</span>
+                        <span class="info-value">AES-256</span>
+                    </li>
+                    <li>
+                        <span class="info-label">Auditoría:</span>
+                        <span class="info-value">✅ Completa</span>
+                    </li>
+                    <li>
+                        <span class="info-label">Multi-tenancy:</span>
+                        <span class="info-value">✅ Aislamiento total</span>
+                    </li>
+                </ul>
             </div>
-            <div class="modal-body">
-                <form id="empresaForm">
-                    <input type="hidden" id="empresaId">
-                    
-                    <div class="form-group">
-                        <label for="codigo">Código Único *</label>
-                        <input type="text" id="codigo" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="nombre">Nombre de la Empresa *</label>
-                        <input type="text" id="nombre" required>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="tipoIdentificacion">Tipo Identificación *</label>
-                            <select id="tipoIdentificacion" required>
-                                <option value="RUC">RUC (Perú)</option>
-                                <option value="NIT">NIT (Bolivia/Colombia)</option>
-                                <option value="RUT">RUT (Chile/Uruguay)</option>
-                                <option value="CUIT">CUIT (Argentina)</option>
-                                <option value="CIF">CIF (España)</option>
-                                <option value="CNPJ">CNPJ (Brasil empresas)</option>
-                                <option value="CPF">CPF (Brasil personas)</option>
-                                <option value="DNI">DNI (Varios países)</option>
-                                <option value="OTRO">OTRO</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="identificacion">Número *</label>
-                            <input type="text" id="identificacion" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="pais">País</label>
-                            <input type="text" id="pais">
-                        </div>
-                        <div class="form-group">
-                            <label for="moneda">Moneda Default</label>
-                            <select id="moneda">
-                                <option value="USD">USD</option>
-                                <option value="EUR">EUR</option>
-                                <option value="PEN">PEN</option>
-                                <option value="ARS">ARS</option>
-                                <option value="BRL">BRL</option>
-                                <option value="CLP">CLP</option>
-                                <option value="COP">COP</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="idioma">Idioma Default</label>
-                            <select id="idioma">
-                                <option value="es">Español</option>
-                                <option value="en">English</option>
-                                <option value="pt">Português</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="zonaHoraria">Zona Horaria</label>
-                            <select id="zonaHoraria">
-                                <option value="UTC">UTC</option>
-                                <option value="America/Lima">Lima (GMT-5)</option>
-                                <option value="America/Buenos_Aires">Buenos Aires (GMT-3)</option>
-                                <option value="America/Sao_Paulo">São Paulo (GMT-3)</option>
-                                <option value="America/Mexico_City">Mexico City (GMT-6)</option>
-                                <option value="Europe/Madrid">Madrid (GMT+1)</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="dominioCorporativo">Dominio Corporativo</label>
-                        <input type="text" id="dominioCorporativo" placeholder="empresa.com">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="nivelSeguridad">Nivel de Seguridad</label>
-                        <select id="nivelSeguridad">
-                            <option value="bajo">Bajo</option>
-                            <option value="medio">Medio</option>
-                            <option value="alto" selected>Alto</option>
-                            <option value="critico">Crítico</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" id="activo"> Activa
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" id="verificada"> Verificada
-                            </label>
-                        </div>
-                    </div>
-                </form>
+            
+            <div class="info-card">
+                <h3>Jerarquía Corporativa</h3>
+                <ul class="info-list">
+                    <li>
+                        <span class="info-label">1. Director Corporativo:</span>
+                        <span class="info-value">Dueño software</span>
+                    </li>
+                    <li>
+                        <span class="info-label">2. Director General:</span>
+                        <span class="info-value">CEO por empresa</span>
+                    </li>
+                    <li>
+                        <span class="info-label">3. Director Financiero:</span>
+                        <span class="info-value">CFO - Finanzas/RH</span>
+                    </li>
+                    <li>
+                        <span class="info-label">4. Supervisor Senior:</span>
+                        <span class="info-value">Operaciones diarias</span>
+                    </li>
+                    <li>
+                        <span class="info-label">Roles Operativos:</span>
+                        <span class="info-value">3 niveles</span>
+                    </li>
+                </ul>
             </div>
-            <div class="modal-footer">
-                <button class="save-btn" onclick="saveEmpresa()">Guardar Empresa</button>
+            
+            <div class="info-card">
+                <h3>Características Técnicas</h3>
+                <ul class="info-list">
+                    <li>
+                        <span class="info-label">Base de Datos:</span>
+                        <span class="info-value">PostgreSQL 15</span>
+                    </li>
+                    <li>
+                        <span class="info-label">Hosting:</span>
+                        <span class="info-value">Supabase</span>
+                    </li>
+                    <li>
+                        <span class="info-label">Frontend:</span>
+                        <span class="info-value">HTML/CSS/JS</span>
+                    </li>
+                    <li>
+                        <span class="info-label">Seguridad:</span>
+                        <span class="info-value">RLS + AES-256</span>
+                    </li>
+                    <li>
+                        <span class="info-label">Países Soportados:</span>
+                        <span class="info-value">Múltiples</span>
+                    </li>
+                </ul>
             </div>
         </div>
-    </div>
-    
-    <!-- Modal para Configuración Seguridad -->
-    <div id="seguridadModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Configuración de Seguridad</h3>
-                <button class="close-btn" onclick="closeSeguridadModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="seguridadForm">
-                    <input type="hidden" id="seguridadEmpresaId">
-                    
-                    <div class="form-group">
-                        <label>Intentos Máximos de Login</label>
-                        <input type="number" id="intentosMaximos" min="1" max="10" value="5">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Tiempo de Bloqueo (minutos)</label>
-                        <input type="number" id="tiempoBloqueo" min="1" max="1440" value="30">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Sesiones Concurrentes Máximas</label>
-                        <input type="number" id="sesionesMaximas" min="1" max="10" value="3">
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" id="requiereMFA"> Requiere MFA
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" id="encriptacionActiva"> Encriptación Activa
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Horario Inicio Acceso</label>
-                            <input type="time" id="horarioInicio" value="08:00">
-                        </div>
-                        <div class="form-group">
-                            <label>Horario Fin Acceso</label>
-                            <input type="time" id="horarioFin" value="18:00">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Longitud Mínima Contraseña</label>
-                        <input type="number" id="longitudPassword" min="8" max="50" value="12">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Expiración Contraseña (días)</label>
-                        <input type="number" id="expiracionPassword" min="1" max="365" value="90">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="save-btn" onclick="saveSeguridad()">Guardar Configuración</button>
-            </div>
+        
+        <div class="alert alert-info" id="demoAlert" style="display: none;">
+            <strong>💡 Acción de Demostración:</strong> En un entorno real, esta acción ejecutaría la función correspondiente en Supabase con todas las validaciones de seguridad.
+        </div>
+        
+        <div class="footer">
+            <p>Sistema Corporativo Universal © 2024 | Compatible con múltiples países: RUC, NIT, RUT, CUIT, CIF, CNPJ, CPF, DNI</p>
+            <p>Seguridad: Row Level Security (RLS) | Encriptación AES-256 | Auditoría Completa | Aislamiento Multi-tenancy</p>
         </div>
     </div>
 
     <script>
-        // Configuración Supabase
-        const SUPABASE_URL = 'https://tjtpdxeoxissrpdrhqbc.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_yH2lzZ_AWTvHsxW4TI2yYw_KnY5krtq';
-        
-        // Datos de ejemplo (en producción vendrían de Supabase)
-        let empresas = [];
-        let configuracionesSeguridad = [];
-        
-        // Estado de la aplicación
-        let currentUser = null;
-        let editingEmpresaId = null;
-        let editingSeguridadId = null;
-        
-        // Inicialización
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-            loadEmpresas();
-            loadStats();
-        });
-        
-        function checkAuth() {
-            const savedEmail = sessionStorage.getItem('user_email');
-            const savedRole = sessionStorage.getItem('user_role');
-            
-            if (!savedEmail || savedRole !== 'Director Corporativo') {
-                // Redirigir al login si no es Director Corporativo
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            currentUser = {
-                email: savedEmail,
-                role: savedRole
-            };
-            
-            document.getElementById('currentUser').textContent = `Usuario: ${savedEmail} (${savedRole})`;
-        }
-        
-        function logout() {
-            // Registrar logout en auditoría (simulación)
-            console.log('Logout del Director Corporativo:', currentUser.email);
-            
-            // Limpiar sesión
-            sessionStorage.clear();
-            
-            // Redirigir al login
-            window.location.href = 'login.html';
-        }
-        
-        function loadEmpresas() {
-            // Simulación de carga desde Supabase
-            // En producción sería:
-            // fetch(`${SUPABASE_URL}/rest/v1/empresas?select=*`, {
-            //     headers: {
-            //         'apikey': SUPABASE_KEY,
-            //         'Authorization': `Bearer ${sessionStorage.getItem('access_token')}`
-            //     }
-            // });
-            
-            // Datos de ejemplo
-            empresas = [
-                {
-                    id: 'emp_001',
-                    codigo: 'EMP-001',
-                    nombre: 'Corporación Global S.A.',
-                    identificacion_tributaria: '20123456789',
-                    tipo_documento: 'RUC',
-                    pais: 'Perú',
-                    moneda_default: 'USD',
-                    idioma_default: 'es',
-                    nivel_seguridad: 'alto',
-                    activo: true,
-                    verificada: true
-                },
-                {
-                    id: 'emp_002',
-                    codigo: 'EMP-002',
-                    nombre: 'Logística Internacional Ltda.',
-                    identificacion_tributaria: '30567891234',
-                    tipo_documento: 'NIT',
-                    pais: 'Colombia',
-                    moneda_default: 'COP',
-                    idioma_default: 'es',
-                    nivel_seguridad: 'medio',
-                    activo: true,
-                    verificada: true
-                },
-                {
-                    id: 'emp_003',
-                    codigo: 'EMP-003',
-                    nombre: 'Distribuidora Continental',
-                    identificacion_tributaria: '20765432198',
-                    tipo_documento: 'RUT',
-                    pais: 'Chile',
-                    moneda_default: 'CLP',
-                    idioma_default: 'es',
-                    nivel_seguridad: 'critico',
-                    activo: false,
-                    verificada: true
-                }
-            ];
-            
-            configuracionesSeguridad = [
-                {
-                    empresa_id: 'emp_001',
-                    intentos_maximos_login: 5,
-                    tiempo_bloqueo_minutos: 30,
-                    sesiones_concurrentes_max: 3,
-                    requiere_mfa: true,
-                    horario_acceso_inicio: '08:00',
-                    horario_acceso_fin: '18:00'
-                },
-                {
-                    empresa_id: 'emp_002',
-                    intentos_maximos_login: 3,
-                    tiempo_bloqueo_minutos: 60,
-                    sesiones_concurrentes_max: 2,
-                    requiere_mfa: false,
-                    horario_acceso_inicio: '07:00',
-                    horario_acceso_fin: '19:00'
-                }
-            ];
-            
-            renderEmpresas();
-            renderSeguridad();
-        }
-        
-        function renderEmpresas() {
-            const tbody = document.getElementById('empresasBody');
-            tbody.innerHTML = '';
-            
-            empresas.forEach(empresa => {
-                const row = document.createElement('tr');
-                
-                // Determinar clase de seguridad
-                let seguridadClass = '';
-                let seguridadText = '';
-                switch(empresa.nivel_seguridad) {
-                    case 'alto': seguridadClass = 'badge-alto'; seguridadText = 'ALTO'; break;
-                    case 'medio': seguridadClass = 'badge-medio'; seguridadText = 'MEDIO'; break;
-                    case 'bajo': seguridadClass = 'badge-bajo'; seguridadText = 'BAJO'; break;
-                    case 'critico': seguridadClass = 'badge-alto'; seguridadText = 'CRÍTICO'; break;
-                }
-                
-                row.innerHTML = `
-                    <td>${empresa.codigo}</td>
-                    <td>${empresa.nombre}</td>
-                    <td>${empresa.identificacion_tributaria} (${empresa.tipo_documento || 'RUC'})</td>
-                    <td>${empresa.pais || 'No especificado'}</td>
-                    <td><span class="security-badge ${seguridadClass}">${seguridadText}</span></td>
-                    <td>${empresa.activo ? '✅ Activa' : '❌ Inactiva'}</td>
-                    <td>
-                        <div class="actions">
-                            <button class="edit-btn" onclick="editEmpresa('${empresa.id}')">Editar</button>
-                            <button class="delete-btn" onclick="deleteEmpresa('${empresa.id}')">Eliminar</button>
-                        </div>
-                    </td>
-                `;
-                
-                tbody.appendChild(row);
-            });
-        }
-        
-        function renderSeguridad() {
-            const tbody = document.getElementById('seguridadBody');
-            tbody.innerHTML = '';
-            
-            configuracionesSeguridad.forEach(config => {
-                const empresa = empresas.find(e => e.id === config.empresa_id);
-                if (!empresa) return;
-                
-                const row = document.createElement('tr');
-                
-                row.innerHTML = `
-                    <td>${empresa.nombre}</td>
-                    <td>${config.requiere_mfa ? '✅ Sí' : '❌ No'}</td>
-                    <td>${config.intentos_maximos_login}</td>
-                    <td>${config.sesiones_concurrentes_max}</td>
-                    <td>${config.horario_acceso_inicio} - ${config.horario_acceso_fin}</td>
-                    <td>
-                        <div class="actions">
-                            <button class="edit-btn" onclick="editSeguridad('${config.empresa_id}')">Configurar</button>
-                        </div>
-                    </td>
-                `;
-                
-                tbody.appendChild(row);
-            });
-        }
-        
-        function openEmpresaModal() {
-            editingEmpresaId = null;
-            document.getElementById('modalTitle').textContent = 'Nueva Empresa';
-            document.getElementById('empresaForm').reset();
-            document.getElementById('empresaModal').style.display = 'block';
-        }
-        
-        function closeEmpresaModal() {
-            document.getElementById('empresaModal').style.display = 'none';
-        }
-        
-        function editEmpresa(id) {
-            const empresa = empresas.find(e => e.id === id);
-            if (!empresa) return;
-            
-            editingEmpresaId = id;
-            document.getElementById('modalTitle').textContent = 'Editar Empresa';
-            
-            // Rellenar formulario
-            document.getElementById('empresaId').value = empresa.id;
-            document.getElementById('codigo').value = empresa.codigo;
-            document.getElementById('nombre').value = empresa.nombre;
-            document.getElementById('tipoIdentificacion').value = empresa.tipo_documento || 'RUC';
-            document.getElementById('identificacion').value = empresa.identificacion_tributaria;
-            document.getElementById('pais').value = empresa.pais || '';
-            document.getElementById('moneda').value = empresa.moneda_default || 'USD';
-            document.getElementById('idioma').value = empresa.idioma_default || 'es';
-            document.getElementById('zonaHoraria').value = empresa.zona_horaria || 'UTC';
-            document.getElementById('dominioCorporativo').value = empresa.dominio_corporativo || '';
-            document.getElementById('nivelSeguridad').value = empresa.nivel_seguridad || 'alto';
-            document.getElementById('activo').checked = empresa.activo || false;
-            document.getElementById('verificada').checked = empresa.verificada || false;
-            
-            document.getElementById('empresaModal').style.display = 'block';
-        }
-        
-        function saveEmpresa() {
-            const empresaData = {
-                codigo: document.getElementById('codigo').value,
-                nombre: document.getElementById('nombre').value,
-                tipo_documento: document.getElementById('tipoIdentificacion').value,
-                identificacion_tributaria: document.getElementById('identificacion').value,
-                pais: document.getElementById('pais').value,
-                moneda_default: document.getElementById('moneda').value,
-                idioma_default: document.getElementById('idioma').value,
-                zona_horaria: document.getElementById('zonaHoraria').value,
-                dominio_corporativo: document.getElementById('dominioCorporativo').value,
-                nivel_seguridad: document.getElementById('nivelSeguridad').value,
-                activo: document.getElementById('activo').checked,
-                verificada: document.getElementById('verificada').checked
-            };
-            
-            // Validación
-            if (!empresaData.codigo || !empresaData.nombre || !empresaData.identificacion_tributaria) {
-                showAlert('Todos los campos marcados con * son obligatorios', 'error');
-                return;
-            }
-            
-            if (editingEmpresaId) {
-                // Actualizar empresa existente
-                const index = empresas.findIndex(e => e.id === editingEmpresaId);
-                if (index !== -1) {
-                    empresas[index] = { ...empresas[index], ...empresaData };
-                    
-                    // En producción: llamada a Supabase
-                    // fetch(`${SUPABASE_URL}/rest/v1/empresas?id=eq.${editingEmpresaId}`, {
-                    //     method: 'PATCH',
-                    //     headers: { ... },
-                    //     body: JSON.stringify(empresaData)
-                    // });
-                    
-                    showAlert('Empresa actualizada correctamente', 'success');
-                    console.log('Empresa actualizada:', empresaData);
-                }
-            } else {
-                // Crear nueva empresa
-                const newEmpresa = {
-                    id: 'emp_' + Date.now(),
-                    ...empresaData
-                };
-                
-                empresas.push(newEmpresa);
-                
-                // Crear configuración de seguridad por defecto
-                configuracionesSeguridad.push({
-                    empresa_id: newEmpresa.id,
-                    intentos_maximos_login: 5,
-                    tiempo_bloqueo_minutos: 30,
-                    sesiones_concurrentes_max: 3,
-                    requiere_mfa: false,
-                    horario_acceso_inicio: '08:00',
-                    horario_acceso_fin: '18:00'
-                });
-                
-                // En producción: llamadas a Supabase
-                // 1. Insertar empresa
-                // 2. Insertar configuración de seguridad
-                
-                showAlert('Empresa creada correctamente', 'success');
-                console.log('Nueva empresa creada:', newEmpresa);
-            }
-            
-            // Actualizar UI
-            renderEmpresas();
-            renderSeguridad();
-            loadStats();
-            closeEmpresaModal();
-        }
-        
-        function deleteEmpresa(id) {
-            if (!confirm('¿Está seguro de eliminar esta empresa? Esta acción no se puede deshacer.')) {
-                return;
-            }
-            
-            // En producción: llamada a Supabase
-            // fetch(`${SUPABASE_URL}/rest/v1/empresas?id=eq.${id}`, {
-            //     method: 'DELETE',
-            //     headers: { ... }
-            // });
-            
-            // Eliminar de arrays locales
-            empresas = empresas.filter(e => e.id !== id);
-            configuracionesSeguridad = configuracionesSeguridad.filter(c => c.empresa_id !== id);
-            
-            showAlert('Empresa eliminada correctamente', 'success');
-            console.log('Empresa eliminada:', id);
-            
-            renderEmpresas();
-            renderSeguridad();
-            loadStats();
-        }
-        
-        function editSeguridad(empresaId) {
-            const config = configuracionesSeguridad.find(c => c.empresa_id === empresaId);
-            const empresa = empresas.find(e => e.id === empresaId);
-            
-            if (!config || !empresa) {
-                showAlert('Configuración no encontrada', 'error');
-                return;
-            }
-            
-            editingSeguridadId = empresaId;
-            
-            // Rellenar formulario
-            document.getElementById('seguridadEmpresaId').value = empresaId;
-            document.getElementById('intentosMaximos').value = config.intentos_maximos_login;
-            document.getElementById('tiempoBloqueo').value = config.tiempo_bloqueo_minutos;
-            document.getElementById('sesionesMaximas').value = config.sesiones_concurrentes_max;
-            document.getElementById('requiereMFA').checked = config.requiere_mfa;
-            document.getElementById('encriptacionActiva').checked = config.encriptacion_nivel === 'AES-256';
-            document.getElementById('horarioInicio').value = config.horario_acceso_inicio;
-            document.getElementById('horarioFin').value = config.horario_acceso_fin;
-            document.getElementById('longitudPassword').value = config.longitud_minima_password || 12;
-            document.getElementById('expiracionPassword').value = config.expiracion_password_dias || 90;
-            
-            document.getElementById('seguridadModal').style.display = 'block';
-        }
-        
-        function closeSeguridadModal() {
-            document.getElementById('seguridadModal').style.display = 'none';
-        }
-        
-        function saveSeguridad() {
-            const empresaId = document.getElementById('seguridadEmpresaId').value;
-            const configData = {
-                intentos_maximos_login: parseInt(document.getElementById('intentosMaximos').value),
-                tiempo_bloqueo_minutos: parseInt(document.getElementById('tiempoBloqueo').value),
-                sesiones_concurrentes_max: parseInt(document.getElementById('sesionesMaximas').value),
-                requiere_mfa: document.getElementById('requiereMFA').checked,
-                encriptacion_nivel: document.getElementById('encriptacionActiva').checked ? 'AES-256' : null,
-                horario_acceso_inicio: document.getElementById('horarioInicio').value,
-                horario_acceso_fin: document.getElementById('horarioFin').value,
-                longitud_minima_password: parseInt(document.getElementById('longitudPassword').value),
-                expiracion_password_dias: parseInt(document.getElementById('expiracionPassword').value)
-            };
-            
-            // Actualizar configuración
-            const index = configuracionesSeguridad.findIndex(c => c.empresa_id === empresaId);
-            if (index !== -1) {
-                configuracionesSeguridad[index] = { 
-                    ...configuracionesSeguridad[index], 
-                    ...configData 
-                };
-                
-                // En producción: llamada a Supabase
-                // fetch(`${SUPABASE_URL}/rest/v1/configuracion_seguridad?empresa_id=eq.${empresaId}`, {
-                //     method: 'PATCH',
-                //     headers: { ... },
-                //     body: JSON.stringify(configData)
-                // });
-                
-                showAlert('Configuración de seguridad actualizada', 'success');
-                console.log('Configuración actualizada:', configData);
-            }
-            
-            renderSeguridad();
-            closeSeguridadModal();
-        }
-        
-        function loadStats() {
-            document.getElementById('empresasCount').textContent = empresas.length;
-            document.getElementById('usuariosCount').textContent = empresas.length * 10; // Simulación
-            document.getElementById('ingresosCount').textContent = `$${empresas.length * 50000}`; // Simulación
-            document.getElementById('alertasCount').textContent = '0'; // Sin alertas
-        }
-        
-        function showAlert(message, type) {
-            const container = document.getElementById('alertContainer');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            
-            container.innerHTML = '';
-            container.appendChild(alert);
-            
+        function showDemoAlert() {
+            const alert = document.getElementById('demoAlert');
+            alert.style.display = 'block';
             setTimeout(() => {
-                container.innerHTML = '';
+                alert.style.display = 'none';
             }, 5000);
         }
         
-        // Cerrar modales al hacer clic fuera
-        window.onclick = function(event) {
-            const empresaModal = document.getElementById('empresaModal');
-            const seguridadModal = document.getElementById('seguridadModal');
+        // Simular datos dinámicos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simular estadísticas
+            const stats = document.querySelectorAll('.stat-card .value');
+            stats.forEach(stat => {
+                const originalText = stat.textContent;
+                stat.textContent = '0';
+                
+                let count = 0;
+                const target = parseInt(originalText);
+                const interval = setInterval(() => {
+                    count += Math.ceil(target / 20);
+                    if (count >= target) {
+                        count = target;
+                        clearInterval(interval);
+                    }
+                    stat.textContent = count;
+                }, 50);
+            });
             
-            if (event.target === empresaModal) {
-                closeEmpresaModal();
-            }
-            if (event.target === seguridadModal) {
-                closeSeguridadModal();
-            }
-        };
+            // Mostrar información de contexto
+            console.log('Sistema Corporativo - Modo Demostración Estático');
+            console.log('URL Supabase: https://tjtpdxeoxissrpdrhqbc.supabase.co');
+            console.log('Anon Key: sb_publishable_yH2lzZ_AWTvHsxW4TI2yYw_KnY5krtq');
+            console.log('En producción, esta página se conectaría a Supabase para operaciones reales.');
+        });
     </script>
 </body>
 </html>
