@@ -4,1455 +4,357 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Director Corporativo</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👑</text></svg>">
     <style>
-        /* RESET Y ESTILOS BASE */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-        }
-        
-        body {
-            background: #0f0f23;
-            color: #ffffff;
-            min-height: 100vh;
-        }
-        
-        /* LAYOUT PRINCIPAL */
-        .app-container {
-            display: flex;
-            min-height: 100vh;
-        }
-        
-        /* SIDEBAR */
-        .sidebar {
-            width: 260px;
-            background: #1a1a2e;
-            border-right: 1px solid rgba(124, 58, 237, 0.2);
-            padding: 24px 0;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-        }
-        
-        .logo {
-            padding: 0 24px 24px;
-            border-bottom: 1px solid rgba(124, 58, 237, 0.2);
-            margin-bottom: 24px;
-        }
-        
-        .logo h1 {
-            color: #7c3aed;
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .logo .badge {
-            display: inline-block;
-            background: rgba(124, 58, 237, 0.2);
-            color: #9d5bff;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .user-info {
-            padding: 0 24px 24px;
-            margin-bottom: 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .user-info h3 {
-            font-size: 16px;
-            margin-bottom: 4px;
-            color: #ffffff;
-        }
-        
-        .user-info p {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 13px;
-        }
-        
-        .nav-menu {
-            padding: 0 24px;
-        }
-        
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .nav-item:hover {
-            background: rgba(124, 58, 237, 0.1);
-            color: #9d5bff;
-        }
-        
-        .nav-item.active {
-            background: rgba(124, 58, 237, 0.15);
-            color: #7c3aed;
-            font-weight: 500;
-        }
-        
-        .nav-item i {
-            margin-right: 12px;
-            width: 20px;
-            text-align: center;
-        }
-        
-        .logout-btn {
-            margin: 24px;
-            width: calc(100% - 48px);
-            padding: 12px;
-            background: rgba(255, 0, 85, 0.1);
-            border: 1px solid rgba(255, 0, 85, 0.2);
-            color: #ff0055;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .logout-btn:hover {
-            background: rgba(255, 0, 85, 0.2);
-        }
-        
-        .logout-btn i {
-            margin-right: 8px;
-        }
-        
-        /* CONTENIDO PRINCIPAL */
-        .main-content {
-            flex: 1;
-            margin-left: 260px;
-            padding: 24px;
-            min-height: 100vh;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid rgba(124, 58, 237, 0.2);
-        }
-        
-        .header h2 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #ffffff;
-        }
-        
-        /* ESTADÍSTICAS */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-        
-        .stat-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(124, 58, 237, 0.1);
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.2s;
-        }
-        
-        .stat-card:hover {
-            border-color: rgba(124, 58, 237, 0.3);
-        }
-        
-        .stat-label {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-        
-        .stat-value {
-            font-size: 28px;
-            font-weight: 600;
-            color: #7c3aed;
-            margin-bottom: 4px;
-        }
-        
-        /* TABLA DE EMPRESAS */
-        .table-container {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(124, 58, 237, 0.1);
-            border-radius: 12px;
-            padding: 24px;
-        }
-        
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-        
-        .table-header h3 {
-            font-size: 18px;
-            font-weight: 600;
-            color: #ffffff;
-        }
-        
-        .primary-btn {
-            padding: 10px 20px;
-            background: #7c3aed;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-        }
-        
-        .primary-btn:hover {
-            background: #6d28d9;
-            transform: translateY(-1px);
-        }
-        
-        .primary-btn i {
-            margin-right: 8px;
-        }
-        
-        .table-wrapper {
-            overflow-x: auto;
-        }
-        
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .data-table th {
-            background: rgba(124, 58, 237, 0.1);
-            color: #9d5bff;
-            font-weight: 500;
-            text-align: left;
-            padding: 16px;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-        
-        .data-table td {
-            padding: 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            vertical-align: middle;
-        }
-        
-        .data-table tr:hover {
-            background: rgba(255, 255, 255, 0.02);
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        
-        .status-active {
-            background: rgba(0, 255, 65, 0.1);
-            color: #00ff41;
-        }
-        
-        .status-inactive {
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .action-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            font-size: 14px;
-        }
-        
-        .action-btn.view {
-            background: rgba(0, 255, 65, 0.1);
-            color: #00ff41;
-        }
-        
-        .action-btn.edit {
-            background: rgba(0, 170, 255, 0.1);
-            color: #00aaff;
-        }
-        
-        .action-btn.delete {
-            background: rgba(255, 0, 85, 0.1);
-            color: #ff0055;
-        }
-        
-        .action-btn.access {
-            background: rgba(157, 91, 255, 0.1);
-            color: #9d5bff;
-        }
-        
-        /* MODALES */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(15, 15, 35, 0.95);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-        
-        .modal {
-            background: #1a1a2e;
-            border-radius: 12px;
-            padding: 32px;
-            width: 100%;
-            max-width: 500px;
-            border: 1px solid rgba(124, 58, 237, 0.3);
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-        
-        .modal-header h3 {
-            font-size: 20px;
-            color: #ffffff;
-        }
-        
-        .close-btn {
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 24px;
-            cursor: pointer;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-        }
-        
-        .close-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 8px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: white;
-            font-size: 14px;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #7c3aed;
-            background: rgba(255, 255, 255, 0.08);
-        }
-        
-        .modal-footer {
-            display: flex;
-            gap: 12px;
-            margin-top: 32px;
-        }
-        
-        .secondary-btn {
-            flex: 1;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .secondary-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        /* LOADING Y NOTIFICACIONES */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(15, 15, 35, 0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-        }
-        
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(124, 58, 237, 0.3);
-            border-radius: 50%;
-            border-top-color: #7c3aed;
-            animation: spin 1s linear infinite;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 16px 24px;
-            border-radius: 8px;
-            z-index: 3000;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            max-width: 400px;
-        }
-        
-        .notification.success {
-            background: rgba(0, 255, 65, 0.1);
-            border: 1px solid #00ff41;
-            color: #00ff41;
-        }
-        
-        .notification.error {
-            background: rgba(255, 0, 85, 0.1);
-            border: 1px solid #ff0055;
-            color: #ff0055;
-        }
-        
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 220px;
-            }
-            
-            .main-content {
-                margin-left: 220px;
-                padding: 16px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .sidebar {
-                width: 100%;
-                position: relative;
-                height: auto;
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .app-container {
-                flex-direction: column;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* ANIMACIONES */
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+        /* [Mismos estilos que antes, pero simplificados] */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #0f0f23; color: white; min-height: 100vh; }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: #1a1a2e; border-right: 1px solid rgba(124, 58, 237, 0.2); padding: 24px; position: fixed; height: 100vh; }
+        .main-content { flex: 1; margin-left: 260px; padding: 24px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid rgba(124, 58, 237, 0.2); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+        .stat-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(124, 58, 237, 0.1); border-radius: 12px; padding: 20px; }
+        .table-container { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(124, 58, 237, 0.1); border-radius: 12px; padding: 24px; }
+        .btn { padding: 10px 20px; background: #7c3aed; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        .table-wrapper { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { background: rgba(124, 58, 237, 0.1); color: #9d5bff; padding: 16px; text-align: left; }
+        .data-table td { padding: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .action-buttons { display: flex; gap: 8px; }
+        .action-btn { width: 36px; height: 36px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 15, 35, 0.95); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal { background: #1a1a2e; border-radius: 12px; padding: 32px; max-width: 500px; width: 90%; border: 1px solid rgba(124, 58, 237, 0.3); }
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 15, 35, 0.9); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .spinner { width: 40px; height: 40px; border: 3px solid rgba(124, 58, 237, 0.3); border-radius: 50%; border-top-color: #7c3aed; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- SIDEBAR -->
         <div class="sidebar">
-            <div class="logo">
-                <h1>Nexial Suite</h1>
-                <div class="badge">DIRECTOR CORPORATIVO</div>
-            </div>
-            
-            <div class="user-info">
+            <h2 style="color: #7c3aed; margin-bottom: 24px;">Nexial Suite</h2>
+            <div style="margin-bottom: 32px;">
                 <h3 id="userName">Cargando...</h3>
-                <p id="userRole">Dueño del Software</p>
+                <p style="color: rgba(255,255,255,0.6); font-size: 14px;">Director Corporativo</p>
             </div>
-            
-            <div class="nav-menu">
-                <a class="nav-item active" onclick="loadDashboard()">
-                    <i class="fas fa-tachometer-alt"></i>
-                    Dashboard
-                </a>
-                <a class="nav-item" onclick="loadEmpresas()">
-                    <i class="fas fa-building"></i>
-                    Todas las Empresas
-                </a>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button class="btn" onclick="loadDashboard()" style="text-align: left;">Dashboard</button>
+                <button class="btn" onclick="loadEmpresas()" style="text-align: left;">Empresas</button>
+                <button class="btn" onclick="logout()" style="background: rgba(255,0,85,0.2); color: #ff0055; margin-top: 32px;">Cerrar Sesión</button>
             </div>
-            
-            <button class="logout-btn" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                Cerrar Sesión
-            </button>
         </div>
         
-        <!-- CONTENIDO PRINCIPAL -->
         <div class="main-content" id="mainContent">
-            <!-- El contenido se carga dinámicamente aquí -->
-        </div>
-    </div>
-    
-    <!-- MODAL PARA EMPRESA -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal" id="modalContent">
             <!-- Contenido dinámico -->
         </div>
     </div>
     
-    <!-- LOADING -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modalContent"></div>
+    </div>
+    
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
     </div>
     
-    <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    
     <script>
-        // CONFIGURACIÓN SUPABASE
-        const SUPABASE_URL = 'https://tjtpdxeoxissrpdrhqbc.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_yH2lzZ_AWTvHsxW4TI2yYw_KnY5krtq';
-        
-        let supabase = null;
-        let currentUser = null;
-        let empresas = [];
-        
-        // INICIALIZACIÓN
-        async function initApp() {
-            try {
-                // Configurar Supabase
-                supabase = supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-                    auth: {
-                        persistSession: true,
-                        autoRefreshToken: true
+        // IIFE para evitar conflictos
+        (function() {
+            // CONFIGURACIÓN
+            const SUPABASE_URL = 'https://tjtpdxeoxissrpdrhqbc.supabase.co';
+            const SUPABASE_ANON_KEY = 'sb_publishable_yH2lzZ_AWTvHsxW4TI2yYw_KnY5krtq';
+            
+            // Variables globales
+            var supabase = null;
+            var currentUser = null;
+            
+            // Funciones de utilidad
+            function showLoading() {
+                document.getElementById('loadingOverlay').style.display = 'flex';
+            }
+            
+            function hideLoading() {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+            
+            function showModal(content) {
+                document.getElementById('modalContent').innerHTML = content;
+                document.getElementById('modalOverlay').style.display = 'flex';
+            }
+            
+            function closeModal() {
+                document.getElementById('modalOverlay').style.display = 'none';
+            }
+            
+            // Cargar dashboard
+            async function loadDashboard() {
+                showLoading();
+                try {
+                    const { data: empresas } = await supabase.from('empresas').select('*');
+                    const { count: totalUsuarios } = await supabase.from('usuarios').select('*', { count: 'exact', head: true });
+                    
+                    document.getElementById('mainContent').innerHTML = `
+                        <div class="header">
+                            <h1>Dashboard Corporativo</h1>
+                            <button class="btn" onclick="loadEmpresas()">Ver Empresas</button>
+                        </div>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3 style="color: #7c3aed; font-size: 32px;">${empresas?.length || 0}</h3>
+                                <p style="color: rgba(255,255,255,0.6);">Empresas</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3 style="color: #7c3aed; font-size: 32px;">${totalUsuarios || 0}</h3>
+                                <p style="color: rgba(255,255,255,0.6);">Usuarios</p>
+                            </div>
+                        </div>
+                        
+                        <div class="table-container">
+                            <h3 style="margin-bottom: 20px;">Empresas Recientes</h3>
+                            <div class="table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr><th>Nombre</th><th>RUC</th><th>Email</th><th>Acciones</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${empresas?.slice(0, 5).map(empresa => `
+                                            <tr>
+                                                <td>${empresa.nombre}</td>
+                                                <td>${empresa.identificacion_tributaria || 'N/A'}</td>
+                                                <td>${empresa.email}</td>
+                                                <td>
+                                                    <button class="action-btn" onclick="verEmpresa('${empresa.id}')" style="background: rgba(0,255,65,0.1); color: #00ff41;">👁️</button>
+                                                    <button class="action-btn" onclick="editarEmpresa('${empresa.id}')" style="background: rgba(0,170,255,0.1); color: #00aaff;">✏️</button>
+                                                </td>
+                                            </tr>
+                                        `).join('') || '<tr><td colspan="4">No hay empresas</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    hideLoading();
+                }
+            }
+            
+            // Cargar empresas
+            async function loadEmpresas() {
+                showLoading();
+                try {
+                    const { data: empresas } = await supabase.from('empresas').select('*').order('creado_en', { ascending: false });
+                    
+                    document.getElementById('mainContent').innerHTML = `
+                        <div class="header">
+                            <h1>Empresas (${empresas?.length || 0})</h1>
+                            <button class="btn" onclick="crearEmpresa()">Nueva Empresa</button>
+                        </div>
+                        
+                        <div class="table-container">
+                            <div class="table-wrapper">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr><th>Código</th><th>Nombre</th><th>RUC</th><th>Email</th><th>Estado</th><th>Acciones</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${empresas?.map(empresa => `
+                                            <tr>
+                                                <td>${empresa.codigo || 'N/A'}</td>
+                                                <td>${empresa.nombre}</td>
+                                                <td>${empresa.identificacion_tributaria || 'N/A'}</td>
+                                                <td>${empresa.email}</td>
+                                                <td><span style="padding: 4px 12px; border-radius: 20px; background: ${empresa.activo ? 'rgba(0,255,65,0.1)' : 'rgba(255,255,255,0.1)'}; color: ${empresa.activo ? '#00ff41' : 'rgba(255,255,255,0.5)'};">${empresa.activo ? 'Activa' : 'Inactiva'}</span></td>
+                                                <td>
+                                                    <div class="action-buttons">
+                                                        <button class="action-btn" onclick="verEmpresa('${empresa.id}')" style="background: rgba(0,255,65,0.1); color: #00ff41;">👁️</button>
+                                                        <button class="action-btn" onclick="editarEmpresa('${empresa.id}')" style="background: rgba(0,170,255,0.1); color: #00aaff;">✏️</button>
+                                                        <button class="action-btn" onclick="eliminarEmpresa('${empresa.id}')" style="background: rgba(255,0,85,0.1); color: #ff0055;">🗑️</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        `).join('') || '<tr><td colspan="6">No hay empresas</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    hideLoading();
+                }
+            }
+            
+            // Funciones de empresa (simplificadas)
+            async function crearEmpresa() {
+                const nombre = prompt('Nombre de la empresa:');
+                if (!nombre) return;
+                
+                showLoading();
+                try {
+                    const empresaData = {
+                        id: 'emp-' + Date.now(),
+                        codigo: 'EMP-' + Date.now().toString().slice(-4),
+                        nombre: nombre,
+                        identificacion_tributaria: prompt('RUC:') || '',
+                        email: prompt('Email:') || '',
+                        telefono: prompt('Teléfono:') || '',
+                        pais: 'Bolivia',
+                        activo: true,
+                        creado_en: new Date().toISOString()
+                    };
+                    
+                    const { error } = await supabase.from('empresas').insert([empresaData]);
+                    if (error) throw error;
+                    
+                    alert('Empresa creada');
+                    loadEmpresas();
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                } finally {
+                    hideLoading();
+                }
+            }
+            
+            async function verEmpresa(id) {
+                showLoading();
+                try {
+                    const { data: empresa } = await supabase.from('empresas').select('*').eq('id', id).single();
+                    
+                    showModal(`
+                        <h2 style="color: #7c3aed; margin-bottom: 20px;">${empresa.nombre}</h2>
+                        <p><strong>Código:</strong> ${empresa.codigo}</p>
+                        <p><strong>RUC:</strong> ${empresa.identificacion_tributaria}</p>
+                        <p><strong>Email:</strong> ${empresa.email}</p>
+                        <p><strong>Teléfono:</strong> ${empresa.telefono}</p>
+                        <p><strong>País:</strong> ${empresa.pais}</p>
+                        <p><strong>Estado:</strong> ${empresa.activo ? 'Activa' : 'Inactiva'}</p>
+                        <div style="margin-top: 24px;">
+                            <button class="btn" onclick="closeModal()">Cerrar</button>
+                        </div>
+                    `);
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                } finally {
+                    hideLoading();
+                }
+            }
+            
+            async function editarEmpresa(id) {
+                showLoading();
+                try {
+                    const { data: empresa } = await supabase.from('empresas').select('*').eq('id', id).single();
+                    
+                    const nuevoNombre = prompt('Nuevo nombre:', empresa.nombre);
+                    if (!nuevoNombre) return;
+                    
+                    const { error } = await supabase
+                        .from('empresas')
+                        .update({ nombre: nuevoNombre, actualizado_en: new Date().toISOString() })
+                        .eq('id', id);
+                    
+                    if (error) throw error;
+                    
+                    alert('Empresa actualizada');
+                    loadEmpresas();
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                } finally {
+                    hideLoading();
+                }
+            }
+            
+            async function eliminarEmpresa(id) {
+                if (!confirm('¿Eliminar esta empresa?')) return;
+                
+                showLoading();
+                try {
+                    const { error } = await supabase.from('empresas').delete().eq('id', id);
+                    if (error) throw error;
+                    
+                    alert('Empresa eliminada');
+                    loadEmpresas();
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                } finally {
+                    hideLoading();
+                }
+            }
+            
+            // Cerrar sesión
+            async function logout() {
+                showLoading();
+                try {
+                    await supabase.auth.signOut();
+                    window.location.href = 'login.html';
+                } catch (error) {
+                    window.location.href = 'login.html';
+                }
+            }
+            
+            // Inicializar aplicación
+            async function initApp() {
+                showLoading();
+                try {
+                    // Inicializar Supabase
+                    supabase = window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                        auth: { persistSession: true, autoRefreshToken: true }
+                    });
+                    
+                    // Verificar sesión
+                    const { data: { session } } = await supabase.auth.getSession();
+                    
+                    if (!session) {
+                        window.location.href = 'login.html';
+                        return;
                     }
-                });
-                
-                // Verificar sesión
-                const { data: { session } } = await supabase.auth.getSession();
-                
-                if (!session) {
+                    
+                    // Obtener usuario
+                    const { data: userData } = await supabase
+                        .from('usuarios')
+                        .select('*')
+                        .eq('id', session.user.id)
+                        .single();
+                    
+                    if (!userData || userData.rol !== 'Director Corporativo') {
+                        await supabase.auth.signOut();
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    
+                    currentUser = userData;
+                    document.getElementById('userName').textContent = userData.nombre;
+                    
+                    // Cargar dashboard
+                    loadDashboard();
+                    
+                } catch (error) {
+                    console.error('Error inicializando:', error);
                     window.location.href = 'login.html';
-                    return;
+                } finally {
+                    hideLoading();
                 }
-                
-                // Verificar usuario y rol
-                const { data: userData, error } = await supabase
-                    .from('usuarios')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single();
-                
-                if (error || !userData) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-                
-                if (userData.rol !== 'Director Corporativo') {
-                    alert('Acceso denegado. Solo para Directores Corporativos.');
-                    await supabase.auth.signOut();
-                    window.location.href = 'login.html';
-                    return;
-                }
-                
-                if (!userData.activo) {
-                    alert('Usuario inactivo. Contacte al administrador.');
-                    await supabase.auth.signOut();
-                    window.location.href = 'login.html';
-                    return;
-                }
-                
-                currentUser = userData;
-                document.getElementById('userName').textContent = `${userData.nombre} ${userData.apellido || ''}`;
-                
-                // Cargar dashboard inicial
-                loadDashboard();
-                
-            } catch (error) {
-                console.error('Error inicializando app:', error);
-                window.location.href = 'login.html';
-            }
-        }
-        
-        // FUNCIONES DE INTERFAZ
-        function showLoading() {
-            document.getElementById('loadingOverlay').style.display = 'flex';
-        }
-        
-        function hideLoading() {
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }
-        
-        function showNotification(type, message) {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.style.animation = 'slideIn 0.3s ease-out';
-            notification.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-                <span>${message}</span>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 5000);
-        }
-        
-        function showModal(content) {
-            document.getElementById('modalContent').innerHTML = content;
-            document.getElementById('modalOverlay').style.display = 'flex';
-        }
-        
-        function closeModal() {
-            document.getElementById('modalOverlay').style.display = 'none';
-        }
-        
-        // CARGAR DASHBOARD
-        async function loadDashboard() {
-            showLoading();
-            
-            try {
-                // Obtener estadísticas
-                const totalEmpresas = await getTotalEmpresas();
-                const empresasActivas = await getEmpresasActivas();
-                const totalUsuarios = await getTotalUsuarios();
-                const totalVentas = await getTotalVentas();
-                
-                const content = `
-                    <div class="header">
-                        <h2>Dashboard Corporativo</h2>
-                        <button class="primary-btn" onclick="showNuevaEmpresaModal()">
-                            <i class="fas fa-plus"></i>
-                            Nueva Empresa
-                        </button>
-                    </div>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-label">Empresas Totales</div>
-                            <div class="stat-value">${totalEmpresas}</div>
-                            <div style="color: rgba(255,255,255,0.4); font-size: 13px;">En el sistema</div>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <div class="stat-label">Empresas Activas</div>
-                            <div class="stat-value">${empresasActivas}</div>
-                            <div style="color: rgba(255,255,255,0.4); font-size: 13px;">Operando actualmente</div>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <div class="stat-label">Usuarios Totales</div>
-                            <div class="stat-value">${totalUsuarios}</div>
-                            <div style="color: rgba(255,255,255,0.4); font-size: 13px;">En todas las empresas</div>
-                        </div>
-                        
-                        <div class="stat-card">
-                            <div class="stat-label">Ventas Totales</div>
-                            <div class="stat-value">$${totalVentas.toLocaleString()}</div>
-                            <div style="color: rgba(255,255,255,0.4); font-size: 13px;">Histórico completo</div>
-                        </div>
-                    </div>
-                    
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h3>Empresas Recientes</h3>
-                            <button class="primary-btn" onclick="loadEmpresas()">
-                                <i class="fas fa-eye"></i>
-                                Ver Todas
-                            </button>
-                        </div>
-                        
-                        <div class="table-wrapper">
-                            <table class="data-table" id="empresasTable">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Nombre</th>
-                                        <th>RUC</th>
-                                        <th>Contacto</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="empresasBody">
-                                    <!-- Se carga dinámicamente -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-                
-                document.getElementById('mainContent').innerHTML = content;
-                
-                // Cargar empresas recientes
-                await loadEmpresasRecientes();
-                
-            } catch (error) {
-                console.error('Error cargando dashboard:', error);
-                showNotification('error', 'Error cargando dashboard');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // FUNCIONES DE DATOS
-        async function getTotalEmpresas() {
-            const { count, error } = await supabase
-                .from('empresas')
-                .select('*', { count: 'exact', head: true });
-            
-            return error ? 0 : count;
-        }
-        
-        async function getEmpresasActivas() {
-            const { count, error } = await supabase
-                .from('empresas')
-                .select('*', { count: 'exact', head: true })
-                .eq('activo', true);
-            
-            return error ? 0 : count;
-        }
-        
-        async function getTotalUsuarios() {
-            const { count, error } = await supabase
-                .from('usuarios')
-                .select('*', { count: 'exact', head: true });
-            
-            return error ? 0 : count;
-        }
-        
-        async function getTotalVentas() {
-            const { data, error } = await supabase
-                .from('ventas')
-                .select('total');
-            
-            if (error) return 0;
-            
-            return data.reduce((sum, venta) => {
-                const total = parseFloat(venta.total) || 0;
-                return sum + total;
-            }, 0);
-        }
-        
-        async function loadEmpresasRecientes() {
-            try {
-                const { data, error } = await supabase
-                    .from('empresas')
-                    .select('*')
-                    .order('creado_en', { ascending: false })
-                    .limit(10);
-                
-                if (error) throw error;
-                
-                empresas = data;
-                const tbody = document.getElementById('empresasBody');
-                
-                if (!tbody) return;
-                
-                tbody.innerHTML = empresas.map(empresa => `
-                    <tr>
-                        <td><strong>${empresa.codigo || 'N/A'}</strong></td>
-                        <td>${empresa.nombre || 'Sin nombre'}</td>
-                        <td>${empresa.identificacion_tributaria || 'N/A'}</td>
-                        <td>
-                            <div>${empresa.email || 'N/A'}</div>
-                            <small style="color: rgba(255,255,255,0.5)">${empresa.telefono || ''}</small>
-                        </td>
-                        <td>
-                            <span class="status-badge ${empresa.activo ? 'status-active' : 'status-inactive'}">
-                                ${empresa.activo ? 'Activa' : 'Inactiva'}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="action-btn view" onclick="verEmpresa('${empresa.id}')" title="Ver detalles">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="action-btn edit" onclick="editarEmpresa('${empresa.id}')" title="Editar">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="action-btn delete" onclick="eliminarEmpresa('${empresa.id}')" title="Eliminar">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                                <button class="action-btn access" onclick="accederEmpresa('${empresa.id}')" title="Acceder">
-                                    <i class="fas fa-sign-in-alt"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
-                
-            } catch (error) {
-                console.error('Error cargando empresas:', error);
-            }
-        }
-        
-        // GESTIÓN DE EMPRESAS
-        async function loadEmpresas() {
-            showLoading();
-            
-            try {
-                const { data, error } = await supabase
-                    .from('empresas')
-                    .select('*')
-                    .order('creado_en', { ascending: false });
-                
-                if (error) throw error;
-                
-                empresas = data;
-                
-                const content = `
-                    <div class="header">
-                        <h2>Gestión de Empresas</h2>
-                        <button class="primary-btn" onclick="showNuevaEmpresaModal()">
-                            <i class="fas fa-plus"></i>
-                            Nueva Empresa
-                        </button>
-                    </div>
-                    
-                    <div class="table-container">
-                        <div class="table-header">
-                            <h3>Todas las Empresas (${data.length})</h3>
-                            <div style="display: flex; gap: 10px;">
-                                <input type="text" id="searchInput" placeholder="Buscar empresa..." style="padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-size: 14px;" onkeyup="filtrarEmpresas()">
-                                <button class="primary-btn" onclick="exportarEmpresas()">
-                                    <i class="fas fa-download"></i>
-                                    Exportar
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="table-wrapper">
-                            <table class="data-table" id="empresasTable">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Nombre</th>
-                                        <th>RUC</th>
-                                        <th>Email</th>
-                                        <th>Teléfono</th>
-                                        <th>País</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="empresasBody">
-                                    <!-- Se carga dinámicamente -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-                
-                document.getElementById('mainContent').innerHTML = content;
-                await loadEmpresasRecientes();
-                
-            } catch (error) {
-                console.error('Error cargando empresas:', error);
-                showNotification('error', 'Error cargando empresas');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        function filtrarEmpresas() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const tbody = document.getElementById('empresasBody');
-            
-            if (!tbody) return;
-            
-            const rows = tbody.getElementsByTagName('tr');
-            
-            for (let row of rows) {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
-            }
-        }
-        
-        function exportarEmpresas() {
-            const csv = empresas.map(empresa => 
-                `"${empresa.codigo || ''}","${empresa.nombre || ''}","${empresa.identificacion_tributaria || ''}","${empresa.email || ''}","${empresa.telefono || ''}","${empresa.pais || ''}","${empresa.activo ? 'Activa' : 'Inactiva'}"`
-            ).join('\n');
-            
-            const header = 'Código,Nombre,RUC,Email,Teléfono,País,Estado\n';
-            const blob = new Blob([header + csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `empresas_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-        }
-        
-        // MODAL NUEVA EMPRESA
-        function showNuevaEmpresaModal() {
-            const modalContent = `
-                <div class="modal-header">
-                    <h3>Registrar Nueva Empresa</h3>
-                    <button class="close-btn" onclick="closeModal()">×</button>
-                </div>
-                
-                <form id="formEmpresa" onsubmit="event.preventDefault(); guardarEmpresa();">
-                    <div class="form-group">
-                        <label>Código de Empresa *</label>
-                        <input type="text" id="codigo" placeholder="EMP-001" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Nombre de la Empresa *</label>
-                        <input type="text" id="nombre" placeholder="Mi Empresa S.A." required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Identificación Tributaria (RUC) *</label>
-                        <input type="text" id="ruc" placeholder="12345678901" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Email de Contacto *</label>
-                        <input type="email" id="email" placeholder="contacto@empresa.com" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Teléfono *</label>
-                        <input type="text" id="telefono" placeholder="+591 70000000" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>País</label>
-                        <select id="pais">
-                            <option value="Bolivia">Bolivia</option>
-                            <option value="Perú">Perú</option>
-                            <option value="Chile">Chile</option>
-                            <option value="Argentina">Argentina</option>
-                            <option value="Brasil">Brasil</option>
-                            <option value="Colombia">Colombia</option>
-                            <option value="Ecuador">Ecuador</option>
-                            <option value="México">México</option>
-                            <option value="España">España</option>
-                            <option value="Estados Unidos">Estados Unidos</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Estado Inicial</label>
-                        <select id="activo">
-                            <option value="true">Activa</option>
-                            <option value="false">Inactiva</option>
-                        </select>
-                    </div>
-                    
-                    <div class="modal-footer">
-                        <button type="button" class="secondary-btn" onclick="closeModal()">Cancelar</button>
-                        <button type="submit" class="primary-btn" style="flex: 1;">Crear Empresa</button>
-                    </div>
-                </form>
-            `;
-            
-            showModal(modalContent);
-        }
-        
-        async function guardarEmpresa() {
-            showLoading();
-            
-            try {
-                const empresaData = {
-                    id: generateUUID(),
-                    codigo: document.getElementById('codigo').value.trim(),
-                    nombre: document.getElementById('nombre').value.trim(),
-                    identificacion_tributaria: document.getElementById('ruc').value.trim(),
-                    email: document.getElementById('email').value.trim(),
-                    telefono: document.getElementById('telefono').value.trim(),
-                    pais: document.getElementById('pais').value,
-                    activo: document.getElementById('activo').value === 'true',
-                    verificada: false,
-                    creado_en: new Date().toISOString(),
-                    actualizado_en: new Date().toISOString()
-                };
-                
-                // Verificar si el código ya existe
-                const { data: existing } = await supabase
-                    .from('empresas')
-                    .select('id')
-                    .eq('codigo', empresaData.codigo)
-                    .single();
-                
-                if (existing) {
-                    throw new Error('El código de empresa ya existe');
-                }
-                
-                // Crear empresa
-                const { error } = await supabase
-                    .from('empresas')
-                    .insert([empresaData]);
-                
-                if (error) throw error;
-                
-                // Registrar auditoría
-                await supabase.from('auditoria').insert({
-                    evento_id: `EMP-CREATE-${Date.now()}`,
-                    tipo_evento: 'creacion',
-                    severidad: 'info',
-                    usuario_id: currentUser.id,
-                    empresa_id: empresaData.id,
-                    tabla_afectada: 'empresas',
-                    registro_id: empresaData.id,
-                    datos_nuevos: empresaData,
-                    descripcion: `Empresa creada: ${empresaData.nombre}`
-                });
-                
-                showNotification('success', 'Empresa creada exitosamente');
-                closeModal();
-                loadDashboard();
-                
-            } catch (error) {
-                console.error('Error creando empresa:', error);
-                showNotification('error', 'Error: ' + error.message);
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // VER EMPRESA
-        async function verEmpresa(id) {
-            showLoading();
-            
-            try {
-                const { data: empresa, error } = await supabase
-                    .from('empresas')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-                
-                if (error) throw error;
-                
-                const modalContent = `
-                    <div class="modal-header">
-                        <h3>${empresa.nombre}</h3>
-                        <button class="close-btn" onclick="closeModal()">×</button>
-                    </div>
-                    
-                    <div style="display: grid; gap: 20px;">
-                        <div>
-                            <h4 style="color: #7c3aed; margin-bottom: 10px;">Información General</h4>
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                                <div>
-                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Código</div>
-                                    <div style="font-weight: 500;">${empresa.codigo || 'N/A'}</div>
-                                </div>
-                                <div>
-                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">RUC</div>
-                                    <div style="font-weight: 500;">${empresa.identificacion_tributaria || 'N/A'}</div>
-                                </div>
-                                <div>
-                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Email</div>
-                                    <div style="font-weight: 500;">${empresa.email || 'N/A'}</div>
-                                </div>
-                                <div>
-                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Teléfono</div>
-                                    <div style="font-weight: 500;">${empresa.telefono || 'N/A'}</div>
-                                </div>
-                                <div>
-                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">País</div>
-                                    <div style="font-weight: 500;">${empresa.pais || 'N/A'}</div>
-                                </div>
-                                <div>
-                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Estado</div>
-                                    <div>
-                                        <span class="status-badge ${empresa.activo ? 'status-active' : 'status-inactive'}">
-                                            ${empresa.activo ? 'Activa' : 'Inactiva'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <h4 style="color: #7c3aed; margin-bottom: 10px;">Configuración</h4>
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                                <div>
-                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Idioma</div>
-                                    <div style="font-weight: 500;">${empresa.idioma_default || 'Español'}</div>
-                                </div>
-                                <div>
-                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Moneda</div>
-                                    <div style="font-weight: 500;">${empresa.moneda_default || 'USD'}</div>
-                                </div>
-                                <div>
-                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Zona Horaria</div>
-                                    <div style="font-weight: 500;">${empresa.zona_horaria || 'UTC-4'}</div>
-                                </div>
-                                <div>
-                                    <div style="color: rgba(255,255,255,0.6); font-size: 13px;">Creada el</div>
-                                    <div style="font-weight: 500;">${empresa.creado_en ? new Date(empresa.creado_en).toLocaleDateString() : 'N/A'}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-footer">
-                        <button type="button" class="secondary-btn" onclick="closeModal()">Cerrar</button>
-                        <button type="button" class="primary-btn" onclick="editarEmpresa('${empresa.id}')">Editar</button>
-                        <button type="button" class="primary-btn" onclick="accederEmpresa('${empresa.id}')">Acceder</button>
-                    </div>
-                `;
-                
-                showModal(modalContent);
-                
-            } catch (error) {
-                console.error('Error cargando empresa:', error);
-                showNotification('error', 'Error cargando empresa');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // EDITAR EMPRESA
-        async function editarEmpresa(id) {
-            showLoading();
-            
-            try {
-                const { data: empresa, error } = await supabase
-                    .from('empresas')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-                
-                if (error) throw error;
-                
-                const modalContent = `
-                    <div class="modal-header">
-                        <h3>Editar: ${empresa.nombre}</h3>
-                        <button class="close-btn" onclick="closeModal()">×</button>
-                    </div>
-                    
-                    <form id="formEditarEmpresa" onsubmit="event.preventDefault(); actualizarEmpresa('${empresa.id}');">
-                        <div class="form-group">
-                            <label>Código *</label>
-                            <input type="text" id="editCodigo" value="${empresa.codigo || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Nombre *</label>
-                            <input type="text" id="editNombre" value="${empresa.nombre || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>RUC *</label>
-                            <input type="text" id="editRuc" value="${empresa.identificacion_tributaria || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Email *</label>
-                            <input type="email" id="editEmail" value="${empresa.email || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Teléfono *</label>
-                            <input type="text" id="editTelefono" value="${empresa.telefono || ''}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>País</label>
-                            <select id="editPais">
-                                <option value="Bolivia" ${empresa.pais === 'Bolivia' ? 'selected' : ''}>Bolivia</option>
-                                <option value="Perú" ${empresa.pais === 'Perú' ? 'selected' : ''}>Perú</option>
-                                <option value="Chile" ${empresa.pais === 'Chile' ? 'selected' : ''}>Chile</option>
-                                <option value="Argentina" ${empresa.pais === 'Argentina' ? 'selected' : ''}>Argentina</option>
-                                <option value="Brasil" ${empresa.pais === 'Brasil' ? 'selected' : ''}>Brasil</option>
-                                <option value="Colombia" ${empresa.pais === 'Colombia' ? 'selected' : ''}>Colombia</option>
-                                <option value="Ecuador" ${empresa.pais === 'Ecuador' ? 'selected' : ''}>Ecuador</option>
-                                <option value="México" ${empresa.pais === 'México' ? 'selected' : ''}>México</option>
-                                <option value="España" ${empresa.pais === 'España' ? 'selected' : ''}>España</option>
-                                <option value="Estados Unidos" ${empresa.pais === 'Estados Unidos' ? 'selected' : ''}>Estados Unidos</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Estado</label>
-                            <select id="editActivo">
-                                <option value="true" ${empresa.activo ? 'selected' : ''}>Activa</option>
-                                <option value="false" ${!empresa.activo ? 'selected' : ''}>Inactiva</option>
-                            </select>
-                        </div>
-                        
-                        <div class="modal-footer">
-                            <button type="button" class="secondary-btn" onclick="closeModal()">Cancelar</button>
-                            <button type="submit" class="primary-btn" style="flex: 1;">Guardar Cambios</button>
-                        </div>
-                    </form>
-                `;
-                
-                showModal(modalContent);
-                
-            } catch (error) {
-                console.error('Error cargando empresa:', error);
-                showNotification('error', 'Error cargando empresa');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        async function actualizarEmpresa(id) {
-            showLoading();
-            
-            try {
-                const empresaData = {
-                    codigo: document.getElementById('editCodigo').value.trim(),
-                    nombre: document.getElementById('editNombre').value.trim(),
-                    identificacion_tributaria: document.getElementById('editRuc').value.trim(),
-                    email: document.getElementById('editEmail').value.trim(),
-                    telefono: document.getElementById('editTelefono').value.trim(),
-                    pais: document.getElementById('editPais').value,
-                    activo: document.getElementById('editActivo').value === 'true',
-                    actualizado_en: new Date().toISOString()
-                };
-                
-                // Actualizar empresa
-                const { error } = await supabase
-                    .from('empresas')
-                    .update(empresaData)
-                    .eq('id', id);
-                
-                if (error) throw error;
-                
-                // Registrar auditoría
-                await supabase.from('auditoria').insert({
-                    evento_id: `EMP-UPDATE-${Date.now()}`,
-                    tipo_evento: 'modificacion',
-                    severidad: 'warning',
-                    usuario_id: currentUser.id,
-                    empresa_id: id,
-                    tabla_afectada: 'empresas',
-                    registro_id: id,
-                    datos_nuevos: empresaData,
-                    descripcion: `Empresa actualizada: ${empresaData.nombre}`
-                });
-                
-                showNotification('success', 'Empresa actualizada exitosamente');
-                closeModal();
-                loadDashboard();
-                
-            } catch (error) {
-                console.error('Error actualizando empresa:', error);
-                showNotification('error', 'Error actualizando empresa');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // ELIMINAR EMPRESA
-        async function eliminarEmpresa(id) {
-            if (!confirm('¿Está seguro de eliminar esta empresa?\n\nEsta acción eliminará todos los datos asociados y NO se puede deshacer.')) {
-                return;
             }
             
-            showLoading();
+            // Hacer funciones disponibles globalmente
+            window.loadDashboard = loadDashboard;
+            window.loadEmpresas = loadEmpresas;
+            window.crearEmpresa = crearEmpresa;
+            window.verEmpresa = verEmpresa;
+            window.editarEmpresa = editarEmpresa;
+            window.eliminarEmpresa = eliminarEmpresa;
+            window.logout = logout;
+            window.closeModal = closeModal;
             
-            try {
-                // Obtener datos de la empresa para auditoría
-                const { data: empresa } = await supabase
-                    .from('empresas')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-                
-                // Eliminar empresa
-                const { error } = await supabase
-                    .from('empresas')
-                    .delete()
-                    .eq('id', id);
-                
-                if (error) throw error;
-                
-                // Registrar auditoría
-                await supabase.from('auditoria').insert({
-                    evento_id: `EMP-DELETE-${Date.now()}`,
-                    tipo_evento: 'eliminacion',
-                    severidad: 'critical',
-                    usuario_id: currentUser.id,
-                    empresa_id: id,
-                    tabla_afectada: 'empresas',
-                    registro_id: id,
-                    datos_anteriores: empresa,
-                    descripcion: `Empresa eliminada: ${empresa?.nombre || id}`
-                });
-                
-                showNotification('success', 'Empresa eliminada exitosamente');
-                loadDashboard();
-                
-            } catch (error) {
-                console.error('Error eliminando empresa:', error);
-                showNotification('error', 'Error eliminando empresa');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // ACCEDER A EMPRESA
-        async function accederEmpresa(id) {
-            showLoading();
+            // Iniciar cuando se cargue la página
+            document.addEventListener('DOMContentLoaded', initApp);
             
-            try {
-                const { data: empresa, error } = await supabase
-                    .from('empresas')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-                
-                if (error) throw error;
-                
-                // Guardar información de acceso temporal
-                const accessData = {
-                    empresa_id: id,
-                    empresa_nombre: empresa.nombre,
-                    director_id: currentUser.id,
-                    access_time: new Date().toISOString(),
-                    expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 horas
-                };
-                
-                localStorage.setItem('temp_empresa_access', JSON.stringify(accessData));
-                
-                // Registrar auditoría
-                await supabase.from('auditoria').insert({
-                    evento_id: `EMP-ACCESS-${Date.now()}`,
-                    tipo_evento: 'acceso_sensible',
-                    severidad: 'info',
-                    usuario_id: currentUser.id,
-                    empresa_id: id,
-                    tabla_afectada: 'empresas',
-                    registro_id: id,
-                    datos_nuevos: accessData,
-                    descripcion: `Acceso temporal a empresa: ${empresa.nombre}`
-                });
-                
-                showNotification('success', `Acceso configurado para ${empresa.nombre}`);
-                
-                // Preguntar si abrir panel de empresa
-                if (confirm(`¿Abrir panel de administración de ${empresa.nombre} en nueva pestaña?`)) {
-                    window.open('empresa-panel.html', '_blank');
-                }
-                
-            } catch (error) {
-                console.error('Error configurando acceso:', error);
-                showNotification('error', 'Error configurando acceso');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // CERRAR SESIÓN
-        async function logout() {
-            showLoading();
-            
-            try {
-                // Registrar auditoría
-                await supabase.from('auditoria').insert({
-                    evento_id: `LOGOUT-${Date.now()}`,
-                    tipo_evento: 'logout',
-                    severidad: 'info',
-                    usuario_id: currentUser.id,
-                    empresa_id: currentUser.empresa_id,
-                    tabla_afectada: 'usuarios',
-                    registro_id: currentUser.id,
-                    descripcion: 'Cierre de sesión de Director Corporativo'
-                });
-                
-                // Cerrar sesión
-                await supabase.auth.signOut();
-                
-                // Limpiar localStorage
-                localStorage.clear();
-                
-                // Redirigir al login
-                window.location.href = 'login.html';
-                
-            } catch (error) {
-                console.error('Error cerrando sesión:', error);
-                window.location.href = 'login.html';
-            }
-        }
-        
-        // FUNCIONES UTILITARIAS
-        function generateUUID() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0;
-                const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        }
-        
-        // INICIAR APLICACIÓN
-        document.addEventListener('DOMContentLoaded', initApp);
+        })(); // Fin de la IIFE
     </script>
 </body>
 </html>
