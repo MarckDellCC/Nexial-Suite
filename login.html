@@ -2,179 +2,31 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sistema Corporativo</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            background: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .login-container {
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
-        }
-        .login-box {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            padding: 40px 30px;
-        }
-        .logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo h1 {
-            color: #2c3e50;
-            font-weight: 300;
-            margin-bottom: 5px;
-        }
-        .logo p {
-            color: #7f8c8d;
-            font-size: 14px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        .form-control:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-        .btn-login {
-            width: 100%;
-            padding: 14px;
-            background: #2c3e50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.3s;
-            margin-top: 10px;
-        }
-        .btn-login:hover {
-            background: #34495e;
-        }
-        .role-selector {
-            margin-top: 25px;
-            border-top: 1px solid #eee;
-            padding-top: 25px;
-        }
-        .role-selector h3 {
-            font-size: 14px;
-            color: #7f8c8d;
-            text-align: center;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .role-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 8px;
-        }
-        .role-btn {
-            display: block;
-            padding: 12px 15px;
-            background: #ecf0f1;
-            color: #2c3e50;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 14px;
-            text-align: center;
-            transition: all 0.3s;
-            border: 1px solid #ddd;
-        }
-        .role-btn:hover {
-            background: #3498db;
-            color: white;
-            border-color: #3498db;
-        }
-        .system-info {
-            margin-top: 25px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            font-size: 12px;
-            color: #7f8c8d;
-            text-align: center;
-            border: 1px solid #eee;
-        }
-        .system-info strong {
-            color: #2c3e50;
-        }
+        body {font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f0f2f5;}
+        .container {max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);}
+        h1 {text-align: center; color: #2c3e50; margin-bottom: 30px;}
+        .role-btn {display: block; width: 100%; padding: 12px; margin: 10px 0; background: #3498db; color: white; border: none; border-radius: 4px; text-decoration: none; text-align: center;}
+        .role-btn:hover {background: #2980b9;}
+        .info {background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 20px; font-size: 12px; color: #666;}
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-box">
-            <div class="logo">
-                <h1>Sistema Corporativo</h1>
-                <p>Jerarquía de Seguridad Avanzada</p>
-            </div>
-            
-            <div class="role-selector">
-                <h3>Acceso por Rol Corporativo</h3>
-                <div class="role-grid">
-                    <a href="director_corporativo.html" class="role-btn">
-                        Director Corporativo
-                        <br><small>Dueño del software - Acceso total multi-empresa</small>
-                    </a>
-                    <a href="director_general.html" class="role-btn">
-                        Director General
-                        <br><small>Máximo responsable de una empresa (CEO)</small>
-                    </a>
-                    <a href="director_financiero.html" class="role-btn">
-                        Director Financiero
-                        <br><small>Responsable financiero, contable, RH, nóminas (CFO)</small>
-                    </a>
-                    <a href="supervisor_senior.html" class="role-btn">
-                        Supervisor Senior
-                        <br><small>Supervisa operaciones diarias, reporta a Director General</small>
-                    </a>
-                    <a href="ejecutivo_comercial.html" class="role-btn">
-                        Ejecutivo Comercial
-                        <br><small>Ventas, clientes, atención al cliente</small>
-                    </a>
-                    <a href="especialista_logistico.html" class="role-btn">
-                        Especialista Logístico
-                        <br><small>Distribución, rutas, entregas, logística</small>
-                    </a>
-                    <a href="gestor_almacen.html" class="role-btn">
-                        Gestor de Almacén
-                        <br><small>Inventario, stock, almacenes, control de existencias</small>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="system-info">
-                <strong>Sistema Universal Multi-país</strong><br>
-                Compatible con: RUC, NIT, RUT, CUIT, CIF, CNPJ, CPF, DNI<br>
-                Seguridad: RLS, Encriptación AES-256, Auditoría Completa
-            </div>
+    <div class="container">
+        <h1>Sistema Corporativo</h1>
+        <h3>Seleccione su Rol:</h3>
+        <a href="director_corporativo.html" class="role-btn">Director Corporativo</a>
+        <a href="director_general.html" class="role-btn">Director General</a>
+        <a href="director_financiero.html" class="role-btn">Director Financiero</a>
+        <a href="supervisor_senior.html" class="role-btn">Supervisor Senior</a>
+        <a href="ejecutivo_comercial.html" class="role-btn">Ejecutivo Comercial</a>
+        <a href="especialista_logistico.html" class="role-btn">Especialista Logístico</a>
+        <a href="gestor_almacen.html" class="role-btn">Gestor de Almacén</a>
+        
+        <div class="info">
+            <strong>Sistema Universal Multi-país</strong><br>
+            Compatible con: RUC, NIT, RUT, CUIT, CIF, CNPJ, CPF, DNI
         </div>
     </div>
 </body>
