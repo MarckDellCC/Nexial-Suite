@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Nexial Suite</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .login-box {
+            background: #1e293b;
+            padding: 40px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #7c3aed;
+            margin-bottom: 30px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #7c3aed;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #6d28d9;
+        }
+        .error {
+            background: #7f1d1d;
+            color: #fecaca;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h1>NEXIAL SUITE</h1>
+        <div class="error" id="errorMsg"></div>
+        
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Contraseña" required>
+            <button type="submit">INICIAR SESIÓN</button>
+        </form>
+        
+        <p style="text-align: center; color: #94a3b8; margin-top: 20px; font-size: 14px;">
+            Sistema Corporativo Multi-Empresa
+        </p>
+    </div>
+
+    <script>
+        // SIMPLE LOGIN PARA PRUEBAS
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+            
+            // Limpiar error
+            errorMsg.style.display = 'none';
+            
+            // Validación simple
+            if (!email || !password) {
+                errorMsg.textContent = 'Por favor completa todos los campos';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            // Simular carga
+            const btn = document.querySelector('button');
+            btn.textContent = 'CONECTANDO...';
+            btn.disabled = true;
+            
+            // Redirigir después de 1 segundo
+            setTimeout(() => {
+                // Aquí después pondrás la conexión REAL con Supabase
+                window.location.href = 'https://marckdellcc.github.io/Nexial-Suite/director_corporativo.html';
+            }, 1000);
+        });
+        
+        // Enfocar el email al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('email').focus();
+        });
+    </script>
+</body>
+</html>
