@@ -3,23 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>Nexial Suite</title>
-    <!-- Favicon personalizado para evitar error 404 -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
-    <!-- Preload de fuentes para mejor rendimiento -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <!-- Favicon embebido - NO EXTERNO -->
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48dGV4dCB5PSIuOWVtIiBmb250LXNpemU9IjcwIiBmaWxsPSJ1cmwoI2dyYWRpZW50KSI+wqDCoDwvdGV4dD48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50IiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjN2MzYWVkIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDBmNWZmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+">
+    
+    <!-- ESTILOS COMPLETAMENTE INCORPORADOS -->
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         }
         
         body {
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             min-height: 100vh;
             display: flex;
@@ -30,17 +26,11 @@
         
         .login-container {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             background: rgba(255, 255, 255, 0.98);
-            border-radius: 20px;
-            padding: 40px 30px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-            animation: fadeIn 0.5s ease-out;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
         
         .logo-container {
@@ -48,32 +38,44 @@
             margin-bottom: 40px;
         }
         
+        /* Icono usando Unicode y CSS - NO FontAwesome */
         .nexial-logo-icon {
-            font-size: 64px;
-            background: linear-gradient(45deg, #7c3aed, #00f5ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
             display: inline-block;
-            filter: drop-shadow(0 5px 15px rgba(124, 58, 237, 0.3));
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #7c3aed, #00f5ff);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.3);
+        }
+        
+        .nexial-logo-icon::before {
+            content: "🧠";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            filter: brightness(0) invert(1);
         }
         
         .company-name {
             font-size: 32px;
-            font-weight: 700;
+            font-weight: 800;
             background: linear-gradient(45deg, #7c3aed, #00f5ff);
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-            text-shadow: 0 2px 10px rgba(124, 58, 237, 0.2);
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
         }
         
         .company-tagline {
             color: #64748b;
             font-size: 14px;
             font-weight: 500;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
         }
         
@@ -84,8 +86,8 @@
         label {
             display: block;
             margin-bottom: 8px;
-            color: #475569;
-            font-weight: 500;
+            color: #334155;
+            font-weight: 600;
             font-size: 14px;
         }
         
@@ -93,17 +95,15 @@
             width: 100%;
             padding: 14px 16px;
             border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 16px;
-            transition: all 0.3s;
             background: white;
-            font-family: 'Inter', sans-serif;
+            transition: border-color 0.3s;
         }
         
         input:focus {
             outline: none;
             border-color: #7c3aed;
-            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
         }
         
         .password-container {
@@ -112,16 +112,14 @@
         
         .toggle-password {
             position: absolute;
-            right: 15px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
             color: #94a3b8;
             cursor: pointer;
-            font-size: 18px;
-            padding: 5px;
-            z-index: 2;
+            font-size: 20px;
         }
         
         .login-btn {
@@ -130,21 +128,16 @@
             background: linear-gradient(45deg, #7c3aed, #00f5ff);
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
             margin-top: 10px;
-            letter-spacing: 0.5px;
-            font-family: 'Inter', sans-serif;
-            position: relative;
-            overflow: hidden;
+            transition: transform 0.2s;
         }
         
         .login-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.4);
         }
         
         .login-btn:active {
@@ -152,28 +145,19 @@
         }
         
         .login-btn:disabled {
-            background: #cbd5e1;
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
-            box-shadow: none;
         }
         
         .error-message {
-            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            background: #fee2e2;
             color: #dc2626;
-            padding: 14px 18px;
-            border-radius: 12px;
+            padding: 14px;
+            border-radius: 8px;
             margin-bottom: 24px;
-            display: none;
             font-size: 14px;
-            border: 1px solid #fca5a5;
-            animation: shake 0.5s;
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+            display: none;
         }
         
         .loading {
@@ -186,13 +170,13 @@
         
         .spinner {
             display: inline-block;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border: 3px solid rgba(124, 58, 237, 0.2);
             border-radius: 50%;
             border-top-color: #7c3aed;
             animation: spin 1s linear infinite;
-            margin-right: 10px;
+            margin-right: 8px;
             vertical-align: middle;
         }
         
@@ -208,13 +192,11 @@
             font-size: 12px;
             border-top: 1px solid #e2e8f0;
             padding-top: 20px;
-            line-height: 1.6;
         }
         
         @media (max-width: 480px) {
             .login-container {
                 padding: 30px 20px;
-                border-radius: 16px;
             }
             
             .company-name {
@@ -222,7 +204,12 @@
             }
             
             .nexial-logo-icon {
-                font-size: 56px;
+                width: 70px;
+                height: 70px;
+            }
+            
+            .nexial-logo-icon::before {
+                font-size: 36px;
             }
         }
     </style>
@@ -230,7 +217,7 @@
 <body>
     <div class="login-container">
         <div class="logo-container">
-            <i class="fas fa-brain nexial-logo-icon"></i>
+            <div class="nexial-logo-icon"></div>
             <div class="company-name">NEXIAL SUITE</div>
             <div class="company-tagline">Enterprise Platform</div>
         </div>
@@ -240,15 +227,15 @@
         <form id="loginForm">
             <div class="form-group">
                 <label for="email">Email Corporativo</label>
-                <input type="email" id="email" required placeholder="ejemplo@nexialsuite.com">
+                <input type="email" id="email" required placeholder="ejemplo@empresa.com">
             </div>
             
             <div class="form-group">
                 <label for="password">Contraseña</label>
                 <div class="password-container">
                     <input type="password" id="password" required minlength="12" placeholder="••••••••••••">
-                    <button type="button" class="toggle-password" id="togglePassword" aria-label="Mostrar contraseña">
-                        <i class="far fa-eye"></i>
+                    <button type="button" class="toggle-password" id="togglePassword">
+                        👁️
                     </button>
                 </div>
                 <div style="font-size: 12px; color: #64748b; margin-top: 5px;">Mínimo 12 caracteres</div>
@@ -264,210 +251,172 @@
         
         <div class="footer-text">
             &copy; 2024 Nexial Suite. Todos los derechos reservados.<br>
-            <small>Sistema Corporativo Multi-Empresa - v1.0</small>
+            Sistema Corporativo Multi-Empresa
         </div>
     </div>
 
     <script>
-        // Evitar que el formulario se envíe automáticamente
+        // Inicializar cuando la página cargue
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔄 Nexial Suite Login - Inicializando...');
+            console.log('Nexial Suite Login - Inicializando...');
             
-            // Inicializar Supabase inmediatamente
-            initializeApp();
+            // Inicializar Supabase
+            initializeSupabase();
+            
+            // Configurar eventos
+            setupEventListeners();
             
             // Enfocar campo email
             setTimeout(() => {
-                const emailInput = document.getElementById('email');
-                if (emailInput) emailInput.focus();
+                document.getElementById('email').focus();
             }, 100);
         });
 
-        function initializeApp() {
+        function initializeSupabase() {
             try {
-                // Configuración de Supabase
+                // URL de Supabase (tú la proporcionaste)
                 const SUPABASE_URL = 'https://tjtpdxeoxissrpdrhqbc.supabase.co';
                 const SUPABASE_KEY = 'sb_publishable_yH2lzZ_AWTvHsxW4TI2yYw_KnY5krtq';
                 
-                // Verificar que Supabase esté disponible
-                if (typeof window.supabase === 'undefined') {
-                    showError('Error: La biblioteca Supabase no se cargó correctamente');
-                    return;
+                // Verificar que Supabase exista
+                if (typeof supabase === 'undefined') {
+                    // Cargar Supabase dinámicamente si no está disponible
+                    const script = document.createElement('script');
+                    script.src = 'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js';
+                    script.onload = function() {
+                        window.supabase = supabase;
+                        setupSupabaseClient();
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    setupSupabaseClient();
                 }
                 
-                // Crear cliente Supabase
-                const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                console.log('✅ Supabase inicializado correctamente');
-                
-                // Configurar eventos
-                setupEventListeners(supabase);
+                function setupSupabaseClient() {
+                    // Crear cliente (usando window.supabase si está disponible)
+                    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                    window.supabaseClient = supabaseClient;
+                    console.log('Supabase inicializado');
+                }
                 
             } catch (error) {
-                console.error('❌ Error inicializando la aplicación:', error);
-                showError('Error al inicializar el sistema. Por favor, recarga la página.');
+                console.error('Error inicializando Supabase:', error);
+                document.getElementById('errorMessage').textContent = 'Error de conexión. Recargue la página.';
+                document.getElementById('errorMessage').style.display = 'block';
             }
         }
 
-        function setupEventListeners(supabase) {
+        function setupEventListeners() {
             // Toggle para mostrar/ocultar contraseña
-            const toggleBtn = document.getElementById('togglePassword');
-            if (toggleBtn) {
-                toggleBtn.addEventListener('click', function() {
-                    const passwordInput = document.getElementById('password');
-                    const icon = this.querySelector('i');
-                    
-                    if (passwordInput.type === 'password') {
-                        passwordInput.type = 'text';
-                        icon.classList.remove('fa-eye');
-                        icon.classList.add('fa-eye-slash');
-                        this.setAttribute('aria-label', 'Ocultar contraseña');
-                    } else {
-                        passwordInput.type = 'password';
-                        icon.classList.remove('fa-eye-slash');
-                        icon.classList.add('fa-eye');
-                        this.setAttribute('aria-label', 'Mostrar contraseña');
-                    }
-                });
-            }
+            document.getElementById('togglePassword').addEventListener('click', function() {
+                const passwordInput = document.getElementById('password');
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    this.innerHTML = '🙈';
+                } else {
+                    passwordInput.type = 'password';
+                    this.innerHTML = '👁️';
+                }
+            });
 
             // Manejar el formulario de login
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    await handleLogin(supabase);
-                });
-            }
-            
+            document.getElementById('loginForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                const errorDiv = document.getElementById('errorMessage');
+                const loginBtn = document.getElementById('loginBtn');
+                const loading = document.getElementById('loading');
+
+                // Limpiar error anterior
+                errorDiv.style.display = 'none';
+                errorDiv.textContent = '';
+
+                // Validaciones
+                if (!email || !email.includes('@')) {
+                    errorDiv.textContent = 'Ingrese un email válido';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                if (!password || password.length < 12) {
+                    errorDiv.textContent = 'La contraseña debe tener al menos 12 caracteres';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                // Mostrar loading
+                loginBtn.disabled = true;
+                loginBtn.textContent = 'Verificando...';
+                loading.style.display = 'block';
+
+                try {
+                    // Verificar que Supabase esté disponible
+                    if (!window.supabaseClient) {
+                        throw new Error('Error de conexión. Intente de nuevo.');
+                    }
+
+                    // Intentar autenticación
+                    const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+
+                    if (error) throw error;
+
+                    // Verificar rol del usuario
+                    const { data: userData, error: userError } = await window.supabaseClient
+                        .from('usuarios')
+                        .select('rol, activo')
+                        .eq('email', email)
+                        .single();
+
+                    if (userError) throw userError;
+
+                    if (!userData.activo) {
+                        throw new Error('Cuenta desactivada. Contacte al administrador.');
+                    }
+
+                    if (userData.rol !== 'Director Corporativo') {
+                        await window.supabaseClient.auth.signOut();
+                        throw new Error('Acceso restringido. Solo para Directores Corporativos.');
+                    }
+
+                    // Redirigir al panel
+                    window.location.href = 'director_corporativo.html';
+
+                } catch (error) {
+                    console.error('Error de login:', error);
+                    
+                    let mensajeError = error.message;
+                    if (error.message.includes('Invalid login credentials')) {
+                        mensajeError = 'Credenciales incorrectas';
+                    } else if (error.message.includes('Email not confirmed')) {
+                        mensajeError = 'Email no confirmado';
+                    } else if (error.message.includes('Too many requests')) {
+                        mensajeError = 'Demasiados intentos. Espere unos minutos.';
+                    }
+                    
+                    errorDiv.textContent = 'Error: ' + mensajeError;
+                    errorDiv.style.display = 'block';
+                } finally {
+                    // Restaurar botón
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Acceder al Sistema';
+                    loading.style.display = 'none';
+                }
+            });
+
             // Login con Enter
             document.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     const loginBtn = document.getElementById('loginBtn');
                     if (!loginBtn.disabled) {
-                        handleLogin(supabase);
+                        loginBtn.click();
                     }
                 }
             });
-        }
-
-        async function handleLogin(supabase) {
-            const email = document.getElementById('email')?.value.trim();
-            const password = document.getElementById('password')?.value;
-            const errorDiv = document.getElementById('errorMessage');
-            const loginBtn = document.getElementById('loginBtn');
-            const loading = document.getElementById('loading');
-
-            // Limpiar mensajes anteriores
-            if (errorDiv) {
-                errorDiv.style.display = 'none';
-                errorDiv.textContent = '';
-            }
-
-            // Validaciones básicas
-            if (!email || !email.includes('@')) {
-                showError('Por favor, ingrese un email válido');
-                return;
-            }
-
-            if (!password || password.length < 12) {
-                showError('La contraseña debe tener al menos 12 caracteres');
-                return;
-            }
-
-            // Mostrar loading
-            if (loginBtn) {
-                loginBtn.disabled = true;
-                loginBtn.textContent = 'Verificando...';
-            }
-            
-            if (loading) {
-                loading.style.display = 'block';
-            }
-
-            try {
-                console.log('🔐 Intentando autenticación...');
-                
-                // Intentar autenticación
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
-                if (error) {
-                    console.error('Error de autenticación:', error);
-                    throw new Error(translateAuthError(error.message));
-                }
-
-                // Verificar rol del usuario
-                const { data: userData, error: userError } = await supabase
-                    .from('usuarios')
-                    .select('rol, activo, nombre, empresa_id')
-                    .eq('email', email)
-                    .single();
-
-                if (userError || !userData) {
-                    throw new Error('Usuario no encontrado en el sistema');
-                }
-
-                if (!userData.activo) {
-                    throw new Error('Cuenta desactivada. Contacte al administrador.');
-                }
-
-                if (userData.rol !== 'Director Corporativo') {
-                    await supabase.auth.signOut();
-                    throw new Error('Acceso restringido. Solo para Directores Corporativos.');
-                }
-
-                console.log('✅ Login exitoso como Director Corporativo');
-                
-                // Redirigir al panel
-                window.location.href = 'director_corporativo.html';
-
-            } catch (error) {
-                console.error('Error en login:', error);
-                showError(error.message);
-            } finally {
-                // Restaurar estado del botón
-                if (loginBtn) {
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = 'Acceder al Sistema';
-                }
-                
-                if (loading) {
-                    loading.style.display = 'none';
-                }
-            }
-        }
-
-        function translateAuthError(errorMessage) {
-            if (errorMessage.includes('Invalid login credentials')) {
-                return 'Credenciales incorrectas. Verifique su email y contraseña.';
-            }
-            if (errorMessage.includes('Email not confirmed')) {
-                return 'Email no confirmado. Revise su bandeja de entrada.';
-            }
-            if (errorMessage.includes('Too many requests')) {
-                return 'Demasiados intentos. Espere unos minutos.';
-            }
-            if (errorMessage.includes('Network')) {
-                return 'Error de conexión. Verifique su internet.';
-            }
-            return errorMessage;
-        }
-
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            if (errorDiv) {
-                errorDiv.textContent = message;
-                errorDiv.style.display = 'block';
-                
-                // Auto-ocultar después de 5 segundos
-                setTimeout(() => {
-                    errorDiv.style.display = 'none';
-                }, 5000);
-            } else {
-                alert(message);
-            }
         }
     </script>
 </body>
