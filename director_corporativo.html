@@ -2,115 +2,1197 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Director Corporativo - Panel</title>
+    <title>Director Corporativo</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        body {font-family: Arial, sans-serif; margin: 0; background: #f0f2f5;}
-        .header {background: #2c3e50; color: white; padding: 20px; text-align: center;}
-        .container {max-width: 1200px; margin: 0 auto; padding: 20px;}
-        .card {background: white; margin: 20px 0; padding: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
-        table {width: 100%; border-collapse: collapse;}
-        th, td {border: 1px solid #ddd; padding: 10px; text-align: left;}
-        th {background: #f8f9fa;}
-        .back-btn {display: inline-block; padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 4px;}
-        .status-active {background: #d4edda; color: #155724; padding: 4px 8px; border-radius: 3px;}
-        .status-inactive {background: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 3px;}
-        .security-high {background: #e74c3c; color: white; padding: 4px 8px; border-radius: 3px;}
-        .security-medium {background: #f39c12; color: white; padding: 4px 8px; border-radius: 3px;}
-        .security-critical {background: #8e44ad; color: white; padding: 4px 8px; border-radius: 3px;}
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-gray: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background: var(--light-gray);
+            color: #333;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logout-btn {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        /* Contenedor principal */
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .tab-btn {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn:hover {
+            background: #f8f9fa;
+        }
+        
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--secondary-color);
+            font-weight: 500;
+        }
+        
+        /* Paneles */
+        .tab-panel {
+            display: none;
+            background: white;
+            padding: 25px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        /* Cabecera de panel */
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .add-btn {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Tablas */
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        th {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        
+        /* Botones de acción */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .edit-btn, .delete-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: opacity 0.3s;
+        }
+        
+        .edit-btn {
+            background: var(--warning-color);
+            color: white;
+        }
+        
+        .delete-btn {
+            background: var(--danger-color);
+            color: white;
+        }
+        
+        .edit-btn:hover, .delete-btn:hover {
+            opacity: 0.9;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        /* Formularios */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--secondary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                width: 100%;
+                text-align: left;
+                border-bottom: 1px solid var(--border-color);
+                border-left: 3px solid transparent;
+            }
+            
+            .tab-btn.active {
+                border-left-color: var(--secondary-color);
+                border-bottom-color: var(--border-color);
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .user-info span {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Header -->
     <div class="header">
         <h1>Director Corporativo</h1>
-        <p>Dueño del software - Acceso total multi-empresa</p>
+        <div class="user-info">
+            <span id="userEmail">Cargando...</span>
+            <button class="logout-btn" id="logoutBtn">Cerrar Sesión</button>
+        </div>
     </div>
     
+    <!-- Contenedor principal -->
     <div class="container">
-        <div class="card">
-            <h2>Empresas Registradas</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Código</th>
-                        <th>Nombre</th>
-                        <th>Identificación</th>
-                        <th>País</th>
-                        <th>Seguridad</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>EMP-001</td>
-                        <td>Corporación Global S.A.</td>
-                        <td>20123456789 (RUC)</td>
-                        <td>Perú</td>
-                        <td><span class="security-high">ALTO</span></td>
-                        <td><span class="status-active">Activa</span></td>
-                    </tr>
-                    <tr>
-                        <td>EMP-002</td>
-                        <td>Logística Internacional Ltda.</td>
-                        <td>30567891234 (NIT)</td>
-                        <td>Colombia</td>
-                        <td><span class="security-medium">MEDIO</span></td>
-                        <td><span class="status-active">Activa</span></td>
-                    </tr>
-                    <tr>
-                        <td>EMP-003</td>
-                        <td>Distribuidora Continental</td>
-                        <td>20765432198 (RUT)</td>
-                        <td>Chile</td>
-                        <td><span class="security-critical">CRÍTICO</span></td>
-                        <td><span class="status-inactive">Inactiva</span></td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="empresas">Empresas</button>
+            <button class="tab-btn" data-tab="usuarios">Usuarios</button>
         </div>
         
-        <div class="card">
-            <h2>Configuración de Seguridad</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Empresa</th>
-                        <th>MFA Requerido</th>
-                        <th>Intentos Máx.</th>
-                        <th>Sesiones</th>
-                        <th>Horario Acceso</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Corporación Global</td>
-                        <td>Sí</td>
-                        <td>5</td>
-                        <td>3</td>
-                        <td>08:00 - 18:00</td>
-                    </tr>
-                    <tr>
-                        <td>Logística Internacional</td>
-                        <td>No</td>
-                        <td>3</td>
-                        <td>2</td>
-                        <td>07:00 - 19:00</td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Panel: Empresas -->
+        <div id="empresas-panel" class="tab-panel active">
+            <div class="panel-header">
+                <h2>Empresas Registradas</h2>
+                <button class="add-btn" id="addEmpresaBtn">+ Nueva Empresa</button>
+            </div>
+            
+            <div id="empresasLoading" class="loading">
+                <div class="spinner"></div>
+                <p>Cargando empresas...</p>
+            </div>
+            
+            <div id="empresasContent" style="display: none;">
+                <div class="table-container">
+                    <table id="empresasTable">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>País</th>
+                                <th>Moneda</th>
+                                <th>Seguridad</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="empresasBody">
+                            <!-- Datos cargados dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
         
-        <div class="card">
-            <h3>Funciones del Director Corporativo</h3>
-            <ul>
-                <li>Gestión completa de todas las empresas</li>
-                <li>Configuración global de seguridad</li>
-                <li>Acceso total multi-empresa</li>
-                <li>Auditoría completa del sistema</li>
-                <li>Control total de usuarios y permisos</li>
-            </ul>
+        <!-- Panel: Usuarios -->
+        <div id="usuarios-panel" class="tab-panel">
+            <div class="panel-header">
+                <h2>Usuarios del Sistema</h2>
+                <button class="add-btn" id="addUsuarioBtn">+ Nuevo Usuario</button>
+            </div>
+            
+            <div id="usuariosLoading" class="loading">
+                <div class="spinner"></div>
+                <p>Cargando usuarios...</p>
+            </div>
+            
+            <div id="usuariosContent" style="display: none;">
+                <div class="table-container">
+                    <table id="usuariosTable">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                                <th>Empresa</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuariosBody">
+                            <!-- Datos cargados dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        
-        <a href="login.html" class="back-btn">← Volver al Login</a>
     </div>
+    
+    <!-- Modal para Empresa -->
+    <div class="modal" id="empresaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="empresaModalTitle">Nueva Empresa</h3>
+                <button class="close-modal" id="closeEmpresaModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="empresaForm">
+                    <input type="hidden" id="empresaId">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="empresaCodigo">Código *</label>
+                            <input type="text" id="empresaCodigo" class="form-control" required maxlength="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="empresaNombre">Nombre *</label>
+                            <input type="text" id="empresaNombre" class="form-control" required maxlength="255">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="empresaIdentificacion">Identificación Tributaria</label>
+                            <input type="text" id="empresaIdentificacion" class="form-control" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="empresaPais">País</label>
+                            <input type="text" id="empresaPais" class="form-control" maxlength="100">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="empresaMoneda">Moneda</label>
+                            <select id="empresaMoneda" class="form-control">
+                                <option value="USD">USD - Dólar Americano</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="PEN">PEN - Sol Peruano</option>
+                                <option value="CLP">CLP - Peso Chileno</option>
+                                <option value="COP">COP - Peso Colombiano</option>
+                                <option value="ARS">ARS - Peso Argentino</option>
+                                <option value="BRL">BRL - Real Brasileño</option>
+                                <option value="MXN">MXN - Peso Mexicano</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="empresaIdioma">Idioma</label>
+                            <select id="empresaIdioma" class="form-control">
+                                <option value="es">Español</option>
+                                <option value="en">English</option>
+                                <option value="pt">Português</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="empresaSeguridad">Nivel de Seguridad</label>
+                            <select id="empresaSeguridad" class="form-control">
+                                <option value="medio">Medio</option>
+                                <option value="alto">Alto</option>
+                                <option value="critico">Crítico</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="empresaActivo">Estado</label>
+                            <select id="empresaActivo" class="form-control">
+                                <option value="true">Activo</option>
+                                <option value="false">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="empresaEmail">Email Corporativo</label>
+                        <input type="email" id="empresaEmail" class="form-control" maxlength="255">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="empresaDominio">Dominio Corporativo</label>
+                        <input type="text" id="empresaDominio" class="form-control" placeholder="ejemplo.com" maxlength="100">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelEmpresaBtn">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="saveEmpresaBtn">Guardar Empresa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para Usuario -->
+    <div class="modal" id="usuarioModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="usuarioModalTitle">Nuevo Usuario</h3>
+                <button class="close-modal" id="closeUsuarioModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="usuarioForm">
+                    <input type="hidden" id="usuarioId">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="usuarioNombre">Nombre *</label>
+                            <input type="text" id="usuarioNombre" class="form-control" required maxlength="255">
+                        </div>
+                        <div class="form-group">
+                            <label for="usuarioEmail">Email *</label>
+                            <input type="email" id="usuarioEmail" class="form-control" required maxlength="255">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" id="passwordRow">
+                        <div class="form-group">
+                            <label for="usuarioPassword">Contraseña *</label>
+                            <input type="password" id="usuarioPassword" class="form-control" minlength="12">
+                            <small style="color: #666; font-size: 12px;">Mínimo 12 caracteres</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="usuarioPasswordConfirm">Confirmar Contraseña *</label>
+                            <input type="password" id="usuarioPasswordConfirm" class="form-control" minlength="12">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="usuarioRol">Rol *</label>
+                            <select id="usuarioRol" class="form-control" required>
+                                <option value="Director General">Director General</option>
+                                <option value="Director Financiero">Director Financiero</option>
+                                <option value="Supervisor Senior">Supervisor Senior</option>
+                                <option value="Ejecutivo Comercial">Ejecutivo Comercial</option>
+                                <option value="Especialista Logístico">Especialista Logístico</option>
+                                <option value="Gestor de Almacén">Gestor de Almacén</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="usuarioEmpresa">Empresa *</label>
+                            <select id="usuarioEmpresa" class="form-control" required>
+                                <!-- Opciones cargadas dinámicamente -->
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="usuarioDepartamento">Departamento</label>
+                            <input type="text" id="usuarioDepartamento" class="form-control" maxlength="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="usuarioActivo">Estado</label>
+                            <select id="usuarioActivo" class="form-control">
+                                <option value="true">Activo</option>
+                                <option value="false">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelUsuarioBtn">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="saveUsuarioBtn">Guardar Usuario</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de Supabase
+        const SUPABASE_URL = 'https://tjtpdxeoxissrpdrhqbc.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_yH2lzZ_AWTvHsxW4TI2yYw_KnY5krtq';
+        
+        // Inicializar Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Variables globales
+        let currentUser = null;
+        let empresasData = [];
+        let usuariosData = [];
+        
+        // Inicializar la aplicación
+        async function initApp() {
+            // Verificar sesión
+            await checkSession();
+            
+            // Cargar datos iniciales
+            await loadEmpresas();
+            await loadUsuarios();
+            
+            // Configurar eventos
+            setupEventListeners();
+            
+            // Ocultar loading
+            document.getElementById('empresasLoading').style.display = 'none';
+            document.getElementById('empresasContent').style.display = 'block';
+            
+            document.getElementById('usuariosLoading').style.display = 'none';
+            document.getElementById('usuariosContent').style.display = 'block';
+        }
+        
+        // Verificar sesión
+        async function checkSession() {
+            const { data, error } = await supabase.auth.getSession();
+            
+            if (error || !data.session) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            currentUser = data.session.user;
+            document.getElementById('userEmail').textContent = currentUser.email;
+            
+            // Verificar si es Director Corporativo
+            const { data: userData } = await supabase
+                .from('usuarios')
+                .select('rol')
+                .eq('email', currentUser.email)
+                .single();
+            
+            if (!userData || userData.rol !== 'Director Corporativo') {
+                alert('Acceso no autorizado. Solo para Directores Corporativos.');
+                await logout();
+            }
+        }
+        
+        // Cargar empresas
+        async function loadEmpresas() {
+            try {
+                const { data, error } = await supabase
+                    .from('empresas')
+                    .select('*')
+                    .order('creado_en', { ascending: false });
+                
+                if (error) throw error;
+                
+                empresasData = data || [];
+                renderEmpresasTable();
+            } catch (error) {
+                console.error('Error cargando empresas:', error);
+                alert('Error al cargar empresas: ' + error.message);
+            }
+        }
+        
+        // Renderizar tabla de empresas
+        function renderEmpresasTable() {
+            const tbody = document.getElementById('empresasBody');
+            tbody.innerHTML = '';
+            
+            empresasData.forEach(empresa => {
+                const row = document.createElement('tr');
+                
+                // Determinar clase de seguridad
+                let seguridadClass = 'badge-warning';
+                if (empresa.nivel_seguridad === 'alto') seguridadClass = 'badge-danger';
+                if (empresa.nivel_seguridad === 'critico') seguridadClass = 'badge-danger';
+                if (empresa.nivel_seguridad === 'medio') seguridadClass = 'badge-info';
+                
+                row.innerHTML = `
+                    <td><strong>${empresa.codigo}</strong></td>
+                    <td>${empresa.nombre}</td>
+                    <td>${empresa.pais || '--'}</td>
+                    <td>${empresa.moneda_default || 'USD'}</td>
+                    <td><span class="badge ${seguridadClass}">${empresa.nivel_seguridad.toUpperCase()}</span></td>
+                    <td>
+                        <span class="badge ${empresa.activo ? 'badge-success' : 'badge-danger'}">
+                            ${empresa.activo ? 'ACTIVO' : 'INACTIVO'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="edit-btn" onclick="editEmpresa('${empresa.id}')">Editar</button>
+                            <button class="delete-btn" onclick="deleteEmpresa('${empresa.id}')">Eliminar</button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Cargar usuarios
+        async function loadUsuarios() {
+            try {
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .select(`
+                        *,
+                        empresas (nombre, codigo)
+                    `)
+                    .order('creado_en', { ascending: false });
+                
+                if (error) throw error;
+                
+                usuariosData = data || [];
+                renderUsuariosTable();
+            } catch (error) {
+                console.error('Error cargando usuarios:', error);
+                alert('Error al cargar usuarios: ' + error.message);
+            }
+        }
+        
+        // Renderizar tabla de usuarios
+        function renderUsuariosTable() {
+            const tbody = document.getElementById('usuariosBody');
+            tbody.innerHTML = '';
+            
+            usuariosData.forEach(usuario => {
+                const row = document.createElement('tr');
+                
+                // Determinar clase de rol
+                let rolClass = 'badge-info';
+                if (usuario.rol.includes('Director')) rolClass = 'badge-danger';
+                if (usuario.rol.includes('Supervisor')) rolClass = 'badge-warning';
+                
+                row.innerHTML = `
+                    <td><strong>${usuario.codigo}</strong></td>
+                    <td>${usuario.nombre}</td>
+                    <td>${usuario.email}</td>
+                    <td><span class="badge ${rolClass}">${usuario.rol}</span></td>
+                    <td>${usuario.empresas ? usuario.empresas.nombre : '--'}</td>
+                    <td>
+                        <span class="badge ${usuario.activo ? 'badge-success' : 'badge-danger'}">
+                            ${usuario.activo ? 'ACTIVO' : 'INACTIVO'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="edit-btn" onclick="editUsuario('${usuario.id}')">Editar</button>
+                            <button class="delete-btn" onclick="deleteUsuario('${usuario.id}')">Eliminar</button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Actualizar tabs
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Mostrar panel correspondiente
+                    document.querySelectorAll('.tab-panel').forEach(panel => {
+                        panel.classList.remove('active');
+                    });
+                    document.getElementById(`${tabId}-panel`).classList.add('active');
+                });
+            });
+            
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            // Modal Empresa
+            document.getElementById('addEmpresaBtn').addEventListener('click', () => openEmpresaModal());
+            document.getElementById('closeEmpresaModal').addEventListener('click', closeEmpresaModal);
+            document.getElementById('cancelEmpresaBtn').addEventListener('click', closeEmpresaModal);
+            document.getElementById('empresaForm').addEventListener('submit', saveEmpresa);
+            
+            // Modal Usuario
+            document.getElementById('addUsuarioBtn').addEventListener('click', () => openUsuarioModal());
+            document.getElementById('closeUsuarioModal').addEventListener('click', closeUsuarioModal);
+            document.getElementById('cancelUsuarioBtn').addEventListener('click', closeUsuarioModal);
+            document.getElementById('usuarioForm').addEventListener('submit', saveUsuario);
+        }
+        
+        // Logout
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'login.html';
+        }
+        
+        // Empresa Modal
+        function openEmpresaModal(empresaId = null) {
+            const modal = document.getElementById('empresaModal');
+            const title = document.getElementById('empresaModalTitle');
+            const form = document.getElementById('empresaForm');
+            
+            form.reset();
+            document.getElementById('empresaId').value = '';
+            
+            if (empresaId) {
+                // Modo edición
+                title.textContent = 'Editar Empresa';
+                const empresa = empresasData.find(e => e.id === empresaId);
+                
+                if (empresa) {
+                    document.getElementById('empresaId').value = empresa.id;
+                    document.getElementById('empresaCodigo').value = empresa.codigo;
+                    document.getElementById('empresaNombre').value = empresa.nombre;
+                    document.getElementById('empresaIdentificacion').value = empresa.identificacion_tributaria || '';
+                    document.getElementById('empresaPais').value = empresa.pais || '';
+                    document.getElementById('empresaMoneda').value = empresa.moneda_default || 'USD';
+                    document.getElementById('empresaIdioma').value = empresa.idioma_default || 'es';
+                    document.getElementById('empresaSeguridad').value = empresa.nivel_seguridad || 'medio';
+                    document.getElementById('empresaActivo').value = empresa.activo;
+                    document.getElementById('empresaEmail').value = empresa.email || '';
+                    document.getElementById('empresaDominio').value = empresa.dominio_corporativo || '';
+                }
+            } else {
+                // Modo nuevo
+                title.textContent = 'Nueva Empresa';
+                document.getElementById('empresaActivo').value = 'true';
+                document.getElementById('empresaMoneda').value = 'USD';
+                document.getElementById('empresaIdioma').value = 'es';
+                document.getElementById('empresaSeguridad').value = 'medio';
+            }
+            
+            modal.classList.add('active');
+        }
+        
+        function closeEmpresaModal() {
+            document.getElementById('empresaModal').classList.remove('active');
+        }
+        
+        // Guardar empresa
+        async function saveEmpresa(e) {
+            e.preventDefault();
+            
+            const empresaId = document.getElementById('empresaId').value;
+            const isEdit = !!empresaId;
+            
+            const empresaData = {
+                codigo: document.getElementById('empresaCodigo').value,
+                nombre: document.getElementById('empresaNombre').value,
+                identificacion_tributaria: document.getElementById('empresaIdentificacion').value || null,
+                pais: document.getElementById('empresaPais').value || null,
+                moneda_default: document.getElementById('empresaMoneda').value,
+                idioma_default: document.getElementById('empresaIdioma').value,
+                nivel_seguridad: document.getElementById('empresaSeguridad').value,
+                activo: document.getElementById('empresaActivo').value === 'true',
+                email: document.getElementById('empresaEmail').value || null,
+                dominio_corporativo: document.getElementById('empresaDominio').value || null,
+                verificada: true
+            };
+            
+            try {
+                if (isEdit) {
+                    // Actualizar empresa existente
+                    const { error } = await supabase
+                        .from('empresas')
+                        .update(empresaData)
+                        .eq('id', empresaId);
+                    
+                    if (error) throw error;
+                    
+                    // Registrar auditoría
+                    await registrarAuditoria(
+                        'modificacion',
+                        'Empresa actualizada: ' + empresaData.nombre,
+                        'empresas',
+                        empresaId
+                    );
+                    
+                } else {
+                    // Crear nueva empresa - el ID será generado automáticamente
+                    const { error } = await supabase
+                        .from('empresas')
+                        .insert([empresaData]);
+                    
+                    if (error) throw error;
+                    
+                    // Registrar auditoría
+                    await registrarAuditoria(
+                        'creacion',
+                        'Empresa creada: ' + empresaData.nombre,
+                        'empresas',
+                        null
+                    );
+                }
+                
+                closeEmpresaModal();
+                await loadEmpresas();
+                await loadUsuarios(); // Recargar usuarios para actualizar empresas en select
+                
+                alert(isEdit ? 'Empresa actualizada correctamente' : 'Empresa creada correctamente');
+                
+            } catch (error) {
+                console.error('Error guardando empresa:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        // Eliminar empresa
+        async function deleteEmpresa(empresaId) {
+            if (!confirm('¿Está seguro de eliminar esta empresa? Esta acción eliminará todos los usuarios asociados.')) {
+                return;
+            }
+            
+            try {
+                // Primero eliminamos los usuarios de esta empresa
+                const { error: userError } = await supabase
+                    .from('usuarios')
+                    .delete()
+                    .eq('empresa_id', empresaId);
+                
+                if (userError) throw userError;
+                
+                // Luego eliminamos la empresa
+                const { error } = await supabase
+                    .from('empresas')
+                    .delete()
+                    .eq('id', empresaId);
+                
+                if (error) throw error;
+                
+                // Registrar auditoría
+                await registrarAuditoria(
+                    'eliminacion',
+                    'Empresa eliminada',
+                    'empresas',
+                    empresaId
+                );
+                
+                await loadEmpresas();
+                await loadUsuarios();
+                
+                alert('Empresa eliminada correctamente');
+                
+            } catch (error) {
+                console.error('Error eliminando empresa:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        // Usuario Modal
+        async function openUsuarioModal(usuarioId = null) {
+            const modal = document.getElementById('usuarioModal');
+            const title = document.getElementById('usuarioModalTitle');
+            const form = document.getElementById('usuarioForm');
+            const passwordRow = document.getElementById('passwordRow');
+            const empresaSelect = document.getElementById('usuarioEmpresa');
+            
+            form.reset();
+            document.getElementById('usuarioId').value = '';
+            
+            // Cargar empresas en el select
+            empresaSelect.innerHTML = '<option value="">Seleccionar empresa...</option>';
+            empresasData.forEach(empresa => {
+                if (empresa.activo) {
+                    const option = document.createElement('option');
+                    option.value = empresa.id;
+                    option.textContent = `${empresa.codigo} - ${empresa.nombre}`;
+                    empresaSelect.appendChild(option);
+                }
+            });
+            
+            if (usuarioId) {
+                // Modo edición
+                title.textContent = 'Editar Usuario';
+                passwordRow.style.display = 'none'; // Ocultar campos de contraseña en edición
+                
+                const usuario = usuariosData.find(u => u.id === usuarioId);
+                
+                if (usuario) {
+                    document.getElementById('usuarioId').value = usuario.id;
+                    document.getElementById('usuarioNombre').value = usuario.nombre;
+                    document.getElementById('usuarioEmail').value = usuario.email;
+                    document.getElementById('usuarioRol').value = usuario.rol;
+                    document.getElementById('usuarioEmpresa').value = usuario.empresa_id;
+                    document.getElementById('usuarioDepartamento').value = usuario.departamento || '';
+                    document.getElementById('usuarioActivo').value = usuario.activo;
+                }
+            } else {
+                // Modo nuevo
+                title.textContent = 'Nuevo Usuario';
+                passwordRow.style.display = 'flex'; // Mostrar campos de contraseña en nuevo
+                document.getElementById('usuarioActivo').value = 'true';
+                document.getElementById('usuarioRol').value = 'Director General';
+            }
+            
+            modal.classList.add('active');
+        }
+        
+        function closeUsuarioModal() {
+            document.getElementById('usuarioModal').classList.remove('active');
+        }
+        
+        // Guardar usuario
+        async function saveUsuario(e) {
+            e.preventDefault();
+            
+            const usuarioId = document.getElementById('usuarioId').value;
+            const isEdit = !!usuarioId;
+            const password = document.getElementById('usuarioPassword').value;
+            const passwordConfirm = document.getElementById('usuarioPasswordConfirm').value;
+            
+            // Validar contraseña en creación
+            if (!isEdit && (!password || password.length < 12)) {
+                alert('La contraseña debe tener al menos 12 caracteres');
+                return;
+            }
+            
+            if (!isEdit && password !== passwordConfirm) {
+                alert('Las contraseñas no coinciden');
+                return;
+            }
+            
+            const usuarioData = {
+                nombre: document.getElementById('usuarioNombre').value,
+                email: document.getElementById('usuarioEmail').value,
+                rol: document.getElementById('usuarioRol').value,
+                empresa_id: document.getElementById('usuarioEmpresa').value,
+                departamento: document.getElementById('usuarioDepartamento').value || null,
+                activo: document.getElementById('usuarioActivo').value === 'true',
+                idioma_preferido: 'es'
+            };
+            
+            try {
+                if (isEdit) {
+                    // Actualizar usuario existente
+                    const { error } = await supabase
+                        .from('usuarios')
+                        .update(usuarioData)
+                        .eq('id', usuarioId);
+                    
+                    if (error) throw error;
+                    
+                    // Registrar auditoría
+                    await registrarAuditoria(
+                        'modificacion',
+                        'Usuario actualizado: ' + usuarioData.nombre,
+                        'usuarios',
+                        usuarioId
+                    );
+                    
+                } else {
+                    // Crear nuevo usuario
+                    // Nota: La contraseña se hashearía automáticamente con el trigger
+                    usuarioData.password_hash = password; // El trigger lo hasheará
+                    
+                    const { error } = await supabase
+                        .from('usuarios')
+                        .insert([usuarioData]);
+                    
+                    if (error) throw error;
+                    
+                    // Registrar auditoría
+                    await registrarAuditoria(
+                        'creacion',
+                        'Usuario creado: ' + usuarioData.nombre,
+                        'usuarios',
+                        null
+                    );
+                }
+                
+                closeUsuarioModal();
+                await loadUsuarios();
+                
+                alert(isEdit ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente');
+                
+            } catch (error) {
+                console.error('Error guardando usuario:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        // Eliminar usuario
+        async function deleteUsuario(usuarioId) {
+            if (!confirm('¿Está seguro de eliminar este usuario?')) {
+                return;
+            }
+            
+            try {
+                const { error } = await supabase
+                    .from('usuarios')
+                    .delete()
+                    .eq('id', usuarioId);
+                
+                if (error) throw error;
+                
+                // Registrar auditoría
+                await registrarAuditoria(
+                    'eliminacion',
+                    'Usuario eliminado',
+                    'usuarios',
+                    usuarioId
+                );
+                
+                await loadUsuarios();
+                
+                alert('Usuario eliminado correctamente');
+                
+            } catch (error) {
+                console.error('Error eliminando usuario:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        // Registrar auditoría (simplificado)
+        async function registrarAuditoria(tipoEvento, descripcion, tabla, registroId) {
+            try {
+                // Obtener empresa_id del usuario actual
+                const { data: userData } = await supabase
+                    .from('usuarios')
+                    .select('empresa_id')
+                    .eq('email', currentUser.email)
+                    .single();
+                
+                const auditoriaData = {
+                    evento_id: 'EVT-' + Date.now(),
+                    tipo_evento: tipoEvento,
+                    severidad: 'info',
+                    usuario_id: currentUser.id,
+                    empresa_id: userData?.empresa_id || null,
+                    tabla_afectada: tabla,
+                    registro_id: registroId || null,
+                    descripcion: descripcion,
+                    ip_address: '0.0.0.0', // En producción sería la IP real
+                    user_agent: navigator.userAgent
+                };
+                
+                const { error } = await supabase
+                    .from('auditoria')
+                    .insert([auditoriaData]);
+                
+                if (error) console.error('Error en auditoría:', error);
+                
+            } catch (error) {
+                console.error('Error registrando auditoría:', error);
+            }
+        }
+        
+        // Funciones globales para los botones
+        window.editEmpresa = openEmpresaModal;
+        window.deleteEmpresa = deleteEmpresa;
+        window.editUsuario = openUsuarioModal;
+        window.deleteUsuario = deleteUsuario;
+        
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
 </body>
 </html>
