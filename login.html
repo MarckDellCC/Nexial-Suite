@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Nexial Suite</title>
+    <!-- Favicon personalizado para evitar error 404 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+    <!-- Preload de fuentes para mejor rendimiento -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
@@ -13,7 +19,7 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             min-height: 100vh;
             display: flex;
@@ -25,12 +31,16 @@
         .login-container {
             width: 100%;
             max-width: 400px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .logo-container {
@@ -45,6 +55,7 @@
             -webkit-text-fill-color: transparent;
             margin-bottom: 20px;
             display: inline-block;
+            filter: drop-shadow(0 5px 15px rgba(124, 58, 237, 0.3));
         }
         
         .company-name {
@@ -55,6 +66,7 @@
             -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
             letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(124, 58, 237, 0.2);
         }
         
         .company-tagline {
@@ -81,16 +93,17 @@
             width: 100%;
             padding: 14px 16px;
             border: 2px solid #e2e8f0;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
             transition: all 0.3s;
             background: white;
+            font-family: 'Inter', sans-serif;
         }
         
         input:focus {
             outline: none;
             border-color: #7c3aed;
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
         }
         
         .password-container {
@@ -107,29 +120,38 @@
             color: #94a3b8;
             cursor: pointer;
             font-size: 18px;
+            padding: 5px;
+            z-index: 2;
         }
         
-        button[type="submit"] {
+        .login-btn {
             width: 100%;
             padding: 16px;
             background: linear-gradient(45deg, #7c3aed, #00f5ff);
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
             margin-top: 10px;
             letter-spacing: 0.5px;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow: hidden;
         }
         
-        button[type="submit"]:hover {
+        .login-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.4);
         }
         
-        button[type="submit"]:disabled {
+        .login-btn:active {
+            transform: translateY(0);
+        }
+        
+        .login-btn:disabled {
             background: #cbd5e1;
             cursor: not-allowed;
             transform: none;
@@ -137,14 +159,21 @@
         }
         
         .error-message {
-            background: #fee2e2;
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
             color: #dc2626;
-            padding: 14px;
-            border-radius: 10px;
+            padding: 14px 18px;
+            border-radius: 12px;
             margin-bottom: 24px;
             display: none;
             font-size: 14px;
-            border: 1px solid #fecaca;
+            border: 1px solid #fca5a5;
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
         
         .loading {
@@ -179,11 +208,13 @@
             font-size: 12px;
             border-top: 1px solid #e2e8f0;
             padding-top: 20px;
+            line-height: 1.6;
         }
         
         @media (max-width: 480px) {
             .login-container {
                 padding: 30px 20px;
+                border-radius: 16px;
             }
             
             .company-name {
@@ -209,20 +240,21 @@
         <form id="loginForm">
             <div class="form-group">
                 <label for="email">Email Corporativo</label>
-                <input type="email" id="email" required placeholder="usuario@empresa.com">
+                <input type="email" id="email" required placeholder="ejemplo@nexialsuite.com">
             </div>
             
             <div class="form-group">
                 <label for="password">Contraseña</label>
                 <div class="password-container">
-                    <input type="password" id="password" required minlength="12" placeholder="Mínimo 12 caracteres">
-                    <button type="button" class="toggle-password" id="togglePassword">
+                    <input type="password" id="password" required minlength="12" placeholder="••••••••••••">
+                    <button type="button" class="toggle-password" id="togglePassword" aria-label="Mostrar contraseña">
                         <i class="far fa-eye"></i>
                     </button>
                 </div>
+                <div style="font-size: 12px; color: #64748b; margin-top: 5px;">Mínimo 12 caracteres</div>
             </div>
             
-            <button type="submit" id="loginBtn">Acceder al Sistema</button>
+            <button type="submit" class="login-btn" id="loginBtn">Acceder al Sistema</button>
         </form>
         
         <div id="loading" class="loading">
@@ -231,216 +263,212 @@
         </div>
         
         <div class="footer-text">
-            &copy; 2024 Nexial Suite. Sistema Corporativo Multi-Empresa
+            &copy; 2024 Nexial Suite. Todos los derechos reservados.<br>
+            <small>Sistema Corporativo Multi-Empresa - v1.0</small>
         </div>
     </div>
 
     <script>
-        // Verificar si estamos en GitHub Pages
-        console.log('Nexial Suite Login - Cargando...');
-        
-        // Configuración de Supabase - USANDO TU CONFIGURACIÓN EXACTA
-        const SUPABASE_URL = 'https://tjtpdxeoxissrpdrhqbc.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_yH2lzZ_AWTvHsxW4TI2yYw_KnY5krtq';
-        
-        console.log('URL de Supabase configurada:', SUPABASE_URL);
-        console.log('Clave pública configurada:', SUPABASE_KEY.substring(0, 20) + '...');
-        
-        // Inicializar Supabase con manejo de errores
-        let supabase;
-        try {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            console.log('Supabase inicializado correctamente');
-        } catch (error) {
-            console.error('Error inicializando Supabase:', error);
-            document.getElementById('errorMessage').textContent = 'Error de conexión con el servidor. Por favor, recarga la página.';
-            document.getElementById('errorMessage').style.display = 'block';
-        }
-        
-        // Toggle para mostrar/ocultar contraseña
-        document.getElementById('togglePassword').addEventListener('click', function() {
-            const passwordInput = document.getElementById('password');
-            const icon = this.querySelector('i');
+        // Evitar que el formulario se envíe automáticamente
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔄 Nexial Suite Login - Inicializando...');
             
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
+            // Inicializar Supabase inmediatamente
+            initializeApp();
+            
+            // Enfocar campo email
+            setTimeout(() => {
+                const emailInput = document.getElementById('email');
+                if (emailInput) emailInput.focus();
+            }, 100);
         });
-        
-        // Manejar el formulario de login
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            if (!supabase) {
-                document.getElementById('errorMessage').textContent = 'Error: No se pudo conectar con el servidor. Recarga la página.';
-                document.getElementById('errorMessage').style.display = 'block';
-                return;
+
+        function initializeApp() {
+            try {
+                // Configuración de Supabase
+                const SUPABASE_URL = 'https://tjtpdxeoxissrpdrhqbc.supabase.co';
+                const SUPABASE_KEY = 'sb_publishable_yH2lzZ_AWTvHsxW4TI2yYw_KnY5krtq';
+                
+                // Verificar que Supabase esté disponible
+                if (typeof window.supabase === 'undefined') {
+                    showError('Error: La biblioteca Supabase no se cargó correctamente');
+                    return;
+                }
+                
+                // Crear cliente Supabase
+                const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log('✅ Supabase inicializado correctamente');
+                
+                // Configurar eventos
+                setupEventListeners(supabase);
+                
+            } catch (error) {
+                console.error('❌ Error inicializando la aplicación:', error);
+                showError('Error al inicializar el sistema. Por favor, recarga la página.');
+            }
+        }
+
+        function setupEventListeners(supabase) {
+            // Toggle para mostrar/ocultar contraseña
+            const toggleBtn = document.getElementById('togglePassword');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    const passwordInput = document.getElementById('password');
+                    const icon = this.querySelector('i');
+                    
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                        this.setAttribute('aria-label', 'Ocultar contraseña');
+                    } else {
+                        passwordInput.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                        this.setAttribute('aria-label', 'Mostrar contraseña');
+                    }
+                });
+            }
+
+            // Manejar el formulario de login
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    await handleLogin(supabase);
+                });
             }
             
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
+            // Login con Enter
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const loginBtn = document.getElementById('loginBtn');
+                    if (!loginBtn.disabled) {
+                        handleLogin(supabase);
+                    }
+                }
+            });
+        }
+
+        async function handleLogin(supabase) {
+            const email = document.getElementById('email')?.value.trim();
+            const password = document.getElementById('password')?.value;
             const errorDiv = document.getElementById('errorMessage');
             const loginBtn = document.getElementById('loginBtn');
             const loading = document.getElementById('loading');
-            
+
             // Limpiar mensajes anteriores
-            errorDiv.style.display = 'none';
-            errorDiv.textContent = '';
-            
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+                errorDiv.textContent = '';
+            }
+
             // Validaciones básicas
-            if (!email || !password) {
-                errorDiv.textContent = 'Por favor, complete todos los campos';
-                errorDiv.style.display = 'block';
+            if (!email || !email.includes('@')) {
+                showError('Por favor, ingrese un email válido');
                 return;
             }
-            
-            if (password.length < 12) {
-                errorDiv.textContent = 'La contraseña debe tener al menos 12 caracteres';
-                errorDiv.style.display = 'block';
+
+            if (!password || password.length < 12) {
+                showError('La contraseña debe tener al menos 12 caracteres');
                 return;
             }
-            
+
             // Mostrar loading
-            loginBtn.disabled = true;
-            loading.style.display = 'block';
-            loginBtn.textContent = 'Procesando...';
+            if (loginBtn) {
+                loginBtn.disabled = true;
+                loginBtn.textContent = 'Verificando...';
+            }
             
+            if (loading) {
+                loading.style.display = 'block';
+            }
+
             try {
-                console.log('Intentando login para:', email);
+                console.log('🔐 Intentando autenticación...');
                 
-                // Intentar autenticación con Supabase
+                // Intentar autenticación
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
-                
+
                 if (error) {
                     console.error('Error de autenticación:', error);
-                    
-                    let errorMessage;
-                    if (error.message.includes('Invalid login credentials')) {
-                        errorMessage = 'Credenciales inválidas. Verifique su email y contraseña.';
-                    } else if (error.message.includes('Email not confirmed')) {
-                        errorMessage = 'Email no confirmado. Por favor, verifique su cuenta.';
-                    } else if (error.message.includes('Too many requests')) {
-                        errorMessage = 'Demasiados intentos. Por favor, espere unos minutos.';
-                    } else {
-                        errorMessage = 'Error de conexión: ' + error.message;
-                    }
-                    
-                    throw new Error(errorMessage);
+                    throw new Error(translateAuthError(error.message));
                 }
-                
-                console.log('Autenticación exitosa, verificando rol...');
-                
-                // Verificar el rol del usuario
+
+                // Verificar rol del usuario
                 const { data: userData, error: userError } = await supabase
                     .from('usuarios')
-                    .select('rol, activo, nombre')
+                    .select('rol, activo, nombre, empresa_id')
                     .eq('email', email)
                     .single();
-                
-                if (userError) {
-                    console.error('Error buscando usuario:', userError);
-                    throw new Error('Error al verificar permisos de usuario');
-                }
-                
-                if (!userData) {
+
+                if (userError || !userData) {
                     throw new Error('Usuario no encontrado en el sistema');
                 }
-                
+
                 if (!userData.activo) {
-                    throw new Error('Cuenta desactivada. Contacte al administrador del sistema.');
+                    throw new Error('Cuenta desactivada. Contacte al administrador.');
                 }
-                
-                // Redirigir según el rol
-                if (userData.rol === 'Director Corporativo') {
-                    console.log('Redirigiendo a panel de Director Corporativo...');
-                    
-                    // Redirigir al panel del Director Corporativo
-                    setTimeout(() => {
-                        window.location.href = 'director_corporativo.html';
-                    }, 500);
-                    
-                } else {
-                    // Cerrar sesión si no es Director Corporativo
+
+                if (userData.rol !== 'Director Corporativo') {
                     await supabase.auth.signOut();
-                    throw new Error('Acceso no autorizado. Solo para Directores Corporativos.');
+                    throw new Error('Acceso restringido. Solo para Directores Corporativos.');
                 }
+
+                console.log('✅ Login exitoso como Director Corporativo');
                 
+                // Redirigir al panel
+                window.location.href = 'director_corporativo.html';
+
             } catch (error) {
-                console.error('Error completo:', error);
-                
-                // Mostrar error
-                errorDiv.textContent = error.message;
-                errorDiv.style.display = 'block';
-                
+                console.error('Error en login:', error);
+                showError(error.message);
             } finally {
-                // Restaurar botón
-                loginBtn.disabled = false;
-                loading.style.display = 'none';
-                loginBtn.textContent = 'Acceder al Sistema';
-            }
-        });
-        
-        // Verificar si ya hay sesión activa
-        async function checkSession() {
-            if (!supabase) return;
-            
-            try {
-                const { data, error } = await supabase.auth.getSession();
-                
-                if (error) {
-                    console.error('Error verificando sesión:', error);
-                    return;
+                // Restaurar estado del botón
+                if (loginBtn) {
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Acceder al Sistema';
                 }
                 
-                if (data.session) {
-                    const user = data.session.user;
-                    console.log('Sesión activa encontrada para:', user.email);
-                    
-                    // Verificar rol y redirigir
-                    const { data: userData } = await supabase
-                        .from('usuarios')
-                        .select('rol')
-                        .eq('email', user.email)
-                        .single();
-                    
-                    if (userData && userData.rol === 'Director Corporativo') {
-                        console.log('Redirigiendo automáticamente...');
-                        window.location.href = 'director_corporativo.html';
-                    }
+                if (loading) {
+                    loading.style.display = 'none';
                 }
-            } catch (error) {
-                console.log('Error en checkSession:', error);
             }
         }
-        
-        // Ejecutar cuando el DOM esté listo
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM completamente cargado');
-            
-            // Verificar sesión existente
-            setTimeout(checkSession, 500);
-            
-            // Enfocar automáticamente el campo de email
-            setTimeout(() => {
-                document.getElementById('email').focus();
-            }, 300);
-        });
-        
-        // Permitir login con Enter
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !document.getElementById('loginBtn').disabled) {
-                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+
+        function translateAuthError(errorMessage) {
+            if (errorMessage.includes('Invalid login credentials')) {
+                return 'Credenciales incorrectas. Verifique su email y contraseña.';
             }
-        });
+            if (errorMessage.includes('Email not confirmed')) {
+                return 'Email no confirmado. Revise su bandeja de entrada.';
+            }
+            if (errorMessage.includes('Too many requests')) {
+                return 'Demasiados intentos. Espere unos minutos.';
+            }
+            if (errorMessage.includes('Network')) {
+                return 'Error de conexión. Verifique su internet.';
+            }
+            return errorMessage;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                
+                // Auto-ocultar después de 5 segundos
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 5000);
+            } else {
+                alert(message);
+            }
+        }
     </script>
 </body>
 </html>
