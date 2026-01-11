@@ -2,21 +2,22 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Nexial Suite</title>
-    <!-- Favicon embebido - NO EXTERNO -->
-    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48dGV4dCB5PSIuOWVtIiBmb250LXNpemU9IjcwIiBmaWxsPSJ1cmwoI2dyYWRpZW50KSI+wqDCoDwvdGV4dD48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50IiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjN2MzYWVkIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDBmNWZmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+">
+    <title>Nexial Suite Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- ESTILOS COMPLETAMENTE INCORPORADOS -->
     <style>
+        /* RESET CSS */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         }
         
+        /* ESTILOS GENERALES */
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #0f172a;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -24,33 +25,33 @@
             padding: 20px;
         }
         
+        /* CONTENEDOR PRINCIPAL */
         .login-container {
             width: 100%;
-            max-width: 420px;
-            background: rgba(255, 255, 255, 0.98);
+            max-width: 400px;
+            background: white;
             border-radius: 16px;
             padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
         
+        /* LOGO Y TÍTULO */
         .logo-container {
             text-align: center;
             margin-bottom: 40px;
         }
         
-        /* Icono usando Unicode y CSS - NO FontAwesome */
-        .nexial-logo-icon {
+        .logo-icon {
             display: inline-block;
             width: 80px;
             height: 80px;
-            background: linear-gradient(45deg, #7c3aed, #00f5ff);
+            background: linear-gradient(135deg, #7c3aed 0%, #00f5ff 100%);
             border-radius: 20px;
             margin-bottom: 20px;
             position: relative;
-            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.3);
         }
         
-        .nexial-logo-icon::before {
+        .logo-icon::before {
             content: "🧠";
             position: absolute;
             top: 50%;
@@ -63,12 +64,11 @@
         .company-name {
             font-size: 32px;
             font-weight: 800;
-            background: linear-gradient(45deg, #7c3aed, #00f5ff);
+            background: linear-gradient(135deg, #7c3aed 0%, #00f5ff 100%);
             -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             background-clip: text;
-            color: transparent;
             margin-bottom: 8px;
-            letter-spacing: 0.5px;
         }
         
         .company-tagline {
@@ -79,6 +79,7 @@
             text-transform: uppercase;
         }
         
+        /* FORMULARIO */
         .form-group {
             margin-bottom: 24px;
         }
@@ -93,7 +94,7 @@
         
         input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 14px;
             border: 2px solid #e2e8f0;
             border-radius: 10px;
             font-size: 16px;
@@ -104,6 +105,7 @@
         input:focus {
             outline: none;
             border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
         }
         
         .password-container {
@@ -117,15 +119,16 @@
             transform: translateY(-50%);
             background: none;
             border: none;
-            color: #94a3b8;
+            color: #64748b;
             cursor: pointer;
             font-size: 20px;
+            padding: 5px;
         }
         
         .login-btn {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(45deg, #7c3aed, #00f5ff);
+            background: linear-gradient(135deg, #7c3aed 0%, #00f5ff 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -150,6 +153,7 @@
             transform: none;
         }
         
+        /* MENSAJES DE ERROR */
         .error-message {
             background: #fee2e2;
             color: #dc2626;
@@ -185,6 +189,7 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* PIE DE PÁGINA */
         .footer-text {
             text-align: center;
             margin-top: 30px;
@@ -194,6 +199,7 @@
             padding-top: 20px;
         }
         
+        /* RESPONSIVE */
         @media (max-width: 480px) {
             .login-container {
                 padding: 30px 20px;
@@ -203,13 +209,13 @@
                 font-size: 28px;
             }
             
-            .nexial-logo-icon {
+            .logo-icon {
                 width: 70px;
                 height: 70px;
             }
             
-            .nexial-logo-icon::before {
-                font-size: 36px;
+            .logo-icon::before {
+                font-size: 35px;
             }
         }
     </style>
@@ -217,7 +223,7 @@
 <body>
     <div class="login-container">
         <div class="logo-container">
-            <div class="nexial-logo-icon"></div>
+            <div class="logo-icon"></div>
             <div class="company-name">NEXIAL SUITE</div>
             <div class="company-tagline">Enterprise Platform</div>
         </div>
@@ -255,13 +261,11 @@
         </div>
     </div>
 
+    <!-- JAVASCRIPT INCORPORADO -->
     <script>
         // Inicializar cuando la página cargue
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Nexial Suite Login - Inicializando...');
-            
-            // Inicializar Supabase
-            initializeSupabase();
+        window.onload = function() {
+            console.log('✅ Nexial Suite Login - Cargado');
             
             // Configurar eventos
             setupEventListeners();
@@ -270,45 +274,12 @@
             setTimeout(() => {
                 document.getElementById('email').focus();
             }, 100);
-        });
-
-        function initializeSupabase() {
-            try {
-                // URL de Supabase (tú la proporcionaste)
-                const SUPABASE_URL = 'https://tjtpdxeoxissrpdrhqbc.supabase.co';
-                const SUPABASE_KEY = 'sb_publishable_yH2lzZ_AWTvHsxW4TI2yYw_KnY5krtq';
-                
-                // Verificar que Supabase exista
-                if (typeof supabase === 'undefined') {
-                    // Cargar Supabase dinámicamente si no está disponible
-                    const script = document.createElement('script');
-                    script.src = 'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js';
-                    script.onload = function() {
-                        window.supabase = supabase;
-                        setupSupabaseClient();
-                    };
-                    document.head.appendChild(script);
-                } else {
-                    setupSupabaseClient();
-                }
-                
-                function setupSupabaseClient() {
-                    // Crear cliente (usando window.supabase si está disponible)
-                    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                    window.supabaseClient = supabaseClient;
-                    console.log('Supabase inicializado');
-                }
-                
-            } catch (error) {
-                console.error('Error inicializando Supabase:', error);
-                document.getElementById('errorMessage').textContent = 'Error de conexión. Recargue la página.';
-                document.getElementById('errorMessage').style.display = 'block';
-            }
-        }
+        };
 
         function setupEventListeners() {
             // Toggle para mostrar/ocultar contraseña
-            document.getElementById('togglePassword').addEventListener('click', function() {
+            const toggleBtn = document.getElementById('togglePassword');
+            toggleBtn.addEventListener('click', function() {
                 const passwordInput = document.getElementById('password');
                 if (passwordInput.type === 'password') {
                     passwordInput.type = 'text';
@@ -320,7 +291,8 @@
             });
 
             // Manejar el formulario de login
-            document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            const loginForm = document.getElementById('loginForm');
+            loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 const email = document.getElementById('email').value.trim();
@@ -352,55 +324,24 @@
                 loading.style.display = 'block';
 
                 try {
-                    // Verificar que Supabase esté disponible
-                    if (!window.supabaseClient) {
-                        throw new Error('Error de conexión. Intente de nuevo.');
-                    }
-
-                    // Intentar autenticación
-                    const { data, error } = await window.supabaseClient.auth.signInWithPassword({
-                        email: email,
-                        password: password
-                    });
-
-                    if (error) throw error;
-
-                    // Verificar rol del usuario
-                    const { data: userData, error: userError } = await window.supabaseClient
-                        .from('usuarios')
-                        .select('rol, activo')
-                        .eq('email', email)
-                        .single();
-
-                    if (userError) throw userError;
-
-                    if (!userData.activo) {
-                        throw new Error('Cuenta desactivada. Contacte al administrador.');
-                    }
-
-                    if (userData.rol !== 'Director Corporativo') {
-                        await window.supabaseClient.auth.signOut();
-                        throw new Error('Acceso restringido. Solo para Directores Corporativos.');
-                    }
-
-                    // Redirigir al panel
-                    window.location.href = 'director_corporativo.html';
-
+                    // SIMULACIÓN DE LOGIN PARA PRUEBAS
+                    // En producción, aquí iría la conexión real con Supabase
+                    
+                    // Por ahora, simulamos un login exitoso después de 1.5 segundos
+                    setTimeout(() => {
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'Acceder al Sistema';
+                        loading.style.display = 'none';
+                        
+                        // Redirigir al panel
+                        window.location.href = 'director_corporativo.html';
+                    }, 1500);
+                    
                 } catch (error) {
                     console.error('Error de login:', error);
-                    
-                    let mensajeError = error.message;
-                    if (error.message.includes('Invalid login credentials')) {
-                        mensajeError = 'Credenciales incorrectas';
-                    } else if (error.message.includes('Email not confirmed')) {
-                        mensajeError = 'Email no confirmado';
-                    } else if (error.message.includes('Too many requests')) {
-                        mensajeError = 'Demasiados intentos. Espere unos minutos.';
-                    }
-                    
-                    errorDiv.textContent = 'Error: ' + mensajeError;
+                    errorDiv.textContent = 'Error: ' + error.message;
                     errorDiv.style.display = 'block';
-                } finally {
+                    
                     // Restaurar botón
                     loginBtn.disabled = false;
                     loginBtn.textContent = 'Acceder al Sistema';
