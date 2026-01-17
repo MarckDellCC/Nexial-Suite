@@ -4,48 +4,122 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceder - Nexial Suite</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        body { margin: 20px; font-family: Arial; background: #0f172a; color: white; }
-        .container { max-width: 300px; margin: 100px auto; }
-        h2 { text-align: center; margin-bottom: 30px; }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; }
-        input { border: 1px solid #475569; background: #1e293b; color: white; }
-        button { background: #7c3aed; color: white; border: none; cursor: pointer; }
-        .error { color: #f87171; margin-top: 10px; text-align: center; }
-        .back { display: block; margin-top: 20px; text-align: center; color: #94a3b8; }
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: Arial, sans-serif; 
+            background: #0f172a; 
+            color: white; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .container { 
+            width: 100%; 
+            max-width: 300px; 
+            padding: 20px; 
+        }
+        h2 { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            color: #e2e8f0; 
+        }
+        input, button { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 8px 0; 
+            border-radius: 5px; 
+            box-sizing: border-box;
+        }
+        input { 
+            border: 1px solid #475569; 
+            background: #1e293b; 
+            color: white; 
+        }
+        button { 
+            background: #7c3aed; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        .error { 
+            color: #f87171; 
+            margin-top: 10px; 
+            text-align: center; 
+            min-height: 20px;
+        }
+        .back { 
+            display: block; 
+            margin-top: 20px; 
+            text-align: center; 
+            color: #94a3b8; 
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Acceder</h2>
-        <input type="email" id="email" placeholder="Tu correo" value="">
-        <input type="password" id="password" placeholder="Tu contraseña" value="">
-        <button id="loginBtn">Entrar</button>
+        <h2>Acceder al Sistema</h2>
+        <input type="email" id="email" placeholder="Correo electrónico" required>
+        <input type="password" id="password" placeholder="Contraseña" required>
+        <button id="loginButton">Acceder</button>
         <div id="error" class="error"></div>
-        <a href="index.html" class="back">← Volver</a>
+        <a href="index.html" class="back">← Volver al inicio</a>
     </div>
 
     <script>
-        // Evitar redeclaración de variables en el ámbito global
-        (function() {
-            // Configurar Supabase
+        // Cargar Supabase desde CDN dinámicamente
+        function cargarSupabase() {
+            return new Promise((resolve) => {
+                if (window.supabase) {
+                    resolve(window.supabase);
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/@supabase/supabase-js@2';
+                script.onload = () => {
+                    resolve(window.supabase);
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        // Función principal
+        async function main() {
+            // Cargar Supabase
+            const supabaseLib = await cargarSupabase();
+            
+            // Configurar cliente de Supabase
             const supabaseUrl = 'https://zshnzeqstrdzuljqueto.supabase.co';
             const supabaseKey = 'sb_publishable_J8vYye7ZumaK4hGoRwaIpQ_O_kj0ERX';
+            const supabase = supabaseLib.createClient(supabaseUrl, supabaseKey);
             
-            // Si ya existe una variable global llamada supabase, usamos esa, sino creamos una nueva
-            window.supabaseClient = window.supabaseClient || window.supabase.createClient(supabaseUrl, supabaseKey);
-            const supabase = window.supabaseClient;
+            // Guardar configuración en localStorage
+            localStorage.setItem('supabase_url', supabaseUrl);
+            localStorage.setItem('supabase_key', supabaseKey);
 
-            // Función de login
+            // Verificar si ya hay sesión activa
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                window.location.href = 'director_corporativo.html';
+                return;
+            }
+
+            // Función para iniciar sesión
             async function iniciarSesion() {
                 const email = document.getElementById('email').value.trim();
                 const password = document.getElementById('password').value;
                 const errorDiv = document.getElementById('error');
+                
                 errorDiv.textContent = '';
-
+                
                 if (!email || !password) {
-                    errorDiv.textContent = 'Email y contraseña son obligatorios';
+                    errorDiv.textContent = 'Por favor, completa todos los campos';
                     return;
                 }
 
@@ -60,35 +134,37 @@
                         return;
                     }
 
-                    // Guardar sesión
-                    localStorage.setItem('nexial_user', JSON.stringify({
-                        email: email,
-                        timestamp: new Date().getTime()
-                    }));
-                    
-                    // Redirigir
-                    window.location.href = 'director_corporativo.html';
-                    
-                } catch (e) {
-                    errorDiv.textContent = 'Error de conexión';
+                    if (data.user) {
+                        // Guardar sesión en localStorage
+                        localStorage.setItem('nexial_user', JSON.stringify({
+                            email: email,
+                            timestamp: new Date().getTime()
+                        }));
+                        
+                        // Redirigir al panel
+                        window.location.href = 'director_corporativo.html';
+                    }
+                } catch (error) {
+                    errorDiv.textContent = 'Error de conexión. Intenta nuevamente.';
                 }
             }
 
-            // Asignar evento al botón
-            document.getElementById('loginBtn').addEventListener('click', iniciarSesion);
-
-            // Permitir Enter para login
+            // Asignar eventos
+            document.getElementById('loginButton').addEventListener('click', iniciarSesion);
+            
+            // Permitir login con Enter
             document.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') iniciarSesion();
-            });
-
-            // Verificar si ya hay sesión
-            supabase.auth.getSession().then(({ data: { session } }) => {
-                if (session) {
-                    window.location.href = 'director_corporativo.html';
+                if (e.key === 'Enter') {
+                    iniciarSesion();
                 }
             });
-        })();
+        }
+
+        // Iniciar la aplicación
+        main().catch(error => {
+            console.error('Error inicial:', error);
+            document.getElementById('error').textContent = 'Error al cargar la aplicación. Recarga la página.';
+        });
     </script>
 </body>
 </html>
