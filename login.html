@@ -3,148 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexial Suite - Login</title>
+    <title>Nexial Suite - Acceder</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial; background: #0f172a; color: white; height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .login-box { background: #1e293b; padding: 30px; border-radius: 10px; width: 350px; border: 1px solid #334155; }
-        .logo { text-align: center; margin-bottom: 20px; }
-        .logo i { font-size: 40px; background: linear-gradient(45deg, #7c3aed, #00f5ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        h2 { text-align: center; margin-bottom: 20px; color: #e2e8f0; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: #94a3b8; }
-        input { width: 100%; padding: 10px; background: #334155; border: 1px solid #475569; color: white; border-radius: 5px; }
-        button { width: 100%; padding: 12px; background: linear-gradient(45deg, #7c3aed, #00f5ff); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .error { color: #f87171; margin-top: 10px; display: none; font-size: 14px; }
-        .loading { color: #94a3b8; margin-top: 10px; display: none; }
+        body { margin: 20px; font-family: Arial; background: #0f172a; color: white; }
+        .container { max-width: 400px; margin: 50px auto; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; }
+        input { border: 1px solid #475569; background: #1e293b; color: white; }
+        button { background: #7c3aed; color: white; border: none; cursor: pointer; }
+        .error { color: #f87171; margin-top: 10px; }
+        .back { display: block; margin-top: 20px; color: #94a3b8; }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="login-box">
-        <div class="logo">
-            <i class="fas fa-brain"></i>
-        </div>
-        <h2>Nexial Suite</h2>
-        <form id="loginForm">
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="email" required>
-            </div>
-            <div class="input-group">
-                <label>Contraseña</label>
-                <input type="password" id="password" required>
-            </div>
-            <button type="submit">Ingresar</button>
-        </form>
-        <div class="error" id="errorMsg">Credenciales incorrectas</div>
-        <div class="loading" id="loading">Verificando...</div>
+    <div class="container">
+        <h2>Acceder al Sistema</h2>
+        <input type="email" id="email" placeholder="Correo electrónico" required>
+        <input type="password" id="password" placeholder="Contraseña" required>
+        <button onclick="login()">Acceder</button>
+        <div id="error" class="error"></div>
+        <a href="index.html" class="back">← Volver al inicio</a>
     </div>
 
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
-        const supabaseUrl = 'https://mixwkebjmvimnijqadgo.supabase.co';
-        const supabaseKey = 'sb_publishable_udTob3dElykcQGudzlA-jg_fREVou98';
+        // Configurar Supabase
+        const supabaseUrl = localStorage.getItem('supabase_url') || 'https://zshnzeqstrdzuljqueto.supabase.co';
+        const supabaseKey = localStorage.getItem('supabase_key') || 'sb_publishable_J8vYye7ZumaK4hGoRwaIpQ_O_kj0ERX';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        async function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = '';
 
-            document.getElementById('errorMsg').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
+            // Autenticación con Supabase
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
 
-            try {
-                // Verificar credenciales usando la función PostgreSQL
-                const { data, error } = await supabase.rpc('verify_user_credentials', {
-                    user_email: email,
-                    user_password: password
-                });
+            if (error) {
+                errorDiv.textContent = 'Error: ' + error.message;
+                return;
+            }
 
-                if (error) {
-                    console.error('Error:', error);
-                    showError('Error de conexión');
-                    return;
-                }
+            // Obtener datos del usuario desde la tabla 'usuarios'
+            const { data: usuario, error: userError } = await supabase
+                .from('usuarios')
+                .select('hierarchy')
+                .eq('email', email)
+                .single();
 
-                if (!data || data.length === 0) {
-                    showError('Credenciales incorrectas o usuario inactivo');
-                    return;
-                }
+            if (userError) {
+                errorDiv.textContent = 'Error al obtener datos del usuario';
+                return;
+            }
 
-                const user = data[0];
-                
+            // Verificar jerarquía y redirigir
+            if (usuario.hierarchy === 'director_corporativo') {
                 // Guardar sesión
                 localStorage.setItem('nexial_user', JSON.stringify({
-                    id: user.id,
-                    email: user.email,
-                    nombre: user.nombre,
-                    rol: user.rol,
-                    empresa_id: user.empresa_id,
+                    email: email,
+                    hierarchy: usuario.hierarchy,
                     timestamp: new Date().getTime()
                 }));
-
-                // Redirigir según rol
-                redirectByRole(user.rol);
-
-            } catch (error) {
-                console.error('Error inesperado:', error);
-                showError('Error en el sistema');
-            }
-        });
-
-        function showError(message) {
-            document.getElementById('errorMsg').textContent = message;
-            document.getElementById('errorMsg').style.display = 'block';
-            document.getElementById('loading').style.display = 'none';
-        }
-
-        function redirectByRole(rol) {
-            switch(rol) {
-                case 'Director Corporativo':
-                    window.location.href = 'director_corporativo.html';
-                    break;
-                case 'Director General':
-                    window.location.href = 'director_general.html';
-                    break;
-                case 'Director Financiero':
-                    window.location.href = 'director_financiero.html';
-                    break;
-                case 'Supervisor Senior':
-                    window.location.href = 'supervisor_senior.html';
-                    break;
-                case 'Ejecutivo Comercial':
-                    window.location.href = 'ejecutivo_comercial.html';
-                    break;
-                case 'Especialista Logístico':
-                    window.location.href = 'especialista_logistico.html';
-                    break;
-                case 'Gestor de Almacén':
-                    window.location.href = 'gestor_almacen.html';
-                    break;
-                default:
-                    showError('Rol no tiene página asignada');
+                
+                // Redirigir según jerarquía
+                window.location.href = 'director_corporativo.html';
+            } else {
+                errorDiv.textContent = 'Acceso no autorizado para esta área';
+                // Aquí se pueden añadir más redirecciones para otras jerarquías
             }
         }
 
-        // Verificar si ya hay sesión
-        window.addEventListener('DOMContentLoaded', function() {
-            const userStr = localStorage.getItem('nexial_user');
-            if (userStr) {
-                try {
-                    const user = JSON.parse(userStr);
-                    // Redirigir según rol si la sesión es reciente (menos de 12 horas)
-                    const twelveHours = 12 * 60 * 60 * 1000;
-                    if (new Date().getTime() - user.timestamp < twelveHours) {
-                        redirectByRole(user.rol);
-                    } else {
-                        localStorage.removeItem('nexial_user');
-                    }
-                } catch (e) {
-                    localStorage.removeItem('nexial_user');
-                }
-            }
+        // Permitir login con Enter
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
         });
     </script>
 </body>
