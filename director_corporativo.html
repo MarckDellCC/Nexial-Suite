@@ -346,7 +346,7 @@
             }
         }
 
-        // Cargar empresas
+        // Cargar empresas - VERSIÓN CORREGIDA
         async function cargarEmpresas() {
             try {
                 mostrarCargando(true);
@@ -361,17 +361,33 @@
 
                 console.log('Cargando empresas...');
                 
-                // Intentar cargar desde Supabase
-                const { data, error, status } = await supabase
+                // Primero, intentamos obtener todas las columnas SIN ordenar
+                const { data, error } = await supabase
                     .from('empresas')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                    .select('*');
 
-                console.log('Respuesta de Supabase:', { data, error, status });
+                console.log('Respuesta de Supabase:', { data, error });
 
                 if (error) {
-                    // Si es error de política RLS, mostrar mensaje específico
-                    if (error.message.includes('policy') || error.code === '42501') {
+                    // Si hay error, intentamos con un select específico
+                    if (error.message.includes('column') && error.message.includes('does not exist')) {
+                        // Probablemente intentamos seleccionar una columna que no existe
+                        // Vamos a intentar obtener solo las columnas básicas
+                        mostrarError('Error de columna: ' + error.message + '. Intentando con columnas básicas...');
+                        
+                        // Segundo intento: obtener solo columnas conocidas
+                        const { data: data2, error: error2 } = await supabase
+                            .from('empresas')
+                            .select('id, nombre, ruc, email, telefono, direccion, descripcion');
+                        
+                        if (error2) {
+                            mostrarError('Error al cargar empresas: ' + error2.message);
+                            return;
+                        }
+                        
+                        actualizarTabla(data2 || []);
+                        return;
+                    } else if (error.message.includes('policy') || error.code === '42501') {
                         mostrarError('Error de permisos: No tienes acceso a esta tabla. Verifica las políticas RLS en Supabase.');
                     } else if (error.message.includes('relation') || error.code === '42P01') {
                         mostrarError('La tabla "empresas" no existe. Crea la tabla en Supabase primero.');
@@ -475,19 +491,20 @@
             }
         }
 
-        // Guardar empresa (crear o actualizar)
+        // Guardar empresa (crear o actualizar) - VERSIÓN SIMPLIFICADA
         async function guardarEmpresa(event) {
             event.preventDefault();
             
             try {
+                // Datos básicos de la empresa
                 const datosEmpresa = {
                     nombre: document.getElementById('nombre').value.trim(),
                     ruc: document.getElementById('ruc').value.trim(),
                     email: document.getElementById('email').value.trim() || null,
                     telefono: document.getElementById('telefono').value.trim() || null,
                     direccion: document.getElementById('direccion').value.trim() || null,
-                    descripcion: document.getElementById('descripcion').value.trim() || null,
-                    updated_at: new Date().toISOString()
+                    descripcion: document.getElementById('descripcion').value.trim() || null
+                    // NO incluimos created_at ni updated_at
                 };
 
                 // Validar campos obligatorios
@@ -513,9 +530,7 @@
                     resultado = data;
                     mostrarStatus('Empresa actualizada correctamente');
                 } else {
-                    // Crear nueva empresa
-                    datosEmpresa.created_at = new Date().toISOString();
-                    
+                    // Crear nueva empresa - SIN created_at
                     const { data, error } = await supabase
                         .from('empresas')
                         .insert([datosEmpresa])
@@ -673,20 +688,6 @@
 
         // Iniciar cuando se cargue la página
         document.addEventListener('DOMContentLoaded', inicializar);
-
-        // También manejar el evento de visibilidad de página
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) {
-                // Si la página se vuelve visible, verificar sesión
-                if (supabase) {
-                    verificarSesion().then(autenticado => {
-                        if (autenticado) {
-                            cargarEmpresas();
-                        }
-                    });
-                }
-            }
-        });
     </script>
 </body>
 </html>
