@@ -27,62 +27,68 @@
     </div>
 
     <script>
-        // Configurar Supabase (solo una vez)
-        const supabaseUrl = 'https://zshnzeqstrdzuljqueto.supabase.co';
-        const supabaseKey = 'sb_publishable_J8vYye7ZumaK4hGoRwaIpQ_O_kj0ERX';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        // Evitar redeclaración de variables en el ámbito global
+        (function() {
+            // Configurar Supabase
+            const supabaseUrl = 'https://zshnzeqstrdzuljqueto.supabase.co';
+            const supabaseKey = 'sb_publishable_J8vYye7ZumaK4hGoRwaIpQ_O_kj0ERX';
+            
+            // Si ya existe una variable global llamada supabase, usamos esa, sino creamos una nueva
+            window.supabaseClient = window.supabaseClient || window.supabase.createClient(supabaseUrl, supabaseKey);
+            const supabase = window.supabaseClient;
 
-        // Función de login
-        async function iniciarSesion() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = '';
+            // Función de login
+            async function iniciarSesion() {
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = '';
 
-            if (!email || !password) {
-                errorDiv.textContent = 'Email y contraseña son obligatorios';
-                return;
-            }
-
-            try {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
-                if (error) {
-                    errorDiv.textContent = 'Error: ' + error.message;
+                if (!email || !password) {
+                    errorDiv.textContent = 'Email y contraseña son obligatorios';
                     return;
                 }
 
-                // Guardar sesión
-                localStorage.setItem('nexial_user', JSON.stringify({
-                    email: email,
-                    timestamp: new Date().getTime()
-                }));
-                
-                // Redirigir
-                window.location.href = 'director_corporativo.html';
-                
-            } catch (e) {
-                errorDiv.textContent = 'Error de conexión';
+                try {
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+
+                    if (error) {
+                        errorDiv.textContent = 'Error: ' + error.message;
+                        return;
+                    }
+
+                    // Guardar sesión
+                    localStorage.setItem('nexial_user', JSON.stringify({
+                        email: email,
+                        timestamp: new Date().getTime()
+                    }));
+                    
+                    // Redirigir
+                    window.location.href = 'director_corporativo.html';
+                    
+                } catch (e) {
+                    errorDiv.textContent = 'Error de conexión';
+                }
             }
-        }
 
-        // Asignar evento al botón
-        document.getElementById('loginBtn').addEventListener('click', iniciarSesion);
+            // Asignar evento al botón
+            document.getElementById('loginBtn').addEventListener('click', iniciarSesion);
 
-        // Permitir Enter para login
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') iniciarSesion();
-        });
+            // Permitir Enter para login
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') iniciarSesion();
+            });
 
-        // Verificar si ya hay sesión
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                window.location.href = 'director_corporativo.html';
-            }
-        });
+            // Verificar si ya hay sesión
+            supabase.auth.getSession().then(({ data: { session } }) => {
+                if (session) {
+                    window.location.href = 'director_corporativo.html';
+                }
+            });
+        })();
     </script>
 </body>
 </html>
