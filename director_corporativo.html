@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Director Corporativo - Nexial Suite</title>
-    <!-- Cargar Supabase desde un CDN que funcione con GitHub Pages -->
+    <!-- Cargar Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -15,10 +15,7 @@
             padding: 20px;
             min-height: 100vh;
         }
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
         header { 
             display: flex; 
             justify-content: space-between; 
@@ -27,15 +24,8 @@
             padding-bottom: 15px; 
             border-bottom: 1px solid #334155; 
         }
-        h1 { 
-            color: #e2e8f0; 
-            font-size: 24px; 
-        }
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+        h1 { color: #e2e8f0; font-size: 24px; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
         .btn { 
             padding: 10px 20px; 
             border: none; 
@@ -45,29 +35,11 @@
             transition: all 0.3s; 
             font-size: 14px;
         }
-        .btn-primary { 
-            background: #7c3aed; 
-            color: white; 
-        }
-        .btn-secondary { 
-            background: #334155; 
-            color: white; 
-            border: 1px solid #475569; 
-        }
-        .btn-danger { 
-            background: #dc2626; 
-            color: white; 
-        }
-        .btn:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); 
-        }
-        .controls { 
-            margin: 20px 0; 
-            display: flex; 
-            gap: 10px; 
-            flex-wrap: wrap; 
-        }
+        .btn-primary { background: #7c3aed; color: white; }
+        .btn-secondary { background: #334155; color: white; border: 1px solid #475569; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .controls { margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap; }
         table { 
             width: 100%; 
             border-collapse: collapse; 
@@ -77,27 +49,15 @@
             overflow: hidden; 
             border: 1px solid #334155;
         }
-        th, td { 
-            padding: 12px 15px; 
-            text-align: left; 
-            border-bottom: 1px solid #334155; 
-        }
-        th { 
-            background: #0f172a; 
-            color: #94a3b8; 
-            font-weight: 600; 
-        }
-        tr:hover { 
-            background: #2d3748; 
-        }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #334155; }
+        th { background: #0f172a; color: #94a3b8; font-weight: 600; }
+        tr:hover { background: #2d3748; }
         .modal { 
             display: none; 
             position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0, 0, 0, 0.8); 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); 
             z-index: 1000; 
             align-items: center; 
             justify-content: center; 
@@ -110,97 +70,33 @@
             max-width: 500px; 
             border: 1px solid #475569; 
         }
-        .modal-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 20px; 
-        }
-        .modal-title { 
-            font-size: 20px; 
-            color: #e2e8f0; 
-        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 20px; color: #e2e8f0; }
         .close-modal { 
-            background: none; 
-            border: none; 
-            color: #94a3b8; 
-            font-size: 24px; 
-            cursor: pointer; 
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; 
+            padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
         }
-        .form-group { 
-            margin-bottom: 15px; 
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #cbd5e1; }
+        .form-group input, .form-group textarea, .form-group select { 
+            width: 100%; padding: 10px; background: #0f172a; 
+            border: 1px solid #475569; border-radius: 5px; color: white; 
         }
-        .form-group label { 
-            display: block; 
-            margin-bottom: 5px; 
-            color: #cbd5e1; 
-        }
-        .form-group input, 
-        .form-group textarea { 
-            width: 100%; 
-            padding: 10px; 
-            background: #0f172a; 
-            border: 1px solid #475569; 
-            border-radius: 5px; 
-            color: white; 
-        }
-        .form-group textarea { 
-            min-height: 100px; 
-            resize: vertical; 
-        }
-        .modal-footer { 
-            display: flex; 
-            justify-content: flex-end; 
-            gap: 10px; 
-            margin-top: 20px; 
-        }
-        .loading { 
-            text-align: center; 
-            padding: 40px; 
-            color: #94a3b8; 
-        }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .loading { text-align: center; padding: 40px; color: #94a3b8; }
         .error-message { 
-            color: #f87171; 
-            padding: 15px; 
-            margin: 10px 0; 
-            background: rgba(220, 38, 38, 0.1); 
-            border-radius: 5px; 
-            border: 1px solid rgba(220, 38, 38, 0.3);
+            color: #f87171; padding: 15px; margin: 10px 0; 
+            background: rgba(220,38,38,0.1); border-radius: 5px; border: 1px solid rgba(220,38,38,0.3);
         }
         .empty-state { 
-            text-align: center; 
-            padding: 40px; 
-            color: #94a3b8; 
-            background: #1e293b;
-            border-radius: 5px;
-            margin-top: 20px;
-            border: 1px solid #334155;
+            text-align: center; padding: 40px; color: #94a3b8; background: #1e293b;
+            border-radius: 5px; margin-top: 20px; border: 1px solid #334155;
         }
-        .actions { 
-            display: flex; 
-            gap: 5px; 
-        }
-        .btn-sm { 
-            padding: 6px 12px; 
-            font-size: 13px; 
-        }
-        .status-message {
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            text-align: center;
-        }
-        .success {
-            background: rgba(34, 197, 94, 0.1);
-            color: #4ade80;
-            border: 1px solid rgba(34, 197, 94, 0.3);
-        }
+        .actions { display: flex; gap: 5px; }
+        .btn-sm { padding: 6px 12px; font-size: 13px; }
+        .status-message { padding: 10px; border-radius: 5px; margin: 10px 0; text-align: center; }
+        .success { background: rgba(34,197,94,0.1); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
     </style>
 </head>
 <body>
@@ -231,17 +127,17 @@
             <table id="empresasTable">
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Nombre</th>
-                        <th>Identificación Tributaria</th>
+                        <th>País</th>
+                        <th>Ciudad</th>
+                        <th>Estado</th>
                         <th>Email</th>
                         <th>Teléfono</th>
-                        <th>Dirección</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody id="empresasBody">
-                    <!-- Las empresas se cargarán aquí -->
-                </tbody>
+                <tbody id="empresasBody"></tbody>
             </table>
         </div>
 
@@ -254,29 +150,53 @@
                 </div>
                 <form id="formEmpresa">
                     <div class="form-group">
-                        <label for="nombre">Nombre de la Empresa *</label>
-                        <input type="text" id="nombre" required>
+                        <label for="nombre_empresa">Nombre de la Empresa *</label>
+                        <input type="text" id="nombre_empresa" required>
                     </div>
                     <div class="form-group">
-                        <label for="ruc">Identificación Tributaria (RUC/NIT/CUIT/OTRO) *</label>
-                        <input type="text" id="ruc" required>
+                        <label for="pais">País *</label>
+                        <select id="pais" required>
+                            <option value="">Seleccionar país</option>
+                            <option value="Argentina">Argentina</option>
+                            <option value="Bolivia">Bolivia</option>
+                            <option value="Brasil">Brasil</option>
+                            <option value="Chile">Chile</option>
+                            <option value="Colombia">Colombia</option>
+                            <option value="Ecuador">Ecuador</option>
+                            <option value="México">México</option>
+                            <option value="Perú">Perú</option>
+                            <option value="España">España</option>
+                            <option value="Estados Unidos">Estados Unidos</option>
+                            <option value="Otro">Otro</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email">
+                        <label for="ciudad">Ciudad *</label>
+                        <input type="text" id="ciudad" required>
                     </div>
                     <div class="form-group">
-                        <label for="telefono">Teléfono</label>
-                        <input type="tel" id="telefono">
+                        <label for="estado">Estado/Provincia</label>
+                        <input type="text" id="estado">
+                    </div>
+                    <div class="form-group">
+                        <label for="email_empresa">Email Corporativo</label>
+                        <input type="email" id="email_empresa">
+                    </div>
+                    <div class="form-group">
+                        <label for="telefono_empresa">Teléfono</label>
+                        <input type="tel" id="telefono_empresa">
                     </div>
                     <div class="form-group">
                         <label for="direccion">Dirección</label>
                         <input type="text" id="direccion">
                     </div>
-                    <!-- Quitamos el campo descripción porque no está en la tabla -->
+                    <div class="form-group">
+                        <label for="sitio_web">Sitio Web</label>
+                        <input type="url" id="sitio_web">
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
-                        <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar</button>
+                        <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar Empresa</button>
                     </div>
                 </form>
             </div>
@@ -292,18 +212,13 @@
         // Inicializar Supabase
         function inicializarSupabase() {
             try {
-                // Configurar cliente Supabase con las credenciales correctas
                 const supabaseUrl = 'https://zshnzeqstrdzuljqueto.supabase.co';
                 const supabaseKey = 'sb_publishable_J8vYye7ZumaK4hGoRwaIpQ_O_kj0ERX';
-                
-                // Crear cliente Supabase
                 supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-                
-                console.log('Supabase inicializado correctamente');
+                console.log('Supabase inicializado');
                 return true;
             } catch (error) {
-                console.error('Error al inicializar Supabase:', error);
-                mostrarError('Error al conectar con la base de datos. Recarga la página.');
+                mostrarError('Error al conectar con la base de datos');
                 return false;
             }
         }
@@ -311,46 +226,28 @@
         // Verificar sesión
         async function verificarSesion() {
             try {
-                if (!supabase) {
-                    mostrarError('No se pudo conectar con el servidor');
-                    return false;
-                }
-
-                // Obtener sesión actual
+                if (!supabase) return false;
                 const { data: { session }, error } = await supabase.auth.getSession();
-                
-                if (error) {
-                    console.error('Error al obtener sesión:', error);
+                if (error || !session) {
                     window.location.href = 'login.html';
                     return false;
                 }
-
-                if (!session) {
-                    console.log('No hay sesión activa, redirigiendo a login...');
-                    window.location.href = 'login.html';
-                    return false;
-                }
-
                 currentSession = session;
-                
-                // Mostrar email del usuario
                 document.getElementById('userEmail').textContent = session.user.email;
                 return true;
             } catch (error) {
-                console.error('Error en verificarSesion:', error);
                 window.location.href = 'login.html';
                 return false;
             }
         }
 
-        // Cargar empresas
+        // Cargar empresas - VERSIÓN CORREGIDA PARA TU BASE DE DATOS
         async function cargarEmpresas() {
             try {
                 mostrarCargando(true);
                 ocultarError();
                 ocultarStatus();
 
-                // Verificar sesión primero
                 if (!currentSession) {
                     const autenticado = await verificarSesion();
                     if (!autenticado) return;
@@ -358,24 +255,49 @@
 
                 console.log('Cargando empresas...');
                 
-                // Seleccionamos las columnas que existen en la tabla
+                // Primero intentamos obtener datos básicos
                 const { data, error } = await supabase
                     .from('empresas')
-                    .select('id, nombre, ruc, email, telefono, direccion');
+                    .select(`
+                        id,
+                        nombre_empresa,
+                        pais,
+                        ciudad,
+                        estado,
+                        email_empresa,
+                        telefono_empresa,
+                        direccion,
+                        sitio_web,
+                        fecha_registro
+                    `);
 
                 console.log('Respuesta de Supabase:', { data, error });
 
                 if (error) {
-                    mostrarError('Error al cargar empresas: ' + error.message);
+                    // Si falla, intentamos de otra forma
+                    console.error('Error detallado:', error);
+                    
+                    // Intentar con un select más básico
+                    const { data: data2, error: error2 } = await supabase
+                        .from('empresas')
+                        .select('*')
+                        .limit(10);
+                    
+                    if (error2) {
+                        mostrarError('Error al cargar empresas: ' + error2.message + 
+                                   '<br>Verifica que la tabla "empresas" exista y tengas permisos.');
+                        return;
+                    }
+                    
+                    actualizarTabla(data2 || []);
                     return;
                 }
 
-                // Mostrar datos
                 actualizarTabla(data || []);
                 
             } catch (error) {
                 console.error('Error en cargarEmpresas:', error);
-                mostrarError('Error inesperado: ' + error.message);
+                mostrarError('Error: ' + error.message);
             } finally {
                 mostrarCargando(false);
             }
@@ -401,21 +323,23 @@
             empresas.forEach(empresa => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${escapeHtml(empresa.nombre || '-')}</td>
-                    <td>${escapeHtml(empresa.ruc || '-')}</td>
-                    <td>${escapeHtml(empresa.email || '-')}</td>
-                    <td>${escapeHtml(empresa.telefono || '-')}</td>
-                    <td>${escapeHtml(empresa.direccion || '-')}</td>
+                    <td>${empresa.id ? empresa.id.substring(0, 8) + '...' : '-'}</td>
+                    <td>${escapeHtml(empresa.nombre_empresa || empresa.nombre || '-')}</td>
+                    <td>${escapeHtml(empresa.pais || '-')}</td>
+                    <td>${escapeHtml(empresa.ciudad || '-')}</td>
+                    <td>${escapeHtml(empresa.estado || '-')}</td>
+                    <td>${escapeHtml(empresa.email_empresa || empresa.email || '-')}</td>
+                    <td>${escapeHtml(empresa.telefono_empresa || empresa.telefono || '-')}</td>
                     <td class="actions">
                         <button class="btn btn-secondary btn-sm" onclick="editarEmpresa('${empresa.id}')">Editar</button>
-                        <button class="btn btn-danger btn-sm" onclick="eliminarEmpresa('${empresa.id}', '${escapeHtml(empresa.nombre || empresa.ruc || 'esta empresa')}')">Eliminar</button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarEmpresa('${empresa.id}', '${escapeHtml(empresa.nombre_empresa || empresa.nombre || 'esta empresa')}')">Eliminar</button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        // Función para escapar HTML (seguridad)
+        // Función para escapar HTML
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
@@ -449,11 +373,16 @@
 
                 empresaEditando = id;
                 document.getElementById('modalTitle').textContent = 'Editar Empresa';
-                document.getElementById('nombre').value = data.nombre || '';
-                document.getElementById('ruc').value = data.ruc || '';
-                document.getElementById('email').value = data.email || '';
-                document.getElementById('telefono').value = data.telefono || '';
+                
+                // Rellenar campos (con nombres flexibles)
+                document.getElementById('nombre_empresa').value = data.nombre_empresa || data.nombre || '';
+                document.getElementById('pais').value = data.pais || '';
+                document.getElementById('ciudad').value = data.ciudad || '';
+                document.getElementById('estado').value = data.estado || '';
+                document.getElementById('email_empresa').value = data.email_empresa || data.email || '';
+                document.getElementById('telefono_empresa').value = data.telefono_empresa || data.telefono || '';
                 document.getElementById('direccion').value = data.direccion || '';
+                document.getElementById('sitio_web').value = data.sitio_web || '';
                 
                 document.getElementById('modalEmpresa').style.display = 'flex';
             } catch (error) {
@@ -463,23 +392,26 @@
             }
         }
 
-        // Guardar empresa (crear o actualizar)
+        // Guardar empresa - VERSIÓN UNIVERSAL
         async function guardarEmpresa(event) {
             event.preventDefault();
             
             try {
-                // Datos básicos de la empresa según la estructura de la tabla
+                // Preparar datos en formato universal
                 const datosEmpresa = {
-                    nombre: document.getElementById('nombre').value.trim(),
-                    ruc: document.getElementById('ruc').value.trim(),
-                    email: document.getElementById('email').value.trim() || null,
-                    telefono: document.getElementById('telefono').value.trim() || null,
-                    direccion: document.getElementById('direccion').value.trim() || null
+                    nombre_empresa: document.getElementById('nombre_empresa').value.trim(),
+                    pais: document.getElementById('pais').value.trim(),
+                    ciudad: document.getElementById('ciudad').value.trim(),
+                    estado: document.getElementById('estado').value.trim() || null,
+                    email_empresa: document.getElementById('email_empresa').value.trim() || null,
+                    telefono_empresa: document.getElementById('telefono_empresa').value.trim() || null,
+                    direccion: document.getElementById('direccion').value.trim() || null,
+                    sitio_web: document.getElementById('sitio_web').value.trim() || null
                 };
 
                 // Validar campos obligatorios
-                if (!datosEmpresa.nombre || !datosEmpresa.ruc) {
-                    mostrarError('Nombre e Identificación Tributaria son campos obligatorios');
+                if (!datosEmpresa.nombre_empresa || !datosEmpresa.pais || !datosEmpresa.ciudad) {
+                    mostrarError('Nombre, País y Ciudad son campos obligatorios');
                     return;
                 }
 
@@ -495,6 +427,7 @@
 
                     if (error) {
                         mostrarError('Error al actualizar: ' + error.message);
+                        console.error('Detalles error:', error);
                         return;
                     }
                     resultado = data;
@@ -508,6 +441,7 @@
 
                     if (error) {
                         mostrarError('Error al crear empresa: ' + error.message);
+                        console.error('Detalles error:', error);
                         return;
                     }
                     resultado = data;
@@ -525,9 +459,7 @@
 
         // Eliminar empresa
         async function eliminarEmpresa(id, nombre) {
-            if (!confirm(`¿Está seguro de eliminar la empresa "${nombre}"? Esta acción no se puede deshacer.`)) {
-                return;
-            }
+            if (!confirm(`¿Está seguro de eliminar la empresa "${nombre}"?`)) return;
 
             try {
                 const { error } = await supabase
@@ -557,12 +489,8 @@
         // Cerrar sesión
         async function logout() {
             try {
-                if (supabase) {
-                    await supabase.auth.signOut();
-                }
+                if (supabase) await supabase.auth.signOut();
                 localStorage.removeItem('nexial_user');
-                localStorage.removeItem('supabase_url');
-                localStorage.removeItem('supabase_key');
                 window.location.href = 'index.html';
             } catch (error) {
                 window.location.href = 'index.html';
@@ -577,7 +505,7 @@
         // Mostrar error
         function mostrarError(mensaje) {
             const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = mensaje;
+            errorDiv.innerHTML = mensaje;
             errorDiv.style.display = 'block';
         }
 
@@ -587,11 +515,7 @@
             statusDiv.textContent = mensaje;
             statusDiv.className = 'status-message success';
             statusDiv.style.display = 'block';
-            
-            // Ocultar después de 3 segundos
-            setTimeout(() => {
-                statusDiv.style.display = 'none';
-            }, 3000);
+            setTimeout(() => { statusDiv.style.display = 'none'; }, 3000);
         }
 
         // Ocultar error
@@ -606,25 +530,72 @@
 
         // Configurar eventos
         function configurarEventos() {
-            // Botones
             document.getElementById('refreshBtn').addEventListener('click', cargarEmpresas);
             document.getElementById('createBtn').addEventListener('click', abrirModalCrear);
             document.getElementById('createFirstBtn').addEventListener('click', abrirModalCrear);
             document.getElementById('logoutBtn').addEventListener('click', logout);
-            
-            // Modal
             document.getElementById('closeModalBtn').addEventListener('click', cerrarModal);
             document.getElementById('cancelBtn').addEventListener('click', cerrarModal);
-            
-            // Formulario
             document.getElementById('formEmpresa').addEventListener('submit', guardarEmpresa);
             
-            // Cerrar modal al hacer clic fuera
             document.getElementById('modalEmpresa').addEventListener('click', function(event) {
-                if (event.target === this) {
-                    cerrarModal();
-                }
+                if (event.target === this) cerrarModal();
             });
+        }
+
+        // Función para crear la tabla si no existe
+        async function crearTablaSiNoExiste() {
+            try {
+                // Verificar si la tabla existe
+                const { error } = await supabase
+                    .from('empresas')
+                    .select('*')
+                    .limit(1);
+
+                // Si hay error 42P01 (tabla no existe) o 42501 (permisos)
+                if (error && (error.code === '42P01' || error.code === '42501')) {
+                    mostrarError('La tabla "empresas" no existe o no tienes permisos. Creando estructura básica...');
+                    
+                    // Nota: No podemos crear tablas desde el frontend por seguridad
+                    // Esto debe hacerse desde el SQL Editor de Supabase
+                    console.log('Debes crear la tabla en Supabase con este SQL:');
+                    console.log(`
+                        CREATE TABLE empresas (
+                            id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                            nombre_empresa TEXT NOT NULL,
+                            pais TEXT NOT NULL,
+                            ciudad TEXT NOT NULL,
+                            estado TEXT,
+                            email_empresa TEXT,
+                            telefono_empresa TEXT,
+                            direccion TEXT,
+                            sitio_web TEXT,
+                            fecha_registro TIMESTAMP DEFAULT NOW()
+                        );
+                        
+                        -- Habilitar RLS
+                        ALTER TABLE empresas ENABLE ROW LEVEL SECURITY;
+                        
+                        -- Crear políticas
+                        CREATE POLICY "Usuarios autenticados pueden ver empresas" 
+                        ON empresas FOR SELECT TO authenticated USING (true);
+                        
+                        CREATE POLICY "Usuarios autenticados pueden crear empresas" 
+                        ON empresas FOR INSERT TO authenticated WITH CHECK (true);
+                        
+                        CREATE POLICY "Usuarios autenticados pueden actualizar empresas" 
+                        ON empresas FOR UPDATE TO authenticated USING (true);
+                        
+                        CREATE POLICY "Usuarios autenticados pueden eliminar empresas" 
+                        ON empresas FOR DELETE TO authenticated USING (true);
+                    `);
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Error verificando tabla:', error);
+                return false;
+            }
         }
 
         // Inicializar aplicación
@@ -633,11 +604,7 @@
                 console.log('Inicializando aplicación...');
                 
                 // Inicializar Supabase
-                const supabaseInicializado = inicializarSupabase();
-                if (!supabaseInicializado) {
-                    mostrarError('No se pudo inicializar la conexión con la base de datos');
-                    return;
-                }
+                if (!inicializarSupabase()) return;
 
                 // Verificar sesión
                 const autenticado = await verificarSesion();
@@ -645,6 +612,9 @@
 
                 // Configurar eventos
                 configurarEventos();
+
+                // Verificar/Crear tabla
+                await crearTablaSiNoExiste();
 
                 // Cargar empresas
                 await cargarEmpresas();
