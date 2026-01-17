@@ -232,7 +232,7 @@
                 <thead>
                     <tr>
                         <th>Nombre</th>
-                        <th>RUC</th>
+                        <th>Identificación Tributaria</th>
                         <th>Email</th>
                         <th>Teléfono</th>
                         <th>Dirección</th>
@@ -258,7 +258,7 @@
                         <input type="text" id="nombre" required>
                     </div>
                     <div class="form-group">
-                        <label for="ruc">RUC *</label>
+                        <label for="ruc">Identificación Tributaria (RUC/NIT/CUIT/OTRO) *</label>
                         <input type="text" id="ruc" required>
                     </div>
                     <div class="form-group">
@@ -273,10 +273,7 @@
                         <label for="direccion">Dirección</label>
                         <input type="text" id="direccion">
                     </div>
-                    <div class="form-group">
-                        <label for="descripcion">Descripción</label>
-                        <textarea id="descripcion"></textarea>
-                    </div>
+                    <!-- Quitamos el campo descripción porque no está en la tabla -->
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
                         <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar</button>
@@ -346,7 +343,7 @@
             }
         }
 
-        // Cargar empresas - VERSIÓN CORREGIDA
+        // Cargar empresas
         async function cargarEmpresas() {
             try {
                 mostrarCargando(true);
@@ -361,39 +358,15 @@
 
                 console.log('Cargando empresas...');
                 
-                // Primero, intentamos obtener todas las columnas SIN ordenar
+                // Seleccionamos las columnas que existen en la tabla
                 const { data, error } = await supabase
                     .from('empresas')
-                    .select('*');
+                    .select('id, nombre, ruc, email, telefono, direccion');
 
                 console.log('Respuesta de Supabase:', { data, error });
 
                 if (error) {
-                    // Si hay error, intentamos con un select específico
-                    if (error.message.includes('column') && error.message.includes('does not exist')) {
-                        // Probablemente intentamos seleccionar una columna que no existe
-                        // Vamos a intentar obtener solo las columnas básicas
-                        mostrarError('Error de columna: ' + error.message + '. Intentando con columnas básicas...');
-                        
-                        // Segundo intento: obtener solo columnas conocidas
-                        const { data: data2, error: error2 } = await supabase
-                            .from('empresas')
-                            .select('id, nombre, ruc, email, telefono, direccion, descripcion');
-                        
-                        if (error2) {
-                            mostrarError('Error al cargar empresas: ' + error2.message);
-                            return;
-                        }
-                        
-                        actualizarTabla(data2 || []);
-                        return;
-                    } else if (error.message.includes('policy') || error.code === '42501') {
-                        mostrarError('Error de permisos: No tienes acceso a esta tabla. Verifica las políticas RLS en Supabase.');
-                    } else if (error.message.includes('relation') || error.code === '42P01') {
-                        mostrarError('La tabla "empresas" no existe. Crea la tabla en Supabase primero.');
-                    } else {
-                        mostrarError('Error al cargar empresas: ' + error.message);
-                    }
+                    mostrarError('Error al cargar empresas: ' + error.message);
                     return;
                 }
 
@@ -481,7 +454,6 @@
                 document.getElementById('email').value = data.email || '';
                 document.getElementById('telefono').value = data.telefono || '';
                 document.getElementById('direccion').value = data.direccion || '';
-                document.getElementById('descripcion').value = data.descripcion || '';
                 
                 document.getElementById('modalEmpresa').style.display = 'flex';
             } catch (error) {
@@ -491,25 +463,23 @@
             }
         }
 
-        // Guardar empresa (crear o actualizar) - VERSIÓN SIMPLIFICADA
+        // Guardar empresa (crear o actualizar)
         async function guardarEmpresa(event) {
             event.preventDefault();
             
             try {
-                // Datos básicos de la empresa
+                // Datos básicos de la empresa según la estructura de la tabla
                 const datosEmpresa = {
                     nombre: document.getElementById('nombre').value.trim(),
                     ruc: document.getElementById('ruc').value.trim(),
                     email: document.getElementById('email').value.trim() || null,
                     telefono: document.getElementById('telefono').value.trim() || null,
-                    direccion: document.getElementById('direccion').value.trim() || null,
-                    descripcion: document.getElementById('descripcion').value.trim() || null
-                    // NO incluimos created_at ni updated_at
+                    direccion: document.getElementById('direccion').value.trim() || null
                 };
 
                 // Validar campos obligatorios
                 if (!datosEmpresa.nombre || !datosEmpresa.ruc) {
-                    mostrarError('Nombre y RUC son campos obligatorios');
+                    mostrarError('Nombre e Identificación Tributaria son campos obligatorios');
                     return;
                 }
 
@@ -530,7 +500,7 @@
                     resultado = data;
                     mostrarStatus('Empresa actualizada correctamente');
                 } else {
-                    // Crear nueva empresa - SIN created_at
+                    // Crear nueva empresa
                     const { data, error } = await supabase
                         .from('empresas')
                         .insert([datosEmpresa])
