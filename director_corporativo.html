@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Director Corporativo - Nexial Suite</title>
+    <!-- Cargar Supabase desde un CDN que funcione con GitHub Pages -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -11,6 +13,7 @@
             background: #0f172a; 
             color: white; 
             padding: 20px;
+            min-height: 100vh;
         }
         .container { 
             max-width: 1200px; 
@@ -40,6 +43,7 @@
             cursor: pointer; 
             font-weight: bold; 
             transition: all 0.3s; 
+            font-size: 14px;
         }
         .btn-primary { 
             background: #7c3aed; 
@@ -55,7 +59,8 @@
             color: white; 
         }
         .btn:hover { 
-            opacity: 0.9; 
+            transform: translateY(-2px); 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); 
         }
         .controls { 
             margin: 20px 0; 
@@ -70,6 +75,7 @@
             background: #1e293b; 
             border-radius: 5px; 
             overflow: hidden; 
+            border: 1px solid #334155;
         }
         th, td { 
             padding: 12px 15px; 
@@ -82,7 +88,7 @@
             font-weight: 600; 
         }
         tr:hover { 
-            background: #1e293b; 
+            background: #2d3748; 
         }
         .modal { 
             display: none; 
@@ -120,6 +126,12 @@
             color: #94a3b8; 
             font-size: 24px; 
             cursor: pointer; 
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .form-group { 
             margin-bottom: 15px; 
@@ -150,29 +162,44 @@
         }
         .loading { 
             text-align: center; 
-            padding: 20px; 
+            padding: 40px; 
             color: #94a3b8; 
         }
         .error-message { 
             color: #f87171; 
-            padding: 10px; 
+            padding: 15px; 
             margin: 10px 0; 
             background: rgba(220, 38, 38, 0.1); 
             border-radius: 5px; 
-            display: none; 
+            border: 1px solid rgba(220, 38, 38, 0.3);
         }
         .empty-state { 
             text-align: center; 
             padding: 40px; 
             color: #94a3b8; 
+            background: #1e293b;
+            border-radius: 5px;
+            margin-top: 20px;
+            border: 1px solid #334155;
         }
         .actions { 
             display: flex; 
             gap: 5px; 
         }
         .btn-sm { 
-            padding: 5px 10px; 
-            font-size: 14px; 
+            padding: 6px 12px; 
+            font-size: 13px; 
+        }
+        .status-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
         }
     </style>
 </head>
@@ -181,20 +208,24 @@
         <header>
             <h1>Director Corporativo - Gestión de Empresas</h1>
             <div class="user-info">
-                <span id="userEmail"></span>
-                <button class="btn btn-secondary" onclick="logout()">Cerrar Sesión</button>
+                <span id="userEmail">Cargando...</span>
+                <button class="btn btn-secondary" id="logoutBtn">Cerrar Sesión</button>
             </div>
         </header>
 
-        <div id="errorMessage" class="error-message"></div>
+        <div id="statusMessage" class="status-message" style="display: none;"></div>
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
 
         <div class="controls">
-            <button class="btn btn-primary" onclick="cargarEmpresas()">Actualizar Lista</button>
-            <button class="btn btn-primary" onclick="abrirModalCrear()">Nueva Empresa</button>
+            <button class="btn btn-primary" id="refreshBtn">Actualizar Lista</button>
+            <button class="btn btn-primary" id="createBtn">Nueva Empresa</button>
         </div>
 
         <div id="loading" class="loading">Cargando empresas...</div>
-        <div id="emptyState" class="empty-state" style="display: none;">No hay empresas registradas</div>
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <p>No hay empresas registradas</p>
+            <button class="btn btn-primary" style="margin-top: 15px;" id="createFirstBtn">Crear primera empresa</button>
+        </div>
         
         <div id="empresasContainer" style="display: none;">
             <table id="empresasTable">
@@ -219,9 +250,9 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 class="modal-title" id="modalTitle">Nueva Empresa</h2>
-                    <button class="close-modal" onclick="cerrarModal()">&times;</button>
+                    <button class="close-modal" id="closeModalBtn">&times;</button>
                 </div>
-                <form id="formEmpresa" onsubmit="guardarEmpresa(event)">
+                <form id="formEmpresa">
                     <div class="form-group">
                         <label for="nombre">Nombre de la Empresa *</label>
                         <input type="text" id="nombre" required>
@@ -247,7 +278,7 @@
                         <textarea id="descripcion"></textarea>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                        <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
                         <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar</button>
                     </div>
                 </form>
@@ -259,22 +290,24 @@
         // Variables globales
         let supabase = null;
         let empresaEditando = null;
+        let currentSession = null;
 
         // Inicializar Supabase
-        async function inicializarSupabase() {
+        function inicializarSupabase() {
             try {
-                // Cargar la librería de Supabase
-                const { createClient } = await import('https://unpkg.com/@supabase/supabase-js@2/dist/supabase.js');
-                
-                // Configurar cliente
+                // Configurar cliente Supabase con las credenciales correctas
                 const supabaseUrl = 'https://zshnzeqstrdzuljqueto.supabase.co';
                 const supabaseKey = 'sb_publishable_J8vYye7ZumaK4hGoRwaIpQ_O_kj0ERX';
-                supabase = createClient(supabaseUrl, supabaseKey);
                 
-                return supabase;
+                // Crear cliente Supabase
+                supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                
+                console.log('Supabase inicializado correctamente');
+                return true;
             } catch (error) {
-                mostrarError('Error al cargar la librería: ' + error.message);
-                return null;
+                console.error('Error al inicializar Supabase:', error);
+                mostrarError('Error al conectar con la base de datos. Recarga la página.');
+                return false;
             }
         }
 
@@ -282,21 +315,32 @@
         async function verificarSesion() {
             try {
                 if (!supabase) {
-                    window.location.href = 'login.html';
+                    mostrarError('No se pudo conectar con el servidor');
                     return false;
                 }
 
+                // Obtener sesión actual
                 const { data: { session }, error } = await supabase.auth.getSession();
                 
-                if (error || !session) {
+                if (error) {
+                    console.error('Error al obtener sesión:', error);
                     window.location.href = 'login.html';
                     return false;
                 }
 
+                if (!session) {
+                    console.log('No hay sesión activa, redirigiendo a login...');
+                    window.location.href = 'login.html';
+                    return false;
+                }
+
+                currentSession = session;
+                
                 // Mostrar email del usuario
                 document.getElementById('userEmail').textContent = session.user.email;
                 return true;
             } catch (error) {
+                console.error('Error en verificarSesion:', error);
                 window.location.href = 'login.html';
                 return false;
             }
@@ -307,20 +351,42 @@
             try {
                 mostrarCargando(true);
                 ocultarError();
+                ocultarStatus();
 
-                const { data, error } = await supabase
+                // Verificar sesión primero
+                if (!currentSession) {
+                    const autenticado = await verificarSesion();
+                    if (!autenticado) return;
+                }
+
+                console.log('Cargando empresas...');
+                
+                // Intentar cargar desde Supabase
+                const { data, error, status } = await supabase
                     .from('empresas')
                     .select('*')
                     .order('created_at', { ascending: false });
 
+                console.log('Respuesta de Supabase:', { data, error, status });
+
                 if (error) {
-                    mostrarError('Error al cargar empresas: ' + error.message);
+                    // Si es error de política RLS, mostrar mensaje específico
+                    if (error.message.includes('policy') || error.code === '42501') {
+                        mostrarError('Error de permisos: No tienes acceso a esta tabla. Verifica las políticas RLS en Supabase.');
+                    } else if (error.message.includes('relation') || error.code === '42P01') {
+                        mostrarError('La tabla "empresas" no existe. Crea la tabla en Supabase primero.');
+                    } else {
+                        mostrarError('Error al cargar empresas: ' + error.message);
+                    }
                     return;
                 }
 
-                actualizarTabla(data);
+                // Mostrar datos
+                actualizarTabla(data || []);
+                
             } catch (error) {
-                mostrarError('Error: ' + error.message);
+                console.error('Error en cargarEmpresas:', error);
+                mostrarError('Error inesperado: ' + error.message);
             } finally {
                 mostrarCargando(false);
             }
@@ -346,18 +412,26 @@
             empresas.forEach(empresa => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${empresa.nombre || '-'}</td>
-                    <td>${empresa.ruc || '-'}</td>
-                    <td>${empresa.email || '-'}</td>
-                    <td>${empresa.telefono || '-'}</td>
-                    <td>${empresa.direccion || '-'}</td>
+                    <td>${escapeHtml(empresa.nombre || '-')}</td>
+                    <td>${escapeHtml(empresa.ruc || '-')}</td>
+                    <td>${escapeHtml(empresa.email || '-')}</td>
+                    <td>${escapeHtml(empresa.telefono || '-')}</td>
+                    <td>${escapeHtml(empresa.direccion || '-')}</td>
                     <td class="actions">
                         <button class="btn btn-secondary btn-sm" onclick="editarEmpresa('${empresa.id}')">Editar</button>
-                        <button class="btn btn-danger btn-sm" onclick="eliminarEmpresa('${empresa.id}', '${empresa.nombre || empresa.ruc}')">Eliminar</button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarEmpresa('${empresa.id}', '${escapeHtml(empresa.nombre || empresa.ruc || 'esta empresa')}')">Eliminar</button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
+        }
+
+        // Función para escapar HTML (seguridad)
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // Abrir modal para crear empresa
@@ -432,8 +506,12 @@
                         .eq('id', empresaEditando)
                         .select();
 
-                    if (error) throw error;
+                    if (error) {
+                        mostrarError('Error al actualizar: ' + error.message);
+                        return;
+                    }
                     resultado = data;
+                    mostrarStatus('Empresa actualizada correctamente');
                 } else {
                     // Crear nueva empresa
                     datosEmpresa.created_at = new Date().toISOString();
@@ -443,8 +521,12 @@
                         .insert([datosEmpresa])
                         .select();
 
-                    if (error) throw error;
+                    if (error) {
+                        mostrarError('Error al crear empresa: ' + error.message);
+                        return;
+                    }
                     resultado = data;
+                    mostrarStatus('Empresa creada correctamente');
                 }
 
                 if (resultado && resultado.length > 0) {
@@ -473,6 +555,7 @@
                     return;
                 }
 
+                mostrarStatus('Empresa eliminada correctamente');
                 cargarEmpresas();
             } catch (error) {
                 mostrarError('Error: ' + error.message);
@@ -493,6 +576,8 @@
                     await supabase.auth.signOut();
                 }
                 localStorage.removeItem('nexial_user');
+                localStorage.removeItem('supabase_url');
+                localStorage.removeItem('supabase_key');
                 window.location.href = 'index.html';
             } catch (error) {
                 window.location.href = 'index.html';
@@ -511,18 +596,61 @@
             errorDiv.style.display = 'block';
         }
 
+        // Mostrar mensaje de éxito
+        function mostrarStatus(mensaje) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = mensaje;
+            statusDiv.className = 'status-message success';
+            statusDiv.style.display = 'block';
+            
+            // Ocultar después de 3 segundos
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
         // Ocultar error
         function ocultarError() {
             document.getElementById('errorMessage').style.display = 'none';
         }
 
+        // Ocultar status
+        function ocultarStatus() {
+            document.getElementById('statusMessage').style.display = 'none';
+        }
+
+        // Configurar eventos
+        function configurarEventos() {
+            // Botones
+            document.getElementById('refreshBtn').addEventListener('click', cargarEmpresas);
+            document.getElementById('createBtn').addEventListener('click', abrirModalCrear);
+            document.getElementById('createFirstBtn').addEventListener('click', abrirModalCrear);
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            // Modal
+            document.getElementById('closeModalBtn').addEventListener('click', cerrarModal);
+            document.getElementById('cancelBtn').addEventListener('click', cerrarModal);
+            
+            // Formulario
+            document.getElementById('formEmpresa').addEventListener('submit', guardarEmpresa);
+            
+            // Cerrar modal al hacer clic fuera
+            document.getElementById('modalEmpresa').addEventListener('click', function(event) {
+                if (event.target === this) {
+                    cerrarModal();
+                }
+            });
+        }
+
         // Inicializar aplicación
         async function inicializar() {
             try {
+                console.log('Inicializando aplicación...');
+                
                 // Inicializar Supabase
-                const supabaseClient = await inicializarSupabase();
-                if (!supabaseClient) {
-                    mostrarError('No se pudo conectar con la base de datos');
+                const supabaseInicializado = inicializarSupabase();
+                if (!supabaseInicializado) {
+                    mostrarError('No se pudo inicializar la conexión con la base de datos');
                     return;
                 }
 
@@ -530,22 +658,35 @@
                 const autenticado = await verificarSesion();
                 if (!autenticado) return;
 
+                // Configurar eventos
+                configurarEventos();
+
                 // Cargar empresas
                 await cargarEmpresas();
 
-                // Configurar cierre de modal al hacer clic fuera
-                document.getElementById('modalEmpresa').addEventListener('click', function(event) {
-                    if (event.target === this) {
-                        cerrarModal();
-                    }
-                });
+                console.log('Aplicación inicializada correctamente');
             } catch (error) {
-                mostrarError('Error al inicializar: ' + error.message);
+                console.error('Error al inicializar:', error);
+                mostrarError('Error crítico: ' + error.message);
             }
         }
 
         // Iniciar cuando se cargue la página
         document.addEventListener('DOMContentLoaded', inicializar);
+
+        // También manejar el evento de visibilidad de página
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                // Si la página se vuelve visible, verificar sesión
+                if (supabase) {
+                    verificarSesion().then(autenticado => {
+                        if (autenticado) {
+                            cargarEmpresas();
+                        }
+                    });
+                }
+            }
+        });
     </script>
 </body>
 </html>
