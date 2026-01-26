@@ -3,23 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-    <style>
-        body {font-family:Arial;margin:20px;padding:0;}
-        .container {max-width:300px;margin:100px auto;}
-        input, button {width:100%;padding:10px;margin:5px 0;box-sizing:border-box;}
-        .error {color:red;font-size:12px;margin-top:10px;}
-    </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Login</h2>
-        <form id="loginForm">
-            <input type="text" id="username" placeholder="Usuario" required>
-            <input type="password" id="password" placeholder="Contraseña" required>
-            <button type="submit">Entrar</button>
-        </form>
-        <div id="error" class="error"></div>
-    </div>
+    <form id="loginForm">
+        <input type="text" id="username" placeholder="Usuario" required>
+        <input type="password" id="password" placeholder="Contraseña" required>
+        <button type="submit">Entrar</button>
+    </form>
+    <div id="error"></div>
 
     <script>
         const SUPABASE_URL = 'https://dcmzpbfhtcevinruphcz.supabase.co';
@@ -33,71 +24,47 @@
             errorDiv.textContent = '';
             
             try {
-                // Intentar login básico - en producción usarías auth
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?select=id,username,email,password_hash,rol_sistema,nivel_acceso,empresa_id,eliminado,cuenta_bloqueada&or=(username.eq.${encodeURIComponent(username)},email.eq.${encodeURIComponent(username)})`, {
+                // Primero obtener todos los usuarios
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/usuarios`, {
                     headers: {
                         'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Content-Type': 'application/json'
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
                     }
                 });
                 
                 if (!response.ok) {
-                    // Si falla, intentar con el endpoint simple
-                    const altResponse = await fetch(`${SUPABASE_URL}/rest/v1/usuarios`, {
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': `Bearer ${SUPABASE_KEY}`
-                        }
-                    });
-                    
-                    if (!altResponse.ok) throw new Error('Error de conexión con la base de datos');
-                    
-                    const usuarios = await altResponse.json();
-                    const usuario = usuarios.find(u => 
-                        (u.username === username || u.email === username) && 
-                        u.password_hash === password && 
-                        u.eliminado === false &&
-                        u.cuenta_bloqueada === false
-                    );
-                    
-                    if (!usuario) throw new Error('Credenciales incorrectas');
-                    
-                    // Guardar sesión
-                    localStorage.setItem('usuario', JSON.stringify({
-                        id: usuario.id,
-                        username: usuario.username,
-                        email: usuario.email,
-                        rol_sistema: usuario.rol_sistema,
-                        nivel_acceso: usuario.nivel_acceso,
-                        empresa_id: usuario.empresa_id
-                    }));
-                    
-                    // Redirigir según rol
-                    if (usuario.rol_sistema === 'DIRECTOR_CORPORATIVO') {
-                        window.location.href = 'Director%20Corporativo.html';
-                    } else {
-                        errorDiv.textContent = 'Acceso restringido. Solo Director Corporativo.';
-                    }
-                    
+                    throw new Error('Error de conexión');
+                }
+                
+                const usuarios = await response.json();
+                
+                // Buscar usuario manualmente
+                const usuario = usuarios.find(u => 
+                    (u.username === username || u.email === username) && 
+                    u.password_hash === password && 
+                    u.eliminado === false &&
+                    u.cuenta_bloqueada === false
+                );
+                
+                if (!usuario) {
+                    throw new Error('Credenciales incorrectas');
+                }
+                
+                // Guardar sesión
+                localStorage.setItem('usuario', JSON.stringify({
+                    id: usuario.id,
+                    username: usuario.username,
+                    email: usuario.email,
+                    rol_sistema: usuario.rol_sistema,
+                    nivel_acceso: usuario.nivel_acceso,
+                    empresa_id: usuario.empresa_id
+                }));
+                
+                // Redirigir según rol
+                if (usuario.rol_sistema === 'DIRECTOR_CORPORATIVO') {
+                    window.location.href = 'Director%20Corporativo.html';
                 } else {
-                    const usuarios = await response.json();
-                    const usuario = usuarios.find(u => 
-                        u.password_hash === password && 
-                        u.eliminado === false &&
-                        u.cuenta_bloqueada === false
-                    );
-                    
-                    if (!usuario) throw new Error('Credenciales incorrectas');
-                    
-                    // Guardar sesión
-                    localStorage.setItem('usuario', JSON.stringify(usuario));
-                    
-                    if (usuario.rol_sistema === 'DIRECTOR_CORPORATIVO') {
-                        window.location.href = 'Director%20Corporativo.html';
-                    } else {
-                        errorDiv.textContent = 'Acceso restringido. Solo Director Corporativo.';
-                    }
+                    errorDiv.textContent = 'Acceso restringido. Solo Director Corporativo.';
                 }
                 
             } catch (error) {
