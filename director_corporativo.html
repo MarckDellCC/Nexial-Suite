@@ -3,955 +3,758 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Director Corporativo - Nexial</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
-        .container { max-width: 1400px; margin: 0 auto; }
-        
-        header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 20px; 
-            padding-bottom: 15px; 
-            border-bottom: 2px solid #ddd; 
-        }
-        
-        h1 { color: #333; }
-        
-        .user-info { 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-        }
-        
-        .tab-buttons { 
-            display: flex; 
-            gap: 10px; 
-            margin-bottom: 20px; 
-        }
-        
-        .tab-btn { 
-            padding: 10px 20px; 
-            background: #ddd; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
-        }
-        
-        .tab-btn.active { 
-            background: #4CAF50; 
-            color: white; 
-        }
-        
-        .btn { 
-            padding: 8px 15px; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            margin: 5px; 
-        }
-        
-        .btn-primary { background: #4CAF50; color: white; }
-        .btn-secondary { background: #008CBA; color: white; }
-        .btn-danger { background: #f44336; color: white; }
-        .btn-edit { background: #ff9800; color: white; }
-        
-        .content-section { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 5px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-            margin-bottom: 20px; 
-        }
-        
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 15px; 
-        }
-        
-        th, td { 
-            padding: 10px; 
-            text-align: left; 
-            border-bottom: 1px solid #ddd; 
-        }
-        
-        th { background: #f2f2f2; }
-        
-        tr:hover { background: #f9f9f9; }
-        
-        .modal { 
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.5); 
-            z-index: 1000; 
-            align-items: center; 
-            justify-content: center; 
-        }
-        
-        .modal-content { 
-            background: white; 
-            padding: 25px; 
-            border-radius: 8px; 
-            width: 90%; 
-            max-width: 700px; 
-            max-height: 80vh; 
-            overflow-y: auto; 
-        }
-        
-        .modal-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 20px; 
-        }
-        
-        .form-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 15px; 
-        }
-        
-        .form-group { margin-bottom: 15px; }
-        
-        .form-group label { 
-            display: block; 
-            margin-bottom: 5px; 
-            font-weight: bold; 
-        }
-        
-        .form-group input, 
-        .form-group select, 
-        .form-group textarea { 
-            width: 100%; 
-            padding: 8px; 
-            border: 1px solid #ddd; 
-            border-radius: 4px; 
-        }
-        
-        .form-actions { 
-            display: flex; 
-            justify-content: flex-end; 
-            gap: 10px; 
-            margin-top: 20px; 
-        }
-        
-        .status-message { 
-            padding: 10px; 
-            margin: 10px 0; 
-            border-radius: 4px; 
-            text-align: center; 
-        }
-        
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-        
-        .loading { 
-            text-align: center; 
-            padding: 20px; 
-            color: #666; 
-        }
-        
-        .empty-state { 
-            text-align: center; 
-            padding: 40px; 
-            color: #666; 
-            font-style: italic; 
-        }
-        
-        .actions-cell { 
-            white-space: nowrap; 
-        }
-    </style>
+    <title>Director Corporativo</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Director Corporativo - Nexial Suite</h1>
-            <div class="user-info">
-                <span id="userEmail">Cargando...</span>
-                <button class="btn btn-danger" id="logoutBtn">Cerrar Sesión</button>
-            </div>
-        </header>
-
-        <div class="tab-buttons">
-            <button class="tab-btn active" data-tab="empresas">Empresas</button>
-            <button class="tab-btn" data-tab="usuarios">Usuarios</button>
-        </div>
-
-        <div id="statusMessage" class="status-message" style="display: none;"></div>
-        <div id="errorMessage" class="status-message error" style="display: none;"></div>
-
-        <!-- Sección Empresas -->
-        <div id="empresasSection" class="content-section">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>Gestión de Empresas</h2>
-                <button class="btn btn-primary" id="crearEmpresaBtn">Nueva Empresa</button>
-            </div>
-            
-            <div id="empresasLoading" class="loading">Cargando empresas...</div>
-            <div id="empresasEmpty" class="empty-state" style="display: none;">
-                <p>No hay empresas registradas</p>
-                <button class="btn btn-primary" id="crearPrimeraEmpresaBtn">Crear primera empresa</button>
-            </div>
-            
-            <div id="empresasContainer" style="display: none;">
-                <table id="empresasTable">
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Nombre</th>
-                            <th>País</th>
-                            <th>Ciudad</th>
-                            <th>Email</th>
-                            <th>Teléfono</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="empresasBody"></tbody>
-                </table>
+    <div style="padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>Panel de Director Corporativo</h1>
+            <div>
+                <span id="usuario-info" style="margin-right: 20px;"></span>
+                <button onclick="logout()" style="padding: 5px 15px; background: #dc3545; color: white; border: none; cursor: pointer;">
+                    Cerrar Sesión
+                </button>
             </div>
         </div>
-
-        <!-- Sección Usuarios -->
-        <div id="usuariosSection" class="content-section" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>Gestión de Usuarios</h2>
-                <button class="btn btn-primary" id="crearUsuarioBtn">Nuevo Usuario</button>
-            </div>
-            
-            <div id="usuariosLoading" class="loading">Cargando usuarios...</div>
-            <div id="usuariosEmpty" class="empty-state" style="display: none;">
-                <p>No hay usuarios registrados</p>
-                <button class="btn btn-primary" id="crearPrimerUsuarioBtn">Crear primer usuario</button>
-            </div>
-            
-            <div id="usuariosContainer" style="display: none;">
-                <table id="usuariosTable">
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Nombre</th>
-                            <th>Email</th>
-                            <th>Rol</th>
-                            <th>Empresa</th>
-                            <th>Departamento</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usuariosBody"></tbody>
-                </table>
-            </div>
+        
+        <div id="error" style="color: red; display: none; margin-bottom: 10px; padding: 10px; background: #ffe6e6;"></div>
+        <div id="success" style="color: green; display: none; margin-bottom: 10px; padding: 10px; background: #e6ffe6;"></div>
+        
+        <!-- Pestañas -->
+        <div style="margin-bottom: 20px;">
+            <button onclick="mostrarTab('empresas')" id="tab-empresas" style="padding: 10px 20px; margin-right: 5px; cursor: pointer;">
+                Empresas
+            </button>
+            <button onclick="mostrarTab('usuarios')" id="tab-usuarios" style="padding: 10px 20px; margin-right: 5px; cursor: pointer;">
+                Usuarios
+            </button>
+            <button onclick="mostrarTab('empleados')" id="tab-empleados" style="padding: 10px 20px; cursor: pointer;">
+                Empleados
+            </button>
         </div>
-
-        <!-- Modal Empresa -->
-        <div id="modalEmpresa" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="modalEmpresaTitle">Nueva Empresa</h2>
-                    <button class="btn btn-danger" id="cerrarModalEmpresaBtn">X</button>
-                </div>
-                <form id="formEmpresa">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="empresa_id">ID (único)</label>
-                            <input type="text" id="empresa_id" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="codigo">Código</label>
-                            <input type="text" id="codigo">
-                        </div>
-                        <div class="form-group">
-                            <label for="nombre">Nombre *</label>
-                            <input type="text" id="nombre" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email">
-                        </div>
-                        <div class="form-group">
-                            <label for="pais">País</label>
-                            <input type="text" id="pais">
-                        </div>
-                        <div class="form-group">
-                            <label for="ciudad">Ciudad</label>
-                            <input type="text" id="ciudad">
-                        </div>
-                        <div class="form-group">
-                            <label for="region">Región</label>
-                            <input type="text" id="region">
-                        </div>
-                        <div class="form-group">
-                            <label for="telefono">Teléfono</label>
-                            <input type="text" id="telefono">
-                        </div>
-                        <div class="form-group">
-                            <label for="direccion">Dirección</label>
-                            <textarea id="direccion" rows="2"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="codigo_postal">Código Postal</label>
-                            <input type="text" id="codigo_postal">
-                        </div>
-                        <div class="form-group">
-                            <label for="grupo_corporativo">Grupo Corporativo</label>
-                            <input type="text" id="grupo_corporativo">
-                        </div>
-                        <div class="form-group">
-                            <label for="dominio_corporativo">Dominio Corporativo</label>
-                            <input type="text" id="dominio_corporativo">
-                        </div>
-                        <div class="form-group">
-                            <label for="moneda_default">Moneda</label>
-                            <select id="moneda_default">
-                                <option value="USD">USD</option>
-                                <option value="EUR">EUR</option>
-                                <option value="COP">COP</option>
-                                <option value="MXN">MXN</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="activo">Estado</label>
-                            <select id="activo">
-                                <option value="true">Activa</option>
-                                <option value="false">Inactiva</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" id="cancelarEmpresaBtn">Cancelar</button>
-                        <button type="submit" class="btn btn-primary" id="guardarEmpresaBtn">Guardar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Modal Usuario -->
-        <div id="modalUsuario" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="modalUsuarioTitle">Nuevo Usuario</h2>
-                    <button class="btn btn-danger" id="cerrarModalUsuarioBtn">X</button>
-                </div>
-                <form id="formUsuario">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="usuario_email">Email *</label>
-                            <input type="email" id="usuario_email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="usuario_password">Contraseña *</label>
-                            <input type="password" id="usuario_password" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="usuario_nombre">Nombre *</label>
-                            <input type="text" id="usuario_nombre" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="usuario_apellido">Apellido</label>
-                            <input type="text" id="usuario_apellido">
-                        </div>
-                        <div class="form-group">
-                            <label for="usuario_rol">Rol *</label>
-                            <select id="usuario_rol" required>
-                                <option value="">Seleccionar</option>
-                                <option value="Director Corporativo">Director Corporativo</option>
-                                <option value="Director General">Director General</option>
-                                <option value="Director Financiero">Director Financiero</option>
-                                <option value="Supervisor Senior">Supervisor Senior</option>
-                                <option value="Ejecutivo Comercial">Ejecutivo Comercial</option>
-                                <option value="Especialista Logístico">Especialista Logístico</option>
-                                <option value="Gestor de Almacén">Gestor de Almacén</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="usuario_empresa_id">Empresa *</label>
-                            <select id="usuario_empresa_id" required></select>
-                        </div>
-                        <div class="form-group">
-                            <label for="usuario_departamento">Departamento</label>
-                            <input type="text" id="usuario_departamento">
-                        </div>
-                        <div class="form-group">
-                            <label for="usuario_cargo">Cargo</label>
-                            <input type="text" id="usuario_cargo">
-                        </div>
-                        <div class="form-group">
-                            <label for="usuario_telefono">Teléfono</label>
-                            <input type="text" id="usuario_telefono">
-                        </div>
-                        <div class="form-group">
-                            <label for="usuario_activo">Estado</label>
-                            <select id="usuario_activo">
-                                <option value="true">Activo</option>
-                                <option value="false">Inactivo</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" id="cancelarUsuarioBtn">Cancelar</button>
-                        <button type="submit" class="btn btn-primary" id="guardarUsuarioBtn">Guardar</button>
-                    </div>
-                </form>
-            </div>
+        
+        <!-- Contenido de las pestañas -->
+        <div id="contenido">
+            <!-- Contenido se cargará dinámicamente -->
         </div>
     </div>
 
     <script>
-        // Configuración Supabase
-        const SUPABASE_URL = 'https://zshnzeqstrdzuljqueto.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_J8vYye7ZumaK4hGoRwaIpQ_O_kj0ERX';
+        // Configuración de Supabase
+        const SUPABASE_URL = 'https://dcmzpbfhtcevinruphcz.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_kIb5dk3KdkVJLGBfKEeyog_OxrzqsjB';
         
-        let supabase = null;
-        let currentSession = null;
-        let empresasData = [];
-        let usuariosData = [];
-        let editMode = false;
-        let currentEditId = null;
-
-        // Inicializar aplicación
-        document.addEventListener('DOMContentLoaded', async () => {
-            await inicializarSupabase();
-            await verificarSesion();
-            configurarEventos();
-            await cargarEmpresas();
-            await cargarUsuarios();
-            cargarSelectEmpresas();
-        });
-
-        // Inicializar Supabase
-        async function inicializarSupabase() {
-            try {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                console.log('Supabase inicializado');
-            } catch (error) {
-                mostrarError('Error al conectar con la base de datos');
-            }
-        }
-
-        // Verificar sesión
-        async function verificarSesion() {
-            try {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                if (error || !session) {
-                    window.location.href = 'login.html';
-                    return false;
-                }
-                currentSession = session;
-                document.getElementById('userEmail').textContent = session.user.email;
-                return true;
-            } catch (error) {
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let usuarioActual = null;
+        let tabActual = 'empresas';
+        
+        // Verificar autenticación al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            const usuarioStr = sessionStorage.getItem('usuario');
+            
+            if (!usuarioStr) {
                 window.location.href = 'login.html';
-                return false;
+                return;
+            }
+            
+            usuarioActual = JSON.parse(usuarioStr);
+            
+            // Verificar que sea Director Corporativo
+            if (usuarioActual.rol_sistema !== 'DIRECTOR_CORPORATIVO') {
+                alert('Acceso denegado. Solo para Director Corporativo');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Mostrar información del usuario
+            document.getElementById('usuario-info').textContent = 
+                `${usuarioActual.username} (${usuarioActual.rol_sistema})`;
+            
+            // Cargar la pestaña inicial
+            mostrarTab('empresas');
+        });
+        
+        function mostrarTab(tab) {
+            tabActual = tab;
+            
+            // Actualizar botones activos
+            ['empresas', 'usuarios', 'empleados'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (btn) {
+                    btn.style.background = t === tab ? '#007bff' : '#f8f9fa';
+                    btn.style.color = t === tab ? 'white' : 'black';
+                }
+            });
+            
+            // Cargar contenido
+            switch(tab) {
+                case 'empresas':
+                    cargarEmpresas();
+                    break;
+                case 'usuarios':
+                    cargarUsuarios();
+                    break;
+                case 'empleados':
+                    cargarEmpleados();
+                    break;
             }
         }
-
-        // Cargar empresas desde la tabla correcta
+        
+        function logout() {
+            sessionStorage.removeItem('usuario');
+            window.location.href = 'login.html';
+        }
+        
+        // ===== FUNCIONES PARA EMPRESAS =====
         async function cargarEmpresas() {
             try {
-                mostrarCarga('empresas', true);
-                ocultarMensajes();
-
-                const { data, error } = await supabase
+                const { data: empresas, error } = await supabase
                     .from('empresas')
                     .select('*')
-                    .order('nombre', { ascending: true });
-
+                    .order('nombre_legal');
+                
                 if (error) throw error;
-
-                empresasData = data || [];
-                actualizarTablaEmpresas(empresasData);
+                
+                let html = `
+                    <div style="margin-bottom: 20px;">
+                        <button onclick="mostrarFormularioEmpresa()" 
+                                style="padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer;">
+                            + Nueva Empresa
+                        </button>
+                    </div>
+                    
+                    <div id="formulario-empresa" style="display: none; margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; background: #f9f9f9;">
+                        <!-- Formulario se cargará aquí -->
+                    </div>
+                    
+                    <div style="overflow-x: auto;">
+                        <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f2f2f2;">
+                                    <th>Código</th>
+                                    <th>Nombre Legal</th>
+                                    <th>RUT/NIT</th>
+                                    <th>País</th>
+                                    <th>Moneda</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                if (empresas && empresas.length > 0) {
+                    empresas.forEach(empresa => {
+                        html += `
+                            <tr>
+                                <td>${empresa.codigo_empresa || ''}</td>
+                                <td>${empresa.nombre_legal || ''}</td>
+                                <td>${empresa.rut_nit_identificacion || ''}</td>
+                                <td>${empresa.pais || ''}</td>
+                                <td>${empresa.moneda_principal || ''}</td>
+                                <td>${empresa.activa ? 'Activa' : 'Inactiva'}</td>
+                                <td>
+                                    <button onclick="editarEmpresa('${empresa.id}')" style="padding: 5px 10px; margin-right: 5px; cursor: pointer;">Editar</button>
+                                    <button onclick="eliminarEmpresa('${empresa.id}')" style="padding: 5px 10px; background: #dc3545; color: white; cursor: pointer;">Eliminar</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    html += `<tr><td colspan="7" style="text-align: center;">No hay empresas registradas</td></tr>`;
+                }
+                
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                document.getElementById('contenido').innerHTML = html;
                 
             } catch (error) {
                 mostrarError('Error al cargar empresas: ' + error.message);
-            } finally {
-                mostrarCarga('empresas', false);
             }
         }
-
-        // Cargar usuarios desde la tabla correcta
-        async function cargarUsuarios() {
-            try {
-                mostrarCarga('usuarios', true);
-                ocultarMensajes();
-
-                const { data, error } = await supabase
-                    .from('usuarios')
-                    .select('*, empresas(nombre)')
-                    .order('nombre', { ascending: true });
-
-                if (error) throw error;
-
-                usuariosData = data || [];
-                actualizarTablaUsuarios(usuariosData);
-                
-            } catch (error) {
-                mostrarError('Error al cargar usuarios: ' + error.message);
-            } finally {
-                mostrarCarga('usuarios', false);
-            }
-        }
-
-        // Cargar empresas en select para usuario
-        async function cargarSelectEmpresas() {
-            try {
-                const { data, error } = await supabase
-                    .from('empresas')
-                    .select('id, nombre')
-                    .order('nombre');
-
-                if (error) throw error;
-
-                const select = document.getElementById('usuario_empresa_id');
-                select.innerHTML = '<option value="">Seleccionar empresa</option>';
-                
-                data.forEach(empresa => {
-                    const option = document.createElement('option');
-                    option.value = empresa.id;
-                    option.textContent = empresa.nombre;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error cargando empresas para select:', error);
-            }
-        }
-
-        // Actualizar tabla de empresas
-        function actualizarTablaEmpresas(empresas) {
-            const tbody = document.getElementById('empresasBody');
-            const container = document.getElementById('empresasContainer');
-            const emptyState = document.getElementById('empresasEmpty');
+        
+        function mostrarFormularioEmpresa(empresa = null) {
+            const esEdicion = empresa !== null;
             
-            tbody.innerHTML = '';
-
-            if (!empresas || empresas.length === 0) {
-                container.style.display = 'none';
-                emptyState.style.display = 'block';
-                return;
-            }
-
-            emptyState.style.display = 'none';
-            container.style.display = 'block';
-
-            empresas.forEach(empresa => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${empresa.codigo || '-'}</td>
-                    <td>${empresa.nombre}</td>
-                    <td>${empresa.pais || '-'}</td>
-                    <td>${empresa.ciudad || '-'}</td>
-                    <td>${empresa.email || '-'}</td>
-                    <td>${empresa.telefono || '-'}</td>
-                    <td>${empresa.activo ? 'Activa' : 'Inactiva'}</td>
-                    <td class="actions-cell">
-                        <button class="btn btn-edit" onclick="editarEmpresa('${empresa.id}')">Editar</button>
-                        <button class="btn btn-danger" onclick="eliminarEmpresa('${empresa.id}')">Eliminar</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // Actualizar tabla de usuarios
-        function actualizarTablaUsuarios(usuarios) {
-            const tbody = document.getElementById('usuariosBody');
-            const container = document.getElementById('usuariosContainer');
-            const emptyState = document.getElementById('usuariosEmpty');
+            let html = `
+                <h3>${esEdicion ? 'Editar Empresa' : 'Nueva Empresa'}</h3>
+                <form id="formEmpresa" onsubmit="guardarEmpresa(event)">
+                    <input type="hidden" id="empresa_id" value="${empresa ? empresa.id : ''}">
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label>Código Empresa *</label>
+                            <input type="text" id="codigo_empresa" value="${empresa ? empresa.codigo_empresa : ''}" required style="width: 100%; padding: 5px;">
+                        </div>
+                        <div>
+                            <label>RUT/NIT Identificación *</label>
+                            <input type="text" id="rut_nit" value="${empresa ? empresa.rut_nit_identificacion : ''}" required style="width: 100%; padding: 5px;">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label>Nombre Legal *</label>
+                        <input type="text" id="nombre_legal" value="${empresa ? empresa.nombre_legal : ''}" required style="width: 100%; padding: 5px;">
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label>Nombre Comercial</label>
+                        <input type="text" id="nombre_comercial" value="${empresa ? empresa.nombre_comercial : ''}" style="width: 100%; padding: 5px;">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label>País *</label>
+                            <input type="text" id="pais" value="${empresa ? empresa.pais : ''}" required style="width: 100%; padding: 5px;">
+                        </div>
+                        <div>
+                            <label>Ciudad</label>
+                            <input type="text" id="ciudad" value="${empresa ? empresa.ciudad : ''}" style="width: 100%; padding: 5px;">
+                        </div>
+                        <div>
+                            <label>Moneda Principal *</label>
+                            <input type="text" id="moneda" value="${empresa ? empresa.moneda_principal : 'COP'}" required style="width: 100%; padding: 5px;">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label>Dirección</label>
+                        <textarea id="direccion" style="width: 100%; padding: 5px; height: 60px;">${empresa ? empresa.direccion : ''}</textarea>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label>Teléfono</label>
+                            <input type="text" id="telefono" value="${empresa ? empresa.telefono : ''}" style="width: 100%; padding: 5px;">
+                        </div>
+                        <div>
+                            <label>Email</label>
+                            <input type="email" id="email" value="${empresa ? empresa.email : ''}" style="width: 100%; padding: 5px;">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label>Zona Horaria *</label>
+                            <input type="text" id="zona_horaria" value="${empresa ? empresa.zona_horaria : 'America/Bogota'}" required style="width: 100%; padding: 5px;">
+                        </div>
+                        <div>
+                            <label>Estado</label>
+                            <select id="activa" style="width: 100%; padding: 5px;">
+                                <option value="true" ${empresa && empresa.activa ? 'selected' : ''}>Activa</option>
+                                <option value="false" ${empresa && !empresa.activa ? 'selected' : ''}>Inactiva</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer;">
+                            ${esEdicion ? 'Actualizar' : 'Guardar'}
+                        </button>
+                        <button type="button" onclick="document.getElementById('formulario-empresa').style.display='none'" 
+                                style="padding: 10px 20px; background: #6c757d; color: white; border: none; cursor: pointer;">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            `;
             
-            tbody.innerHTML = '';
-
-            if (!usuarios || usuarios.length === 0) {
-                container.style.display = 'none';
-                emptyState.style.display = 'block';
-                return;
-            }
-
-            emptyState.style.display = 'none';
-            container.style.display = 'block';
-
-            usuarios.forEach(usuario => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${usuario.codigo || '-'}</td>
-                    <td>${usuario.nombre} ${usuario.apellido || ''}</td>
-                    <td>${usuario.email}</td>
-                    <td>${usuario.rol}</td>
-                    <td>${usuario.empresas?.nombre || usuario.empresa_id}</td>
-                    <td>${usuario.departamento || '-'}</td>
-                    <td>${usuario.activo ? 'Activo' : 'Inactivo'}</td>
-                    <td class="actions-cell">
-                        <button class="btn btn-edit" onclick="editarUsuario('${usuario.id}')">Editar</button>
-                        <button class="btn btn-danger" onclick="eliminarUsuario('${usuario.id}')">Eliminar</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+            document.getElementById('formulario-empresa').innerHTML = html;
+            document.getElementById('formulario-empresa').style.display = 'block';
         }
-
-        // Abrir modal para crear empresa
-        function abrirModalEmpresa() {
-            editMode = false;
-            currentEditId = null;
-            document.getElementById('modalEmpresaTitle').textContent = 'Nueva Empresa';
-            document.getElementById('formEmpresa').reset();
-            
-            // Generar ID automático si está vacío
-            const idInput = document.getElementById('empresa_id');
-            if (!idInput.value) {
-                idInput.value = 'emp-' + Date.now();
-            }
-            
-            document.getElementById('modalEmpresa').style.display = 'flex';
-        }
-
-        // Editar empresa
-        async function editarEmpresa(id) {
-            try {
-                const empresa = empresasData.find(e => e.id === id);
-                if (!empresa) return;
-
-                editMode = true;
-                currentEditId = id;
-                document.getElementById('modalEmpresaTitle').textContent = 'Editar Empresa';
-                
-                // Rellenar formulario
-                document.getElementById('empresa_id').value = empresa.id;
-                document.getElementById('codigo').value = empresa.codigo || '';
-                document.getElementById('nombre').value = empresa.nombre;
-                document.getElementById('email').value = empresa.email || '';
-                document.getElementById('pais').value = empresa.pais || '';
-                document.getElementById('ciudad').value = empresa.ciudad || '';
-                document.getElementById('region').value = empresa.region || '';
-                document.getElementById('telefono').value = empresa.telefono || '';
-                document.getElementById('direccion').value = empresa.direccion || '';
-                document.getElementById('codigo_postal').value = empresa.codigo_postal || '';
-                document.getElementById('grupo_corporativo').value = empresa.grupo_corporativo || '';
-                document.getElementById('dominio_corporativo').value = empresa.dominio_corporativo || '';
-                document.getElementById('moneda_default').value = empresa.moneda_default || 'USD';
-                document.getElementById('activo').value = empresa.activo.toString();
-                
-                document.getElementById('modalEmpresa').style.display = 'flex';
-            } catch (error) {
-                mostrarError('Error al cargar empresa: ' + error.message);
-            }
-        }
-
-        // Guardar empresa (crear o actualizar)
+        
         async function guardarEmpresa(event) {
             event.preventDefault();
             
+            const empresaId = document.getElementById('empresa_id').value;
+            const esEdicion = empresaId !== '';
+            
+            const empresaData = {
+                codigo_empresa: document.getElementById('codigo_empresa').value,
+                nombre_legal: document.getElementById('nombre_legal').value,
+                nombre_comercial: document.getElementById('nombre_comercial').value,
+                rut_nit_identificacion: document.getElementById('rut_nit').value,
+                pais: document.getElementById('pais').value,
+                ciudad: document.getElementById('ciudad').value,
+                direccion: document.getElementById('direccion').value,
+                telefono: document.getElementById('telefono').value,
+                email: document.getElementById('email').value,
+                moneda_principal: document.getElementById('moneda').value,
+                zona_horaria: document.getElementById('zona_horaria').value,
+                activa: document.getElementById('activa').value === 'true'
+            };
+            
             try {
-                const empresaData = {
-                    id: document.getElementById('empresa_id').value.trim(),
-                    codigo: document.getElementById('codigo').value.trim() || null,
-                    nombre: document.getElementById('nombre').value.trim(),
-                    email: document.getElementById('email').value.trim() || null,
-                    pais: document.getElementById('pais').value.trim() || null,
-                    ciudad: document.getElementById('ciudad').value.trim() || null,
-                    region: document.getElementById('region').value.trim() || null,
-                    telefono: document.getElementById('telefono').value.trim() || null,
-                    direccion: document.getElementById('direccion').value.trim() || null,
-                    codigo_postal: document.getElementById('codigo_postal').value.trim() || null,
-                    grupo_corporativo: document.getElementById('grupo_corporativo').value.trim() || null,
-                    dominio_corporativo: document.getElementById('dominio_corporativo').value.trim() || null,
-                    moneda_default: document.getElementById('moneda_default').value,
-                    activo: document.getElementById('activo').value === 'true'
-                };
-
-                // Validaciones básicas
-                if (!empresaData.nombre) {
-                    mostrarError('El nombre es obligatorio');
-                    return;
-                }
-
-                let resultado;
+                let result;
                 
-                if (editMode && currentEditId) {
-                    // Actualizar
-                    const { data, error } = await supabase
+                if (esEdicion) {
+                    result = await supabase
                         .from('empresas')
                         .update(empresaData)
-                        .eq('id', currentEditId)
-                        .select();
-
-                    if (error) throw error;
-                    resultado = data;
-                    mostrarExito('Empresa actualizada correctamente');
+                        .eq('id', empresaId);
                 } else {
-                    // Crear nueva
-                    const { data, error } = await supabase
+                    result = await supabase
                         .from('empresas')
-                        .insert([empresaData])
-                        .select();
-
-                    if (error) throw error;
-                    resultado = data;
-                    mostrarExito('Empresa creada correctamente');
+                        .insert([empresaData]);
                 }
-
-                if (resultado && resultado.length > 0) {
-                    cerrarModal('empresa');
-                    await cargarEmpresas();
-                    await cargarSelectEmpresas();
-                }
+                
+                if (result.error) throw result.error;
+                
+                mostrarExito(`Empresa ${esEdicion ? 'actualizada' : 'creada'} correctamente`);
+                document.getElementById('formulario-empresa').style.display = 'none';
+                cargarEmpresas();
+                
             } catch (error) {
                 mostrarError('Error al guardar empresa: ' + error.message);
             }
         }
-
-        // Eliminar empresa
+        
+        async function editarEmpresa(id) {
+            try {
+                const { data: empresa, error } = await supabase
+                    .from('empresas')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                
+                if (error) throw error;
+                
+                mostrarFormularioEmpresa(empresa);
+                
+            } catch (error) {
+                mostrarError('Error al cargar empresa: ' + error.message);
+            }
+        }
+        
         async function eliminarEmpresa(id) {
-            if (!confirm('¿Está seguro de eliminar esta empresa? Se eliminarán todos sus usuarios relacionados.')) return;
-
+            if (!confirm('¿Está seguro de eliminar esta empresa? Esta acción no se puede deshacer.')) {
+                return;
+            }
+            
             try {
                 const { error } = await supabase
                     .from('empresas')
                     .delete()
                     .eq('id', id);
-
+                
                 if (error) throw error;
-
+                
                 mostrarExito('Empresa eliminada correctamente');
-                await cargarEmpresas();
-                await cargarSelectEmpresas();
+                cargarEmpresas();
+                
             } catch (error) {
                 mostrarError('Error al eliminar empresa: ' + error.message);
             }
         }
-
-        // Abrir modal para crear usuario
-        function abrirModalUsuario() {
-            editMode = false;
-            currentEditId = null;
-            document.getElementById('modalUsuarioTitle').textContent = 'Nuevo Usuario';
-            document.getElementById('formUsuario').reset();
-            document.getElementById('modalUsuario').style.display = 'flex';
-        }
-
-        // Editar usuario
-        async function editarUsuario(id) {
+        
+        // ===== FUNCIONES PARA USUARIOS =====
+        async function cargarUsuarios() {
             try {
-                const usuario = usuariosData.find(u => u.id === id);
-                if (!usuario) return;
-
-                editMode = true;
-                currentEditId = id;
-                document.getElementById('modalUsuarioTitle').textContent = 'Editar Usuario';
+                const { data: usuarios, error } = await supabase
+                    .from('usuarios')
+                    .select('*, empresas(nombre_legal)')
+                    .eq('eliminado', false)
+                    .order('username');
                 
-                // Rellenar formulario
-                document.getElementById('usuario_email').value = usuario.email;
-                document.getElementById('usuario_password').value = '';
-                document.getElementById('usuario_password').placeholder = 'Dejar vacío para no cambiar';
-                document.getElementById('usuario_nombre').value = usuario.nombre;
-                document.getElementById('usuario_apellido').value = usuario.apellido || '';
-                document.getElementById('usuario_rol').value = usuario.rol;
-                document.getElementById('usuario_empresa_id').value = usuario.empresa_id;
-                document.getElementById('usuario_departamento').value = usuario.departamento || '';
-                document.getElementById('usuario_cargo').value = usuario.cargo || '';
-                document.getElementById('usuario_telefono').value = usuario.telefono || '';
-                document.getElementById('usuario_activo').value = usuario.activo.toString();
+                if (error) throw error;
                 
-                document.getElementById('modalUsuario').style.display = 'flex';
+                let html = `
+                    <div style="margin-bottom: 20px;">
+                        <button onclick="mostrarFormularioUsuario()" 
+                                style="padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer;">
+                            + Nuevo Usuario
+                        </button>
+                    </div>
+                    
+                    <div id="formulario-usuario" style="display: none; margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; background: #f9f9f9;">
+                        <!-- Formulario se cargará aquí -->
+                    </div>
+                    
+                    <div style="overflow-x: auto;">
+                        <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f2f2f2;">
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Empresa</th>
+                                    <th>Rol</th>
+                                    <th>Nivel Acceso</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                if (usuarios && usuarios.length > 0) {
+                    usuarios.forEach(usuario => {
+                        html += `
+                            <tr>
+                                <td>${usuario.username || ''}</td>
+                                <td>${usuario.email || ''}</td>
+                                <td>${usuario.empresas ? usuario.empresas.nombre_legal : 'N/A'}</td>
+                                <td>${usuario.rol_sistema || ''}</td>
+                                <td>${usuario.nivel_acceso || ''}</td>
+                                <td>${usuario.cuenta_bloqueada ? 'Bloqueada' : 'Activa'}</td>
+                                <td>
+                                    <button onclick="editarUsuario('${usuario.id}')" style="padding: 5px 10px; margin-right: 5px; cursor: pointer;">Editar</button>
+                                    <button onclick="eliminarUsuario('${usuario.id}')" style="padding: 5px 10px; background: #dc3545; color: white; cursor: pointer;">Eliminar</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    html += `<tr><td colspan="7" style="text-align: center;">No hay usuarios registrados</td></tr>`;
+                }
+                
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                document.getElementById('contenido').innerHTML = html;
+                
             } catch (error) {
-                mostrarError('Error al cargar usuario: ' + error.message);
+                mostrarError('Error al cargar usuarios: ' + error.message);
             }
         }
-
-        // Guardar usuario (crear o actualizar)
+        
+        async function mostrarFormularioUsuario(usuario = null) {
+            // Cargar empresas para el select
+            const { data: empresas, error } = await supabase
+                .from('empresas')
+                .select('id, nombre_legal')
+                .order('nombre_legal');
+            
+            if (error) {
+                mostrarError('Error al cargar empresas: ' + error.message);
+                return;
+            }
+            
+            const esEdicion = usuario !== null;
+            
+            let empresasOptions = '<option value="">Seleccionar Empresa</option>';
+            if (empresas) {
+                empresas.forEach(emp => {
+                    const selected = usuario && usuario.empresa_id === emp.id ? 'selected' : '';
+                    empresasOptions += `<option value="${emp.id}" ${selected}>${emp.nombre_legal}</option>`;
+                });
+            }
+            
+            // Roles disponibles
+            const roles = [
+                'DIRECTOR_CORPORATIVO',
+                'DIRECTOR_GENERAL', 
+                'DIRECTOR_FINANCIERO',
+                'SUPERVISOR_SENIOR',
+                'EJECUTIVO_COMERCIAL',
+                'ESPECIALISTA_LOGISTICO',
+                'GESTOR_ALMACEN'
+            ];
+            
+            let rolesOptions = '';
+            roles.forEach(rol => {
+                const selected = usuario && usuario.rol_sistema === rol ? 'selected' : '';
+                rolesOptions += `<option value="${rol}" ${selected}>${rol}</option>`;
+            });
+            
+            let html = `
+                <h3>${esEdicion ? 'Editar Usuario' : 'Nuevo Usuario'}</h3>
+                <form id="formUsuario" onsubmit="guardarUsuario(event)">
+                    <input type="hidden" id="usuario_id" value="${usuario ? usuario.id : ''}">
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label>Username *</label>
+                            <input type="text" id="username" value="${usuario ? usuario.username : ''}" required style="width: 100%; padding: 5px;">
+                        </div>
+                        <div>
+                            <label>Email *</label>
+                            <input type="email" id="email" value="${usuario ? usuario.email : ''}" required style="width: 100%; padding: 5px;">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label>Contraseña ${esEdicion ? '(dejar en blanco para no cambiar)' : '*'}</label>
+                            <input type="password" id="password" ${esEdicion ? '' : 'required'} style="width: 100%; padding: 5px;">
+                        </div>
+                        <div>
+                            <label>Confirmar Contraseña ${esEdicion ? '(dejar en blanco para no cambiar)' : '*'}</label>
+                            <input type="password" id="confirm_password" ${esEdicion ? '' : 'required'} style="width: 100%; padding: 5px;">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label>Empresa *</label>
+                            <select id="empresa_id" required style="width: 100%; padding: 5px;">
+                                ${empresasOptions}
+                            </select>
+                        </div>
+                        <div>
+                            <label>Rol del Sistema *</label>
+                            <select id="rol_sistema" required style="width: 100%; padding: 5px;">
+                                ${rolesOptions}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label>Nivel de Acceso *</label>
+                            <input type="number" id="nivel_acceso" min="1" max="10" value="${usuario ? usuario.nivel_acceso : 1}" required style="width: 100%; padding: 5px;">
+                        </div>
+                        <div>
+                            <label>Estado de Cuenta</label>
+                            <select id="cuenta_bloqueada" style="width: 100%; padding: 5px;">
+                                <option value="false" ${usuario && !usuario.cuenta_bloqueada ? 'selected' : ''}>Activa</option>
+                                <option value="true" ${usuario && usuario.cuenta_bloqueada ? 'selected' : ''}>Bloqueada</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer;">
+                            ${esEdicion ? 'Actualizar' : 'Guardar'}
+                        </button>
+                        <button type="button" onclick="document.getElementById('formulario-usuario').style.display='none'" 
+                                style="padding: 10px 20px; background: #6c757d; color: white; border: none; cursor: pointer;">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            document.getElementById('formulario-usuario').innerHTML = html;
+            document.getElementById('formulario-usuario').style.display = 'block';
+        }
+        
         async function guardarUsuario(event) {
             event.preventDefault();
             
+            const usuarioId = document.getElementById('usuario_id').value;
+            const esEdicion = usuarioId !== '';
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            
+            // Validar contraseñas
+            if (!esEdicion && !password) {
+                mostrarError('La contraseña es requerida para nuevos usuarios');
+                return;
+            }
+            
+            if (password && password !== confirmPassword) {
+                mostrarError('Las contraseñas no coinciden');
+                return;
+            }
+            
+            const usuarioData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                empresa_id: document.getElementById('empresa_id').value,
+                rol_sistema: document.getElementById('rol_sistema').value,
+                nivel_acceso: parseInt(document.getElementById('nivel_acceso').value),
+                cuenta_bloqueada: document.getElementById('cuenta_bloqueada').value === 'true'
+            };
+            
+            // Si hay contraseña nueva, hacer hash
+            if (password) {
+                usuarioData.password_hash = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
+            }
+            
+            // Si es nuevo usuario, activar cuenta
+            if (!esEdicion) {
+                usuarioData.cuenta_activada = true;
+                usuarioData.fecha_activacion = new Date().toISOString();
+            }
+            
             try {
-                const usuarioData = {
-                    email: document.getElementById('usuario_email').value.trim(),
-                    nombre: document.getElementById('usuario_nombre').value.trim(),
-                    apellido: document.getElementById('usuario_apellido').value.trim() || null,
-                    rol: document.getElementById('usuario_rol').value,
-                    empresa_id: document.getElementById('usuario_empresa_id').value,
-                    departamento: document.getElementById('usuario_departamento').value.trim() || null,
-                    cargo: document.getElementById('usuario_cargo').value.trim() || null,
-                    telefono: document.getElementById('usuario_telefono').value.trim() || null,
-                    activo: document.getElementById('usuario_activo').value === 'true'
-                };
-
-                // Validaciones
-                if (!usuarioData.email || !usuarioData.nombre || !usuarioData.rol || !usuarioData.empresa_id) {
-                    mostrarError('Email, nombre, rol y empresa son obligatorios');
-                    return;
-                }
-
-                let resultado;
+                let result;
                 
-                if (editMode && currentEditId) {
-                    // Actualizar usuario
-                    const password = document.getElementById('usuario_password').value.trim();
-                    if (password) {
-                        // Hashear contraseña si se proporciona
-                        usuarioData.password_hash = password; // En realidad debería hashearse en backend
-                    }
-                    
-                    const { data, error } = await supabase
+                if (esEdicion) {
+                    result = await supabase
                         .from('usuarios')
                         .update(usuarioData)
-                        .eq('id', currentEditId)
-                        .select();
-
-                    if (error) throw error;
-                    resultado = data;
-                    mostrarExito('Usuario actualizado correctamente');
+                        .eq('id', usuarioId);
                 } else {
-                    // Crear nuevo usuario
-                    const password = document.getElementById('usuario_password').value.trim();
-                    if (!password) {
-                        mostrarError('La contraseña es obligatoria para nuevos usuarios');
-                        return;
-                    }
-                    
-                    usuarioData.password_hash = password; // Debería hashearse
-                    
-                    const { data, error } = await supabase
+                    result = await supabase
                         .from('usuarios')
-                        .insert([usuarioData])
-                        .select();
-
-                    if (error) throw error;
-                    resultado = data;
-                    mostrarExito('Usuario creado correctamente');
+                        .insert([usuarioData]);
                 }
-
-                if (resultado && resultado.length > 0) {
-                    cerrarModal('usuario');
-                    await cargarUsuarios();
-                }
+                
+                if (result.error) throw result.error;
+                
+                mostrarExito(`Usuario ${esEdicion ? 'actualizado' : 'creado'} correctamente`);
+                document.getElementById('formulario-usuario').style.display = 'none';
+                cargarUsuarios();
+                
             } catch (error) {
                 mostrarError('Error al guardar usuario: ' + error.message);
             }
         }
-
-        // Eliminar usuario
+        
+        async function editarUsuario(id) {
+            try {
+                const { data: usuario, error } = await supabase
+                    .from('usuarios')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                
+                if (error) throw error;
+                
+                mostrarFormularioUsuario(usuario);
+                
+            } catch (error) {
+                mostrarError('Error al cargar usuario: ' + error.message);
+            }
+        }
+        
         async function eliminarUsuario(id) {
-            if (!confirm('¿Está seguro de eliminar este usuario?')) return;
-
+            if (!confirm('¿Está seguro de eliminar este usuario? Se marcará como eliminado lógico.')) {
+                return;
+            }
+            
             try {
                 const { error } = await supabase
                     .from('usuarios')
-                    .delete()
+                    .update({ eliminado: true, fecha_eliminacion: new Date().toISOString() })
                     .eq('id', id);
-
+                
                 if (error) throw error;
-
+                
                 mostrarExito('Usuario eliminado correctamente');
-                await cargarUsuarios();
+                cargarUsuarios();
+                
             } catch (error) {
                 mostrarError('Error al eliminar usuario: ' + error.message);
             }
         }
-
-        // Cerrar modales
-        function cerrarModal(tipo) {
-            if (tipo === 'empresa') {
-                document.getElementById('modalEmpresa').style.display = 'none';
-            } else if (tipo === 'usuario') {
-                document.getElementById('modalUsuario').style.display = 'none';
-            }
-        }
-
-        // Cerrar sesión
-        async function logout() {
+        
+        // ===== FUNCIONES PARA EMPLEADOS =====
+        async function cargarEmpleados() {
             try {
-                await supabase.auth.signOut();
-                window.location.href = 'login.html';
+                const { data: empleados, error } = await supabase
+                    .from('empleados')
+                    .select('*, empresas(nombre_legal), usuarios(username)')
+                    .eq('activo', true)
+                    .order('nombres');
+                
+                if (error) throw error;
+                
+                let html = `
+                    <div style="margin-bottom: 20px;">
+                        <button onclick="mostrarFormularioEmpleado()" 
+                                style="padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer;">
+                            + Nuevo Empleado
+                        </button>
+                    </div>
+                    
+                    <div id="formulario-empleado" style="display: none; margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; background: #f9f9f9;">
+                        <!-- Formulario se cargará aquí -->
+                    </div>
+                    
+                    <div style="overflow-x: auto;">
+                        <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f2f2f2;">
+                                    <th>Código</th>
+                                    <th>Nombres</th>
+                                    <th>Apellidos</th>
+                                    <th>Documento</th>
+                                    <th>Empresa</th>
+                                    <th>Cargo</th>
+                                    <th>Usuario</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                if (empleados && empleados.length > 0) {
+                    empleados.forEach(empleado => {
+                        html += `
+                            <tr>
+                                <td>${empleado.codigo_empleado || ''}</td>
+                                <td>${empleado.nombres || ''}</td>
+                                <td>${empleado.apellidos || ''}</td>
+                                <td>${empleado.tipo_documento}: ${empleado.numero_documento || ''}</td>
+                                <td>${empleado.empresas ? empleado.empresas.nombre_legal : 'N/A'}</td>
+                                <td>${empleado.cargo || ''}</td>
+                                <td>${empleado.usuarios ? empleado.usuarios.username : 'Sin usuario'}</td>
+                                <td>
+                                    <button onclick="editarEmpleado('${empleado.id}')" style="padding: 5px 10px; margin-right: 5px; cursor: pointer;">Editar</button>
+                                    <button onclick="eliminarEmpleado('${empleado.id}')" style="padding: 5px 10px; background: #dc3545; color: white; cursor: pointer;">Eliminar</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    html += `<tr><td colspan="8" style="text-align: center;">No hay empleados registrados</td></tr>`;
+                }
+                
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                document.getElementById('contenido').innerHTML = html;
+                
             } catch (error) {
-                window.location.href = 'login.html';
+                mostrarError('Error al cargar empleados: ' + error.message);
             }
         }
-
-        // Mostrar/ocultar carga
-        function mostrarCarga(tipo, mostrar) {
-            const loading = document.getElementById(`${tipo}Loading`);
-            if (loading) loading.style.display = mostrar ? 'block' : 'none';
-        }
-
-        // Mostrar mensaje de éxito
-        function mostrarExito(mensaje) {
-            const statusDiv = document.getElementById('statusMessage');
-            statusDiv.textContent = mensaje;
-            statusDiv.className = 'status-message success';
-            statusDiv.style.display = 'block';
-            setTimeout(() => { statusDiv.style.display = 'none'; }, 3000);
-        }
-
-        // Mostrar error
+        
+        // ===== FUNCIONES UTILITARIAS =====
         function mostrarError(mensaje) {
-            const errorDiv = document.getElementById('errorMessage');
+            const errorDiv = document.getElementById('error');
             errorDiv.textContent = mensaje;
             errorDiv.style.display = 'block';
-            setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
+            
+            const successDiv = document.getElementById('success');
+            successDiv.style.display = 'none';
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
         }
-
-        // Ocultar mensajes
-        function ocultarMensajes() {
-            document.getElementById('statusMessage').style.display = 'none';
-            document.getElementById('errorMessage').style.display = 'none';
+        
+        function mostrarExito(mensaje) {
+            const successDiv = document.getElementById('success');
+            successDiv.textContent = mensaje;
+            successDiv.style.display = 'block';
+            
+            const errorDiv = document.getElementById('error');
+            errorDiv.style.display = 'none';
+            
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
         }
-
-        // Configurar eventos
-        function configurarEventos() {
-            // Tabs
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const tab = btn.dataset.tab;
-                    
-                    // Actualizar botones
-                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    
-                    // Mostrar/ocultar secciones
-                    document.getElementById('empresasSection').style.display = tab === 'empresas' ? 'block' : 'none';
-                    document.getElementById('usuariosSection').style.display = tab === 'usuarios' ? 'block' : 'none';
-                });
-            });
-
-            // Empresas
-            document.getElementById('crearEmpresaBtn').addEventListener('click', abrirModalEmpresa);
-            document.getElementById('crearPrimeraEmpresaBtn').addEventListener('click', abrirModalEmpresa);
-            document.getElementById('cerrarModalEmpresaBtn').addEventListener('click', () => cerrarModal('empresa'));
-            document.getElementById('cancelarEmpresaBtn').addEventListener('click', () => cerrarModal('empresa'));
-            document.getElementById('formEmpresa').addEventListener('submit', guardarEmpresa);
-
-            // Usuarios
-            document.getElementById('crearUsuarioBtn').addEventListener('click', abrirModalUsuario);
-            document.getElementById('crearPrimerUsuarioBtn').addEventListener('click', abrirModalUsuario);
-            document.getElementById('cerrarModalUsuarioBtn').addEventListener('click', () => cerrarModal('usuario'));
-            document.getElementById('cancelarUsuarioBtn').addEventListener('click', () => cerrarModal('usuario'));
-            document.getElementById('formUsuario').addEventListener('submit', guardarUsuario);
-
-            // Logout
-            document.getElementById('logoutBtn').addEventListener('click', logout);
-
-            // Cerrar modal al hacer clic fuera
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        if (modal.id === 'modalEmpresa') cerrarModal('empresa');
-                        if (modal.id === 'modalUsuario') cerrarModal('usuario');
-                    }
-                });
-            });
+        
+        // Funciones placeholder para empleados (puedes completarlas después)
+        function mostrarFormularioEmpleado() {
+            mostrarExito('Funcionalidad de empleados en desarrollo. Se mostrará en la próxima versión.');
         }
-
-        // Hacer funciones globales para los botones en las tablas
-        window.editarEmpresa = editarEmpresa;
-        window.eliminarEmpresa = eliminarEmpresa;
-        window.editarUsuario = editarUsuario;
-        window.eliminarUsuario = eliminarUsuario;
+        
+        function editarEmpleado(id) {
+            mostrarExito('Editar empleado - funcionalidad en desarrollo.');
+        }
+        
+        function eliminarEmpleado(id) {
+            if (confirm('¿Está seguro de eliminar este empleado?')) {
+                mostrarExito('Eliminar empleado - funcionalidad en desarrollo.');
+            }
+        }
     </script>
 </body>
 </html>
