@@ -3,167 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceder - Nexial Suite</title>
-    <style>
-        body { 
-            margin: 0; 
-            padding: 0; 
-            font-family: Arial, sans-serif; 
-            background: #0f172a; 
-            color: white; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-        }
-        .container { 
-            width: 100%; 
-            max-width: 300px; 
-            padding: 20px; 
-        }
-        h2 { 
-            text-align: center; 
-            margin-bottom: 30px; 
-            color: #e2e8f0; 
-        }
-        input, button { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 8px 0; 
-            border-radius: 5px; 
-            box-sizing: border-box;
-        }
-        input { 
-            border: 1px solid #475569; 
-            background: #1e293b; 
-            color: white; 
-        }
-        button { 
-            background: #7c3aed; 
-            color: white; 
-            border: none; 
-            cursor: pointer; 
-            font-size: 16px;
-        }
-        .error { 
-            color: #f87171; 
-            margin-top: 10px; 
-            text-align: center; 
-            min-height: 20px;
-        }
-        .back { 
-            display: block; 
-            margin-top: 20px; 
-            text-align: center; 
-            color: #94a3b8; 
-            text-decoration: none;
-        }
-    </style>
+    <title>Iniciar Sesión</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h2>Acceder al Sistema</h2>
-        <input type="email" id="email" placeholder="Correo electrónico" required>
-        <input type="password" id="password" placeholder="Contraseña" required>
-        <button id="loginButton">Acceder</button>
-        <div id="error" class="error"></div>
-        <a href="index.html" class="back">← Volver al inicio</a>
+    <div style="max-width: 300px; margin: 100px auto; padding: 20px;">
+        <h2>Iniciar Sesión</h2>
+        <div id="error" style="color: red; display: none; margin-bottom: 10px;"></div>
+        
+        <div style="margin-bottom: 15px;">
+            <label>Usuario o Email:</label>
+            <input type="text" id="username" style="width: 100%; padding: 5px;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label>Contraseña:</label>
+            <input type="password" id="password" style="width: 100%; padding: 5px;">
+        </div>
+        
+        <button onclick="login()" 
+                style="width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer;">
+            Ingresar
+        </button>
+        
+        <div style="margin-top: 20px; text-align: center;">
+            <button onclick="window.location.href='index.html'" 
+                    style="padding: 5px 10px; background: #6c757d; color: white; border: none; cursor: pointer;">
+                Volver
+            </button>
+        </div>
     </div>
 
     <script>
-        // Cargar Supabase desde CDN dinámicamente
-        function cargarSupabase() {
-            return new Promise((resolve) => {
-                if (window.supabase) {
-                    resolve(window.supabase);
-                    return;
-                }
-                
-                const script = document.createElement('script');
-                script.src = 'https://unpkg.com/@supabase/supabase-js@2';
-                script.onload = () => {
-                    resolve(window.supabase);
-                };
-                document.head.appendChild(script);
-            });
+        // Configuración de Supabase
+        const SUPABASE_URL = 'https://dcmzpbfhtcevinruphcz.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_kIb5dk3KdkVJLGBfKEeyog_OxrzqsjB';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Función para hacer hash SHA256 (simple, sin salt por ahora)
+        function hashPassword(password) {
+            return CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
         }
-
-        // Función principal
-        async function main() {
-            // Cargar Supabase
-            const supabaseLib = await cargarSupabase();
+        
+        async function login() {
+            const usernameInput = document.getElementById('username').value.trim();
+            const passwordInput = document.getElementById('password').value.trim();
+            const errorDiv = document.getElementById('error');
             
-            // Configurar cliente de Supabase
-            const supabaseUrl = 'https://zshnzeqstrdzuljqueto.supabase.co';
-            const supabaseKey = 'sb_publishable_J8vYye7ZumaK4hGoRwaIpQ_O_kj0ERX';
-            const supabase = supabaseLib.createClient(supabaseUrl, supabaseKey);
+            errorDiv.style.display = 'none';
             
-            // Guardar configuración en localStorage
-            localStorage.setItem('supabase_url', supabaseUrl);
-            localStorage.setItem('supabase_key', supabaseKey);
-
-            // Verificar si ya hay sesión activa
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                window.location.href = 'director_corporativo.html';
+            if (!usernameInput || !passwordInput) {
+                errorDiv.textContent = 'Por favor complete todos los campos';
+                errorDiv.style.display = 'block';
                 return;
             }
-
-            // Función para iniciar sesión
-            async function iniciarSesion() {
-                const email = document.getElementById('email').value.trim();
-                const password = document.getElementById('password').value;
-                const errorDiv = document.getElementById('error');
+            
+            // Calcular hash de la contraseña
+            const passwordHash = hashPassword(passwordInput);
+            
+            try {
+                // Buscar usuario por username o email
+                const { data: usuarios, error } = await supabase
+                    .from('usuarios')
+                    .select('*')
+                    .or(`username.eq.${usernameInput},email.eq.${usernameInput}`)
+                    .eq('eliminado', false)
+                    .eq('cuenta_bloqueada', false);
                 
-                errorDiv.textContent = '';
+                if (error) throw error;
                 
-                if (!email || !password) {
-                    errorDiv.textContent = 'Por favor, completa todos los campos';
+                if (!usuarios || usuarios.length === 0) {
+                    errorDiv.textContent = 'Usuario no encontrado';
+                    errorDiv.style.display = 'block';
                     return;
                 }
-
-                try {
-                    const { data, error } = await supabase.auth.signInWithPassword({
-                        email: email,
-                        password: password
-                    });
-
-                    if (error) {
-                        errorDiv.textContent = 'Error: ' + error.message;
-                        return;
+                
+                const usuario = usuarios[0];
+                
+                // Verificar contraseña (comparación simple del hash)
+                // NOTA: En producción necesitarías usar el salt del usuario
+                if (usuario.password_hash === passwordHash) {
+                    // Actualizar último login
+                    await supabase
+                        .from('usuarios')
+                        .update({ fecha_ultimo_login: new Date().toISOString(), intentos_fallidos: 0 })
+                        .eq('id', usuario.id);
+                    
+                    // Guardar usuario en sessionStorage
+                    sessionStorage.setItem('usuario', JSON.stringify({
+                        id: usuario.id,
+                        username: usuario.username,
+                        email: usuario.email,
+                        rol_sistema: usuario.rol_sistema,
+                        nivel_acceso: usuario.nivel_acceso,
+                        empresa_id: usuario.empresa_id
+                    }));
+                    
+                    // Redirigir según rol
+                    if (usuario.rol_sistema === 'DIRECTOR_CORPORATIVO') {
+                        window.location.href = 'Director Corporativo.html';
+                    } else {
+                        errorDiv.textContent = 'Acceso denegado. Solo el Director Corporativo puede acceder por ahora';
+                        errorDiv.style.display = 'block';
                     }
-
-                    if (data.user) {
-                        // Guardar sesión en localStorage
-                        localStorage.setItem('nexial_user', JSON.stringify({
-                            email: email,
-                            timestamp: new Date().getTime()
-                        }));
+                } else {
+                    // Incrementar intentos fallidos
+                    const nuevosIntentos = (usuario.intentos_fallidos || 0) + 1;
+                    await supabase
+                        .from('usuarios')
+                        .update({ intentos_fallidos: nuevosIntentos })
+                        .eq('id', usuario.id);
+                    
+                    if (nuevosIntentos >= 5) {
+                        await supabase
+                            .from('usuarios')
+                            .update({ cuenta_bloqueada: true, fecha_bloqueo: new Date().toISOString() })
+                            .eq('id', usuario.id);
                         
-                        // Redirigir al panel
-                        window.location.href = 'director_corporativo.html';
+                        errorDiv.textContent = 'Cuenta bloqueada por muchos intentos fallidos';
+                    } else {
+                        errorDiv.textContent = 'Contraseña incorrecta. Intentos: ' + nuevosIntentos + '/5';
                     }
-                } catch (error) {
-                    errorDiv.textContent = 'Error de conexión. Intenta nuevamente.';
+                    errorDiv.style.display = 'block';
                 }
+                
+            } catch (error) {
+                console.error('Error de login:', error);
+                errorDiv.textContent = 'Error de conexión con la base de datos';
+                errorDiv.style.display = 'block';
             }
-
-            // Asignar eventos
-            document.getElementById('loginButton').addEventListener('click', iniciarSesion);
-            
-            // Permitir login con Enter
-            document.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    iniciarSesion();
-                }
-            });
         }
-
-        // Iniciar la aplicación
-        main().catch(error => {
-            console.error('Error inicial:', error);
-            document.getElementById('error').textContent = 'Error al cargar la aplicación. Recarga la página.';
+        
+        // Permitir login con Enter
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
         });
     </script>
 </body>
