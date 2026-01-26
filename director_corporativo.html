@@ -4,79 +4,52 @@
     <meta charset="UTF-8">
     <title>Director Corporativo</title>
     <style>
-        body {font-family:Arial;margin:20px;padding:0;}
-        button {margin:5px;padding:8px;}
-        table {border-collapse:collapse;width:100%;margin-top:20px;}
-        th, td {border:1px solid #ddd;padding:8px;text-align:left;}
-        th {background:#f2f2f2;}
-        .modal {display:none;position:fixed;z-index:1;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.4);}
-        .modal-content {background:white;margin:5% auto;padding:20px;width:300px;}
-        .tab {display:flex;margin-bottom:20px;}
-        .tab button {background:#f1f1f1;border:1px solid #ccc;}
-        .tab button.active {background:#ccc;}
+        table, th, td {border:1px solid;border-collapse:collapse;padding:5px;}
+        .modal {display:none;position:fixed;background:white;border:1px solid;padding:20px;}
     </style>
 </head>
 <body>
     <h1>Director Corporativo</h1>
     <button onclick="cerrarSesion()">Cerrar Sesión</button>
-    
-    <div class="tab">
-        <button class="active" onclick="mostrarTab('empresas')">Empresas</button>
+    <div>
+        <button onclick="mostrarTab('empresas')">Empresas</button>
         <button onclick="mostrarTab('usuarios')">Usuarios</button>
     </div>
     
     <div id="empresas-tab">
         <button onclick="mostrarModalEmpresa()">Nueva Empresa</button>
-        <table id="empresas-table">
-            <thead><tr><th>Código</th><th>Nombre</th><th>Acciones</th></tr></thead>
-            <tbody></tbody>
-        </table>
+        <table id="empresas-table"></table>
     </div>
     
     <div id="usuarios-tab" style="display:none;">
         <button onclick="mostrarModalUsuario()">Nuevo Usuario</button>
-        <table id="usuarios-table">
-            <thead><tr><th>Usuario</th><th>Email</th><th>Rol</th><th>Acciones</th></tr></thead>
-            <tbody></tbody>
-        </table>
+        <table id="usuarios-table"></table>
     </div>
     
     <div id="empresa-modal" class="modal">
-        <div class="modal-content">
-            <h3>Empresa</h3>
-            <form id="empresa-form">
-                <input type="hidden" id="empresa-id">
-                <input type="text" id="codigo_empresa" placeholder="Código" required><br>
-                <input type="text" id="nombre_legal" placeholder="Nombre Legal" required><br>
-                <input type="text" id="rut_nit_identificacion" placeholder="RUT/NIT"><br>
-                <input type="text" id="pais" placeholder="País" required><br>
-                <button type="submit">Guardar</button>
-                <button type="button" onclick="cerrarModal('empresa')">Cancelar</button>
-            </form>
-        </div>
+        <h3>Empresa</h3>
+        <form id="empresa-form">
+            <input type="hidden" id="empresa-id">
+            <input type="text" id="codigo_empresa" placeholder="Código" required><br>
+            <input type="text" id="nombre_legal" placeholder="Nombre Legal" required><br>
+            <button type="submit">Guardar</button>
+            <button type="button" onclick="cerrarModal('empresa')">Cancelar</button>
+        </form>
     </div>
     
     <div id="usuario-modal" class="modal">
-        <div class="modal-content">
-            <h3>Usuario</h3>
-            <form id="usuario-form">
-                <input type="hidden" id="usuario-id">
-                <input type="text" id="username" placeholder="Usuario" required><br>
-                <input type="email" id="email" placeholder="Email" required><br>
-                <input type="password" id="password_hash" placeholder="Contraseña" required><br>
-                <select id="rol_sistema" required>
-                    <option value="DIRECTOR_CORPORATIVO">Director Corporativo</option>
-                    <option value="DIRECTOR_GENERAL">Director General</option>
-                    <option value="DIRECTOR_FINANCIERO">Director Financiero</option>
-                    <option value="SUPERVISOR_SENIOR">Supervisor Senior</option>
-                    <option value="EJECUTIVO_COMERCIAL">Ejecutivo Comercial</option>
-                    <option value="ESPECIALISTA_LOGISTICO">Especialista Logístico</option>
-                    <option value="GESTOR_ALMACEN">Gestor Almacén</option>
-                </select><br>
-                <button type="submit">Guardar</button>
-                <button type="button" onclick="cerrarModal('usuario')">Cancelar</button>
-            </form>
-        </div>
+        <h3>Usuario</h3>
+        <form id="usuario-form">
+            <input type="hidden" id="usuario-id">
+            <input type="text" id="username" placeholder="Usuario" required><br>
+            <input type="password" id="password_hash" placeholder="Contraseña" required><br>
+            <select id="rol_sistema" required>
+                <option value="DIRECTOR_CORPORATIVO">Director Corporativo</option>
+                <option value="DIRECTOR_GENERAL">Director General</option>
+            </select><br>
+            <button type="submit">Guardar</button>
+            <button type="button" onclick="cerrarModal('usuario')">Cancelar</button>
+        </form>
     </div>
 
     <script>
@@ -96,38 +69,14 @@
             document.getElementById(tab + '-tab').style.display = 'block';
         }
         
-        function mostrarModalEmpresa(id) {
+        function mostrarModalEmpresa() {
             document.getElementById('empresa-modal').style.display = 'block';
-            if (id) {
-                // Cargar datos para editar
-                const empresa = empresasData.find(e => e.id === id);
-                if (empresa) {
-                    document.getElementById('empresa-id').value = empresa.id;
-                    document.getElementById('codigo_empresa').value = empresa.codigo_empresa;
-                    document.getElementById('nombre_legal').value = empresa.nombre_legal;
-                    document.getElementById('rut_nit_identificacion').value = empresa.rut_nit_identificacion || '';
-                    document.getElementById('pais').value = empresa.pais;
-                }
-            } else {
-                document.getElementById('empresa-form').reset();
-            }
+            document.getElementById('empresa-form').reset();
         }
         
-        function mostrarModalUsuario(id) {
+        function mostrarModalUsuario() {
             document.getElementById('usuario-modal').style.display = 'block';
-            if (id) {
-                // Cargar datos para editar
-                const user = usuariosData.find(u => u.id === id);
-                if (user) {
-                    document.getElementById('usuario-id').value = user.id;
-                    document.getElementById('username').value = user.username;
-                    document.getElementById('email').value = user.email;
-                    document.getElementById('rol_sistema').value = user.rol_sistema;
-                    document.getElementById('password_hash').required = false;
-                }
-            } else {
-                document.getElementById('usuario-form').reset();
-            }
+            document.getElementById('usuario-form').reset();
         }
         
         function cerrarModal(tipo) {
@@ -139,22 +88,19 @@
             window.location.href = 'login.html';
         }
         
-        // Cargar datos
-        let empresasData = [];
-        let usuariosData = [];
-        
+        // Cargar empresas
         async function cargarEmpresas() {
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/empresas?select=*`, {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/empresas`, {
                     headers: {
                         'apikey': SUPABASE_KEY,
                         'Authorization': `Bearer ${SUPABASE_KEY}`
                     }
                 });
-                empresasData = await response.json();
-                const tbody = document.querySelector('#empresas-table tbody');
-                tbody.innerHTML = '';
-                empresasData.forEach(empresa => {
+                const empresas = await response.json();
+                const table = document.getElementById('empresas-table');
+                table.innerHTML = '<tr><th>Código</th><th>Nombre</th><th>Acciones</th></tr>';
+                empresas.forEach(empresa => {
                     const row = `<tr>
                         <td>${empresa.codigo_empresa}</td>
                         <td>${empresa.nombre_legal}</td>
@@ -163,75 +109,62 @@
                             <button onclick="eliminarEmpresa('${empresa.id}')">Eliminar</button>
                         </td>
                     </tr>`;
-                    tbody.innerHTML += row;
+                    table.innerHTML += row;
                 });
             } catch (error) {
-                console.error('Error cargando empresas:', error);
+                console.error('Error:', error);
             }
         }
         
+        // Cargar usuarios
         async function cargarUsuarios() {
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?select=*&eliminado=eq.false`, {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?eliminado=eq.false`, {
                     headers: {
                         'apikey': SUPABASE_KEY,
                         'Authorization': `Bearer ${SUPABASE_KEY}`
                     }
                 });
-                usuariosData = await response.json();
-                const tbody = document.querySelector('#usuarios-table tbody');
-                tbody.innerHTML = '';
-                usuariosData.forEach(usuario => {
+                const usuarios = await response.json();
+                const table = document.getElementById('usuarios-table');
+                table.innerHTML = '<tr><th>Usuario</th><th>Rol</th><th>Acciones</th></tr>';
+                usuarios.forEach(usuario => {
                     const row = `<tr>
                         <td>${usuario.username}</td>
-                        <td>${usuario.email}</td>
                         <td>${usuario.rol_sistema}</td>
                         <td>
                             <button onclick="editarUsuario('${usuario.id}')">Editar</button>
                             <button onclick="eliminarUsuario('${usuario.id}')">Eliminar</button>
                         </td>
                     </tr>`;
-                    tbody.innerHTML += row;
+                    table.innerHTML += row;
                 });
             } catch (error) {
-                console.error('Error cargando usuarios:', error);
+                console.error('Error:', error);
             }
         }
         
-        // Formularios
+        // Formulario empresa
         document.getElementById('empresa-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const id = document.getElementById('empresa-id').value;
             const data = {
                 codigo_empresa: document.getElementById('codigo_empresa').value,
                 nombre_legal: document.getElementById('nombre_legal').value,
-                rut_nit_identificacion: document.getElementById('rut_nit_identificacion').value,
-                pais: document.getElementById('pais').value,
-                activa: true
+                activa: true,
+                moneda_principal: 'COP',
+                zona_horaria: 'America/Bogota'
             };
             
             try {
-                if (id) {
-                    await fetch(`${SUPABASE_URL}/rest/v1/empresas?id=eq.${id}`, {
-                        method: 'PATCH',
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': `Bearer ${SUPABASE_KEY}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    });
-                } else {
-                    await fetch(`${SUPABASE_URL}/rest/v1/empresas`, {
-                        method: 'POST',
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': `Bearer ${SUPABASE_KEY}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    });
-                }
+                await fetch(`${SUPABASE_URL}/rest/v1/empresas`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
                 cerrarModal('empresa');
                 cargarEmpresas();
             } catch (error) {
@@ -239,43 +172,28 @@
             }
         });
         
+        // Formulario usuario
         document.getElementById('usuario-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const id = document.getElementById('usuario-id').value;
             const data = {
                 username: document.getElementById('username').value,
-                email: document.getElementById('email').value,
+                password_hash: document.getElementById('password_hash').value,
                 rol_sistema: document.getElementById('rol_sistema').value,
                 nivel_acceso: document.getElementById('rol_sistema').value === 'DIRECTOR_CORPORATIVO' ? 10 : 5,
-                empresa_id: usuario.empresa_id
+                empresa_id: usuario.empresa_id,
+                email: document.getElementById('username').value + '@empresa.com'
             };
             
-            // Solo actualizar contraseña si se proporciona
-            const password = document.getElementById('password_hash').value;
-            if (password) data.password_hash = password;
-            
             try {
-                if (id) {
-                    await fetch(`${SUPABASE_URL}/rest/v1/usuarios?id=eq.${id}`, {
-                        method: 'PATCH',
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': `Bearer ${SUPABASE_KEY}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    });
-                } else {
-                    await fetch(`${SUPABASE_URL}/rest/v1/usuarios`, {
-                        method: 'POST',
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': `Bearer ${SUPABASE_KEY}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    });
-                }
+                await fetch(`${SUPABASE_URL}/rest/v1/usuarios`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
                 cerrarModal('usuario');
                 cargarUsuarios();
             } catch (error) {
@@ -284,8 +202,13 @@
         });
         
         // Funciones CRUD
-        function editarEmpresa(id) { mostrarModalEmpresa(id); }
-        function editarUsuario(id) { mostrarModalUsuario(id); }
+        function editarEmpresa(id) {
+            alert('Editar empresa: ' + id);
+        }
+        
+        function editarUsuario(id) {
+            alert('Editar usuario: ' + id);
+        }
         
         async function eliminarEmpresa(id) {
             if (confirm('¿Eliminar empresa?')) {
@@ -315,7 +238,7 @@
             }
         }
         
-        // Cargar datos iniciales
+        // Inicializar
         cargarEmpresas();
         cargarUsuarios();
     </script>
