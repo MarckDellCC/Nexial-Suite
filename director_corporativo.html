@@ -3,86 +3,831 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Director Corporativo - Nexial Suite</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Director Corporativo</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .btn { background: #007bff; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; }
+        .btn:hover { background: #0056b3; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        .section { background: white; padding: 20px; margin-bottom: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f8f9fa; }
+        tr:hover { background: #f5f5f5; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 5% auto; padding: 20px; width: 80%; max-width: 600px; border-radius: 8px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        textarea { height: 100px; }
+        .form-row { display: flex; gap: 10px; }
+        .form-row > div { flex: 1; }
+        .tab { display: flex; border-bottom: 2px solid #dee2e6; margin-bottom: 20px; }
+        .tab button { padding: 10px 20px; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab button.active { border-bottom: 2px solid #007bff; color: #007bff; }
+        .error { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .loading { text-align: center; padding: 20px; }
+    </style>
 </head>
 <body>
-    <h1>Panel de Director Corporativo</h1>
-    
-    <div id="userInfo"></div>
-    
-    <div>
-        <button onclick="logout()">Cerrar Sesión</button>
-        <button onclick="cargarDatos()">Cargar Datos</button>
+    <div class="header">
+        <h1>Panel del Director Corporativo</h1>
+        <div>
+            <span id="userInfo" style="margin-right: 20px;"></span>
+            <button class="btn btn-danger" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
     </div>
     
-    <div id="datos"></div>
+    <div class="tab">
+        <button class="tab-btn active" onclick="mostrarTab('empresas')">Empresas</button>
+        <button class="tab-btn" onclick="mostrarTab('usuarios')">Usuarios</button>
+        <button class="tab-btn" onclick="mostrarTab('empleados')">Empleados</button>
+    </div>
+    
+    <!-- Sección Empresas -->
+    <div id="empresas-tab" class="section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Gestión de Empresas</h2>
+            <button class="btn btn-success" onclick="mostrarModalEmpresa()">+ Nueva Empresa</button>
+        </div>
+        <div class="error" id="empresas-error" style="display: none;"></div>
+        <div id="empresas-loading" class="loading">Cargando empresas...</div>
+        <table id="empresas-table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre Legal</th>
+                    <th>RUT/NIT</th>
+                    <th>País</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="empresas-body"></tbody>
+        </table>
+    </div>
+    
+    <!-- Sección Usuarios -->
+    <div id="usuarios-tab" class="section" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Gestión de Usuarios</h2>
+            <button class="btn btn-success" onclick="mostrarModalUsuario()">+ Nuevo Usuario</button>
+        </div>
+        <div class="error" id="usuarios-error" style="display: none;"></div>
+        <div id="usuarios-loading" class="loading">Cargando usuarios...</div>
+        <table id="usuarios-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Empresa</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="usuarios-body"></tbody>
+        </table>
+    </div>
+    
+    <!-- Sección Empleados -->
+    <div id="empleados-tab" class="section" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Gestión de Empleados</h2>
+            <button class="btn btn-success" onclick="mostrarModalEmpleado()">+ Nuevo Empleado</button>
+        </div>
+        <div class="error" id="empleados-error" style="display: none;"></div>
+        <div id="empleados-loading" class="loading">Cargando empleados...</div>
+        <table id="empleados-table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Cargo</th>
+                    <th>Documento</th>
+                    <th>Empresa</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="empleados-body"></tbody>
+        </table>
+    </div>
+    
+    <!-- Modal Empresa -->
+    <div id="empresa-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="empresa-modal-title">Nueva Empresa</h2>
+            <form id="empresa-form">
+                <input type="hidden" id="empresa-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="codigo_empresa">Código Empresa *</label>
+                        <input type="text" id="codigo_empresa" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nombre_legal">Nombre Legal *</label>
+                        <input type="text" id="nombre_legal" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="nombre_comercial">Nombre Comercial</label>
+                    <input type="text" id="nombre_comercial">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="rut_nit_identificacion">RUT/NIT *</label>
+                        <input type="text" id="rut_nit_identificacion" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="moneda_principal">Moneda Principal *</label>
+                        <input type="text" id="moneda_principal" value="COP" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pais">País *</label>
+                        <input type="text" id="pais" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ciudad">Ciudad</label>
+                        <input type="text" id="ciudad">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email">
+                </div>
+                <div class="form-group">
+                    <label for="direccion">Dirección</label>
+                    <textarea id="direccion"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success">Guardar</button>
+                        <button type="button" class="btn" onclick="cerrarModal('empresa')">Cancelar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Usuario -->
+    <div id="usuario-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="usuario-modal-title">Nuevo Usuario</h2>
+            <form id="usuario-form">
+                <input type="hidden" id="usuario-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="usuario-empresa_id">Empresa *</label>
+                        <select id="usuario-empresa_id" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Username *</label>
+                        <input type="text" id="username" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password_hash">Contraseña *</label>
+                        <input type="password" id="password_hash" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="rol_sistema">Rol *</label>
+                        <select id="rol_sistema" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="DIRECTOR_CORPORATIVO">Director Corporativo</option>
+                            <option value="DIRECTOR_GENERAL">Director General</option>
+                            <option value="DIRECTOR_FINANCIERO">Director Financiero</option>
+                            <option value="SUPERVISOR_SENIOR">Supervisor Senior</option>
+                            <option value="EJECUTIVO_COMERCIAL">Ejecutivo Comercial</option>
+                            <option value="ESPECIALISTA_LOGISTICO">Especialista Logístico</option>
+                            <option value="GESTOR_ALMACEN">Gestor de Almacén</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="nivel_acceso">Nivel de Acceso *</label>
+                        <input type="number" id="nivel_acceso" min="1" max="10" value="1" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                    <button type="button" class="btn" onclick="cerrarModal('usuario')">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Empleado -->
+    <div id="empleado-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="empleado-modal-title">Nuevo Empleado</h2>
+            <form id="empleado-form">
+                <input type="hidden" id="empleado-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="empleado-empresa_id">Empresa *</label>
+                        <select id="empleado-empresa_id" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="codigo_empleado">Código Empleado *</label>
+                        <input type="text" id="codigo_empleado" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tipo_documento">Tipo Documento *</label>
+                        <select id="tipo_documento" required>
+                            <option value="CC">Cédula</option>
+                            <option value="CE">Cédula Extranjería</option>
+                            <option value="PASAPORTE">Pasaporte</option>
+                            <option value="NIT">NIT</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="numero_documento">Número Documento *</label>
+                        <input type="text" id="numero_documento" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nombres">Nombres *</label>
+                        <input type="text" id="nombres" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="apellidos">Apellidos *</label>
+                        <input type="text" id="apellidos" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cargo">Cargo *</label>
+                        <select id="cargo" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="DIRECTOR_CORPORATIVO">Director Corporativo</option>
+                            <option value="DIRECTOR_GENERAL">Director General</option>
+                            <option value="DIRECTOR_FINANCIERO">Director Financiero</option>
+                            <option value="SUPERVISOR_SENIOR">Supervisor Senior</option>
+                            <option value="EJECUTIVO_COMERCIAL">Ejecutivo Comercial</option>
+                            <option value="ESPECIALISTA_LOGISTICO">Especialista Logístico</option>
+                            <option value="GESTOR_ALMACEN">Gestor de Almacén</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="nivel_jerarquico">Nivel Jerárquico *</label>
+                        <input type="number" id="nivel_jerarquico" min="1" max="7" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email_corporativo">Email Corporativo</label>
+                        <input type="email" id="email_corporativo">
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha_contratacion">Fecha Contratación *</label>
+                        <input type="date" id="fecha_contratacion" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                    <button type="button" class="btn" onclick="cerrarModal('empleado')">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
-        // Configuración de Supabase - REEMPLAZA CON TUS DATOS
+        // Configuración
         const SUPABASE_URL = 'https://dcmzpbfhtcevinruphcz.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_kIb5dk3KdkVJLGBfKEeyog_OxrzqsjB';
+        const SUPABASE_KEY = 'sb_publishable_kIb5dk3KdkVJLGBfKEeyog_OxrzqsjB';
+        let empresasData = [];
+        let usuariosData = [];
+        let empleadosData = [];
         
-        // Inicializar Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // Verificar sesión al cargar
-        document.addEventListener('DOMContentLoaded', function() {
-            const loggedIn = localStorage.getItem('logged_in');
-            const userData = localStorage.getItem('user');
+        // Verificar autenticación al cargar
+        window.addEventListener('DOMContentLoaded', async () => {
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
             
-            if (loggedIn !== 'true' || !userData) {
+            if (!usuario || usuario.rol_sistema !== 'DIRECTOR_CORPORATIVO') {
                 window.location.href = 'login.html';
                 return;
             }
             
-            // Mostrar información del usuario
-            const user = JSON.parse(userData);
-            document.getElementById('userInfo').innerHTML = `
-                <p><strong>Usuario:</strong> ${user.username || 'mcoarite'}</p>
-                <p><strong>Nombre:</strong> ${user.nombres || 'Marcelo'} ${user.apellidos || 'Coarite'}</p>
-                <p><strong>Rol:</strong> ${user.rol_sistema || 'DIRECTOR_CORPORATIVO'}</p>
-            `;
+            document.getElementById('userInfo').textContent = `${usuario.username} (${usuario.rol_sistema})`;
+            
+            // Cargar datos iniciales
+            await cargarEmpresas();
+            await cargarUsuarios();
+            await cargarEmpleados();
+            cargarSelectEmpresas();
         });
         
-        async function cargarDatos() {
+        // Funciones de pestañas
+        function mostrarTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(section => section.style.display = 'none');
+            
+            document.querySelector(`button[onclick="mostrarTab('${tab}')"]`).classList.add('active');
+            document.getElementById(`${tab}-tab`).style.display = 'block';
+        }
+        
+        // Cargar select de empresas
+        async function cargarSelectEmpresas() {
+            const selectUsuario = document.getElementById('usuario-empresa_id');
+            const selectEmpleado = document.getElementById('empleado-empresa_id');
+            
+            selectUsuario.innerHTML = '<option value="">Seleccionar empresa...</option>';
+            selectEmpleado.innerHTML = '<option value="">Seleccionar empresa...</option>';
+            
+            empresasData.forEach(empresa => {
+                const option = `<option value="${empresa.id}">${empresa.codigo_empresa} - ${empresa.nombre_legal}</option>`;
+                selectUsuario.innerHTML += option;
+                selectEmpleado.innerHTML += option;
+            });
+        }
+        
+        // CRUD Empresas
+        async function cargarEmpresas() {
+            const loading = document.getElementById('empresas-loading');
+            const errorDiv = document.getElementById('empresas-error');
+            const tbody = document.getElementById('empresas-body');
+            
+            loading.style.display = 'block';
+            errorDiv.style.display = 'none';
+            
             try {
-                // Ejemplo: Cargar empresas
-                const { data: empresas, error } = await supabase
-                    .from('empresas')
-                    .select('*');
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/empresas?select=*`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
                 
-                if (error) {
-                    document.getElementById('datos').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
-                    return;
-                }
+                if (!response.ok) throw new Error('Error al cargar empresas');
                 
-                let html = '<h3>Empresas en el Sistema:</h3>';
+                empresasData = await response.json();
+                tbody.innerHTML = '';
                 
-                if (empresas && empresas.length > 0) {
-                    html += '<ul>';
-                    empresas.forEach(empresa => {
-                        html += `<li><strong>${empresa.codigo_empresa}</strong>: ${empresa.nombre_comercial} (${empresa.pais})</li>`;
-                    });
-                    html += '</ul>';
-                } else {
-                    html += '<p>No hay empresas registradas</p>';
-                }
-                
-                document.getElementById('datos').innerHTML = html;
+                empresasData.forEach(empresa => {
+                    const row = `
+                        <tr>
+                            <td>${empresa.codigo_empresa}</td>
+                            <td>${empresa.nombre_legal}</td>
+                            <td>${empresa.rut_nit_identificacion || ''}</td>
+                            <td>${empresa.pais}</td>
+                            <td>${empresa.activa ? 'Activa' : 'Inactiva'}</td>
+                            <td>
+                                <button class="btn" onclick="editarEmpresa('${empresa.id}')">Editar</button>
+                                <button class="btn btn-danger" onclick="eliminarEmpresa('${empresa.id}')">Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
                 
             } catch (error) {
-                console.error('Error cargando datos:', error);
-                document.getElementById('datos').innerHTML = `<p style="color: red;">Error cargando datos: ${error.message}</p>`;
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
             }
         }
         
-        function logout() {
-            localStorage.removeItem('user');
-            localStorage.removeItem('logged_in');
+        function mostrarModalEmpresa(empresaId = null) {
+            const modal = document.getElementById('empresa-modal');
+            const title = document.getElementById('empresa-modal-title');
+            const form = document.getElementById('empresa-form');
+            
+            if (empresaId) {
+                title.textContent = 'Editar Empresa';
+                const empresa = empresasData.find(e => e.id === empresaId);
+                if (empresa) {
+                    Object.keys(empresa).forEach(key => {
+                        const input = document.getElementById(key);
+                        if (input) input.value = empresa[key] || '';
+                    });
+                }
+            } else {
+                title.textContent = 'Nueva Empresa';
+                form.reset();
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        document.getElementById('empresa-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const empresaId = document.getElementById('empresa-id').value;
+            const empresaData = {};
+            
+            formData.forEach((value, key) => {
+                if (value) empresaData[key] = value;
+            });
+            
+            try {
+                if (empresaId) {
+                    // Actualizar
+                    await fetch(`${SUPABASE_URL}/rest/v1/empresas?id=eq.${empresaId}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify(empresaData)
+                    });
+                } else {
+                    // Crear nuevo
+                    await fetch(`${SUPABASE_URL}/rest/v1/empresas`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify(empresaData)
+                    });
+                }
+                
+                cerrarModal('empresa');
+                await cargarEmpresas();
+                await cargarSelectEmpresas();
+                
+            } catch (error) {
+                alert('Error al guardar empresa: ' + error.message);
+            }
+        });
+        
+        async function eliminarEmpresa(id) {
+            if (!confirm('¿Está seguro de eliminar esta empresa?')) return;
+            
+            try {
+                await fetch(`${SUPABASE_URL}/rest/v1/empresas?id=eq.${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Prefer': 'return=minimal'
+                    }
+                });
+                
+                await cargarEmpresas();
+                await cargarSelectEmpresas();
+                
+            } catch (error) {
+                alert('Error al eliminar empresa: ' + error.message);
+            }
+        }
+        
+        function editarEmpresa(id) {
+            mostrarModalEmpresa(id);
+        }
+        
+        // CRUD Usuarios
+        async function cargarUsuarios() {
+            const loading = document.getElementById('usuarios-loading');
+            const errorDiv = document.getElementById('usuarios-error');
+            const tbody = document.getElementById('usuarios-body');
+            
+            loading.style.display = 'block';
+            errorDiv.style.display = 'none';
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?select=*,empresas(nombre_legal)&eliminado=eq.false`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Error al cargar usuarios');
+                
+                usuariosData = await response.json();
+                tbody.innerHTML = '';
+                
+                usuariosData.forEach(usuario => {
+                    const empresaNombre = usuario.empresas ? usuario.empresas.nombre_legal : 'N/A';
+                    const row = `
+                        <tr>
+                            <td>${usuario.username}</td>
+                            <td>${usuario.email}</td>
+                            <td>${usuario.rol_sistema}</td>
+                            <td>${empresaNombre}</td>
+                            <td>${usuario.cuenta_bloqueada ? 'Bloqueada' : 'Activa'}</td>
+                            <td>
+                                <button class="btn" onclick="editarUsuario('${usuario.id}')">Editar</button>
+                                <button class="btn btn-danger" onclick="eliminarUsuario('${usuario.id}')">Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+                
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+        
+        function mostrarModalUsuario(usuarioId = null) {
+            const modal = document.getElementById('usuario-modal');
+            const title = document.getElementById('usuario-modal-title');
+            const form = document.getElementById('usuario-form');
+            
+            if (usuarioId) {
+                title.textContent = 'Editar Usuario';
+                const usuario = usuariosData.find(u => u.id === usuarioId);
+                if (usuario) {
+                    Object.keys(usuario).forEach(key => {
+                        const input = document.getElementById(key);
+                        if (input) input.value = usuario[key] || '';
+                    });
+                }
+            } else {
+                title.textContent = 'Nuevo Usuario';
+                form.reset();
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        document.getElementById('usuario-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const usuarioId = document.getElementById('usuario-id').value;
+            const usuarioData = {};
+            
+            formData.forEach((value, key) => {
+                if (value) usuarioData[key] = value;
+            });
+            
+            // IMPORTANTE: En producción, deberías hashear la contraseña
+            // Aquí se guarda en texto plano solo para pruebas
+            if (usuarioData.password_hash) {
+                usuarioData.password_hash = usuarioData.password_hash; // En producción: hash(usuarioData.password_hash + salt)
+            }
+            
+            try {
+                if (usuarioId) {
+                    // Actualizar
+                    await fetch(`${SUPABASE_URL}/rest/v1/usuarios?id=eq.${usuarioId}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify(usuarioData)
+                    });
+                } else {
+                    // Crear nuevo
+                    await fetch(`${SUPABASE_URL}/rest/v1/usuarios`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify(usuarioData)
+                    });
+                }
+                
+                cerrarModal('usuario');
+                await cargarUsuarios();
+                
+            } catch (error) {
+                alert('Error al guardar usuario: ' + error.message);
+            }
+        });
+        
+        async function eliminarUsuario(id) {
+            if (!confirm('¿Está seguro de eliminar este usuario?')) return;
+            
+            try {
+                // Marcar como eliminado en lugar de borrar físicamente
+                await fetch(`${SUPABASE_URL}/rest/v1/usuarios?id=eq.${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({ eliminado: true, fecha_eliminacion: new Date().toISOString() })
+                });
+                
+                await cargarUsuarios();
+                
+            } catch (error) {
+                alert('Error al eliminar usuario: ' + error.message);
+            }
+        }
+        
+        function editarUsuario(id) {
+            mostrarModalUsuario(id);
+        }
+        
+        // CRUD Empleados
+        async function cargarEmpleados() {
+            const loading = document.getElementById('empleados-loading');
+            const errorDiv = document.getElementById('empleados-error');
+            const tbody = document.getElementById('empleados-body');
+            
+            loading.style.display = 'block';
+            errorDiv.style.display = 'none';
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/empleados?select=*,empresas(nombre_legal)&activo=eq.true`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Error al cargar empleados');
+                
+                empleadosData = await response.json();
+                tbody.innerHTML = '';
+                
+                empleadosData.forEach(empleado => {
+                    const empresaNombre = empleado.empresas ? empleado.empresas.nombre_legal : 'N/A';
+                    const row = `
+                        <tr>
+                            <td>${empleado.codigo_empleado}</td>
+                            <td>${empleado.nombres} ${empleado.apellidos}</td>
+                            <td>${empleado.cargo}</td>
+                            <td>${empleado.tipo_documento}: ${empleado.numero_documento}</td>
+                            <td>${empresaNombre}</td>
+                            <td>${empleado.activo ? 'Activo' : 'Inactivo'}</td>
+                            <td>
+                                <button class="btn" onclick="editarEmpleado('${empleado.id}')">Editar</button>
+                                <button class="btn btn-danger" onclick="eliminarEmpleado('${empleado.id}')">Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+                
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+        
+        function mostrarModalEmpleado(empleadoId = null) {
+            const modal = document.getElementById('empleado-modal');
+            const title = document.getElementById('empleado-modal-title');
+            const form = document.getElementById('empleado-form');
+            
+            if (empleadoId) {
+                title.textContent = 'Editar Empleado';
+                const empleado = empleadosData.find(e => e.id === empleadoId);
+                if (empleado) {
+                    Object.keys(empleado).forEach(key => {
+                        const input = document.getElementById(key);
+                        if (input) input.value = empleado[key] || '';
+                    });
+                }
+            } else {
+                title.textContent = 'Nuevo Empleado';
+                form.reset();
+                document.getElementById('fecha_contratacion').valueAsDate = new Date();
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        document.getElementById('empleado-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const empleadoId = document.getElementById('empleado-id').value;
+            const empleadoData = {};
+            
+            formData.forEach((value, key) => {
+                if (value) empleadoData[key] = value;
+            });
+            
+            // Asegurar consistencia jerárquica
+            const cargo = empleadoData.cargo;
+            const nivel = empleadoData.nivel_jerarquico;
+            
+            // Validación básica de jerarquía
+            const jerarquias = {
+                'DIRECTOR_CORPORATIVO': 1,
+                'DIRECTOR_GENERAL': 2,
+                'DIRECTOR_FINANCIERO': 3,
+                'SUPERVISOR_SENIOR': 3,
+                'EJECUTIVO_COMERCIAL': 4,
+                'ESPECIALISTA_LOGISTICO': 4,
+                'GESTOR_ALMACEN': 4
+            };
+            
+            if (jerarquias[cargo] && parseInt(nivel) !== jerarquias[cargo]) {
+                alert(`Error: El cargo ${cargo} debe tener nivel ${jerarquias[cargo]}`);
+                return;
+            }
+            
+            try {
+                if (empleadoId) {
+                    // Actualizar
+                    await fetch(`${SUPABASE_URL}/rest/v1/empleados?id=eq.${empleadoId}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify(empleadoData)
+                    });
+                } else {
+                    // Crear nuevo
+                    await fetch(`${SUPABASE_URL}/rest/v1/empleados`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify(empleadoData)
+                    });
+                }
+                
+                cerrarModal('empleado');
+                await cargarEmpleados();
+                
+            } catch (error) {
+                alert('Error al guardar empleado: ' + error.message);
+            }
+        });
+        
+        async function eliminarEmpleado(id) {
+            if (!confirm('¿Está seguro de eliminar este empleado?')) return;
+            
+            try {
+                // Marcar como inactivo en lugar de borrar físicamente
+                await fetch(`${SUPABASE_URL}/rest/v1/empleados?id=eq.${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({ activo: false, fecha_inactivacion: new Date().toISOString() })
+                });
+                
+                await cargarEmpleados();
+                
+            } catch (error) {
+                alert('Error al eliminar empleado: ' + error.message);
+            }
+        }
+        
+        function editarEmpleado(id) {
+            mostrarModalEmpleado(id);
+        }
+        
+        // Funciones auxiliares
+        function cerrarModal(tipo) {
+            document.getElementById(`${tipo}-modal`).style.display = 'none';
+        }
+        
+        function cerrarSesion() {
+            localStorage.removeItem('usuario');
             window.location.href = 'login.html';
         }
+        
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') {
+                event.target.style.display = 'none';
+            }
+        };
     </script>
 </body>
 </html>
-
