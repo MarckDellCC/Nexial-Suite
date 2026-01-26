@@ -3,454 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexial Suite - Director Corporativo</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: #f7fafc;
-            min-height: 100vh;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 40px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        
-        .logo h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-        
-        .logo p {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        
-        .user-info {
-            text-align: right;
-        }
-        
-        .user-info .name {
-            font-weight: 600;
-            font-size: 18px;
-        }
-        
-        .user-info .role {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            margin-top: 5px;
-            display: inline-block;
-        }
-        
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            padding: 8px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-left: 15px;
-            transition: background 0.3s;
-        }
-        
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 30px;
-        }
-        
-        .welcome-card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            margin-bottom: 30px;
-        }
-        
-        .welcome-card h2 {
-            color: #4a5568;
-            margin-bottom: 15px;
-        }
-        
-        .welcome-card p {
-            color: #718096;
-            line-height: 1.6;
-        }
-        
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-        
-        .dashboard-card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-        }
-        
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
-        
-        .card-icon {
-            font-size: 40px;
-            margin-bottom: 15px;
-            color: #667eea;
-        }
-        
-        .dashboard-card h3 {
-            color: #4a5568;
-            margin-bottom: 10px;
-        }
-        
-        .dashboard-card p {
-            color: #718096;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-        
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-        
-        .stat-number {
-            font-size: 32px;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            color: #718096;
-            font-size: 14px;
-        }
-        
-        .quick-actions {
-            margin-top: 40px;
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        }
-        
-        .quick-actions h3 {
-            color: #4a5568;
-            margin-bottom: 20px;
-        }
-        
-        .action-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .action-btn {
-            background: #f7fafc;
-            border: 2px solid #e2e8f0;
-            color: #4a5568;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-        
-        .action-btn:hover {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: #718096;
-            font-size: 14px;
-            margin-top: 40px;
-            border-top: 1px solid #e2e8f0;
-        }
-        
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                text-align: center;
-                padding: 20px;
-            }
-            
-            .user-info {
-                text-align: center;
-                margin-top: 15px;
-            }
-            
-            .container {
-                padding: 20px;
-            }
-            
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <title>Director Corporativo - Nexial Suite</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        <div class="logo">
-            <h1>Nexial Suite</h1>
-            <p>Panel de Control - Director Corporativo</p>
-        </div>
-        <div class="user-info">
-            <div class="name" id="user-name">Marcelo Coarite</div>
-            <div class="role">DIRECTOR CORPORATIVO</div>
-            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-        </div>
+    <h1>Panel de Director Corporativo</h1>
+    
+    <div id="userInfo"></div>
+    
+    <div>
+        <button onclick="logout()">Cerrar Sesión</button>
+        <button onclick="cargarDatos()">Cargar Datos</button>
     </div>
     
-    <!-- Contenido Principal -->
-    <div class="container">
-        <!-- Bienvenida -->
-        <div class="welcome-card">
-            <h2>Bienvenido, <span id="welcome-name">Marcelo</span></h2>
-            <p>Como Director Corporativo, tienes acceso total a todas las funcionalidades del sistema. 
-               Puedes gestionar empresas, usuarios, configuraciones y supervisar todas las operaciones.</p>
-        </div>
-        
-        <!-- Estadísticas -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number" id="empresas-count">1</div>
-                <div class="stat-label">Empresas Activas</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="usuarios-count">1</div>
-                <div class="stat-label">Usuarios Totales</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="ventas-count">0</div>
-                <div class="stat-label">Ventas Hoy</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="clientes-count">0</div>
-                <div class="stat-label">Clientes Activos</div>
-            </div>
-        </div>
-        
-        <!-- Dashboard Grid -->
-        <div class="dashboard-grid">
-            <div class="dashboard-card" onclick="navigateTo('empresas')">
-                <div class="card-icon">🏢</div>
-                <h3>Gestionar Empresas</h3>
-                <p>Administra todas las empresas en el sistema, crea nuevas empresas, configura parámetros y supervisa operaciones.</p>
-            </div>
-            
-            <div class="dashboard-card" onclick="navigateTo('usuarios')">
-                <div class="card-icon">👥</div>
-                <h3>Usuarios y Permisos</h3>
-                <p>Gestiona usuarios, asigna roles, controla permisos y supervisa la actividad de todos los usuarios del sistema.</p>
-            </div>
-            
-            <div class="dashboard-card" onclick="navigateTo('configuracion')">
-                <div class="card-icon">⚙️</div>
-                <h3>Configuración Sistema</h3>
-                <p>Configura parámetros globales del sistema, monedas, impuestos y otras configuraciones corporativas.</p>
-            </div>
-            
-            <div class="dashboard-card" onclick="navigateTo('reportes')">
-                <div class="card-icon">📊</div>
-                <h3>Reportes Corporativos</h3>
-                <p>Genera reportes detallados, analiza métricas de todas las empresas y toma decisiones basadas en datos.</p>
-            </div>
-            
-            <div class="dashboard-card" onclick="navigateTo('auditoria')">
-                <div class="card-icon">🔍</div>
-                <h3>Auditoría del Sistema</h3>
-                <p>Revisa el historial completo de actividades, cambios y eventos en todas las empresas del sistema.</p>
-            </div>
-            
-            <div class="dashboard-card" onclick="navigateTo('soporte')">
-                <div class="card-icon">🛠️</div>
-                <h3>Soporte y Ayuda</h3>
-                <p>Accede a documentación, herramientas de soporte y recursos para administrar el sistema eficientemente.</p>
-            </div>
-        </div>
-        
-        <!-- Acciones Rápidas -->
-        <div class="quick-actions">
-            <h3>Acciones Rápidas</h3>
-            <div class="action-buttons">
-                <button class="action-btn" onclick="navigateTo('nueva-empresa')">Crear Nueva Empresa</button>
-                <button class="action-btn" onclick="navigateTo('nuevo-usuario')">Crear Nuevo Usuario</button>
-                <button class="action-btn" onclick="navigateTo('generar-reporte')">Generar Reporte</button>
-                <button class="action-btn" onclick="navigateTo('backup')">Realizar Backup</button>
-                <button class="action-btn" onclick="openConfiguracion()">Configuración Avanzada</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Footer -->
-    <div class="footer">
-        <p>© 2024 Nexial Suite - Sistema de Gestión Empresarial Multi-Tenancy</p>
-        <p>Versión 1.0.0 | Último acceso: <span id="last-access"></span></p>
-    </div>
+    <div id="datos"></div>
 
     <script>
+        // Configuración de Supabase - REEMPLAZA CON TUS DATOS
+        const SUPABASE_URL = 'https://tu-proyecto.supabase.co';
+        const SUPABASE_ANON_KEY = 'tu-anon-key-publica';
+        
+        // Inicializar Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
         // Verificar sesión al cargar
         document.addEventListener('DOMContentLoaded', function() {
-            checkSession();
-            loadUserInfo();
-            loadStats();
-            updateLastAccess();
-        });
-        
-        function checkSession() {
             const loggedIn = localStorage.getItem('logged_in');
-            const userRole = localStorage.getItem('rol_sistema');
+            const userData = localStorage.getItem('user');
             
-            if (loggedIn !== 'true' || userRole !== 'DIRECTOR_CORPORATIVO') {
-                // Redirigir al login si no está autenticado o no es Director Corporativo
+            if (loggedIn !== 'true' || !userData) {
                 window.location.href = 'login.html';
                 return;
             }
             
-            // Verificar tiempo de sesión (24 horas máximo)
-            const loginTime = localStorage.getItem('login_time');
-            if (loginTime) {
-                const loginDate = new Date(loginTime);
-                const now = new Date();
-                const hoursDiff = (now - loginDate) / (1000 * 60 * 60);
-                
-                if (hoursDiff > 24) {
-                    logout();
-                }
-            }
-        }
+            // Mostrar información del usuario
+            const user = JSON.parse(userData);
+            document.getElementById('userInfo').innerHTML = `
+                <p><strong>Usuario:</strong> ${user.username || 'mcoarite'}</p>
+                <p><strong>Nombre:</strong> ${user.nombres || 'Marcelo'} ${user.apellidos || 'Coarite'}</p>
+                <p><strong>Rol:</strong> ${user.rol_sistema || 'DIRECTOR_CORPORATIVO'}</p>
+            `;
+        });
         
-        function loadUserInfo() {
-            const userName = localStorage.getItem('user_name') || 'Marcelo Coarite';
-            const userEmail = localStorage.getItem('email') || 'marcelo@nexialsuite.bo';
-            
-            document.getElementById('user-name').textContent = userName;
-            document.getElementById('welcome-name').textContent = userName.split(' ')[0] || 'Usuario';
-        }
-        
-        async function loadStats() {
+        async function cargarDatos() {
             try {
-                // Aquí deberías reemplazar con tu URL y clave de Supabase
-                const supabaseUrl = 'https://tu-proyecto.supabase.co';
-                const supabaseAnonKey = 'tu-clave-anon-key-publica';
+                // Ejemplo: Cargar empresas
+                const { data: empresas, error } = await supabase
+                    .from('empresas')
+                    .select('*');
                 
-                if (typeof supabase === 'undefined') {
-                    var supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+                if (error) {
+                    document.getElementById('datos').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                    return;
                 }
                 
-                // Obtener estadísticas (ejemplos - debes implementar según tus necesidades)
-                const empresas = await supabase.from('empresas').select('id', { count: 'exact' });
-                const usuarios = await supabase.from('usuarios').select('id', { count: 'exact' }).eq('eliminado', false);
+                let html = '<h3>Empresas en el Sistema:</h3>';
                 
-                if (empresas.count !== null) {
-                    document.getElementById('empresas-count').textContent = empresas.count;
+                if (empresas && empresas.length > 0) {
+                    html += '<ul>';
+                    empresas.forEach(empresa => {
+                        html += `<li><strong>${empresa.codigo_empresa}</strong>: ${empresa.nombre_comercial} (${empresa.pais})</li>`;
+                    });
+                    html += '</ul>';
+                } else {
+                    html += '<p>No hay empresas registradas</p>';
                 }
                 
-                if (usuarios.count !== null) {
-                    document.getElementById('usuarios-count').textContent = usuarios.count;
-                }
+                document.getElementById('datos').innerHTML = html;
                 
             } catch (error) {
-                console.error('Error cargando estadísticas:', error);
+                console.error('Error cargando datos:', error);
+                document.getElementById('datos').innerHTML = `<p style="color: red;">Error cargando datos: ${error.message}</p>`;
             }
-        }
-        
-        function updateLastAccess() {
-            const now = new Date();
-            const options = { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            };
-            document.getElementById('last-access').textContent = now.toLocaleDateString('es-ES', options);
-        }
-        
-        function navigateTo(destination) {
-            // Aquí puedes implementar la navegación a diferentes secciones
-            alert(`Navegando a: ${destination} (Esta funcionalidad está en desarrollo)`);
-            
-            // Ejemplo de implementación futura:
-            // switch(destination) {
-            //     case 'empresas':
-            //         window.location.href = 'empresas.html';
-            //         break;
-            //     case 'usuarios':
-            //         window.location.href = 'usuarios.html';
-            //         break;
-            //     // etc...
-            // }
-        }
-        
-        function openConfiguracion() {
-            alert('Panel de configuración avanzada (En desarrollo)');
         }
         
         function logout() {
-            // Limpiar localStorage
-            localStorage.removeItem('user_id');
-            localStorage.removeItem('empresa_id');
-            localStorage.removeItem('username');
-            localStorage.removeItem('email');
-            localStorage.removeItem('rol_sistema');
-            localStorage.removeItem('nivel_acceso');
-            localStorage.removeItem('user_name');
-            localStorage.removeItem('cargo');
+            localStorage.removeItem('user');
             localStorage.removeItem('logged_in');
-            localStorage.removeItem('login_time');
-            localStorage.removeItem('remember_session');
-            
-            // Redirigir al login
             window.location.href = 'login.html';
         }
-        
-        // Manejar recarga de página
-        window.addEventListener('beforeunload', function(e) {
-            // Opcional: Guardar estado de la sesión
-        });
     </script>
 </body>
 </html>
