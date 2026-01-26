@@ -3,758 +3,454 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Director Corporativo</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <title>Nexial Suite - Director Corporativo</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #f7fafc;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .logo p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .user-info {
+            text-align: right;
+        }
+        
+        .user-info .name {
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        .user-info .role {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 5px;
+            display: inline-block;
+        }
+        
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 15px;
+            transition: background 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        
+        .welcome-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+        
+        .welcome-card h2 {
+            color: #4a5568;
+            margin-bottom: 15px;
+        }
+        
+        .welcome-card p {
+            color: #718096;
+            line-height: 1.6;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        
+        .dashboard-card h3 {
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+        
+        .dashboard-card p {
+            color: #718096;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .quick-actions {
+            margin-top: 40px;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .quick-actions h3 {
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .action-btn {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            color: #4a5568;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .action-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #718096;
+            font-size: 14px;
+            margin-top: 40px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+            
+            .user-info {
+                text-align: center;
+                margin-top: 15px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div style="padding: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h1>Panel de Director Corporativo</h1>
-            <div>
-                <span id="usuario-info" style="margin-right: 20px;"></span>
-                <button onclick="logout()" style="padding: 5px 15px; background: #dc3545; color: white; border: none; cursor: pointer;">
-                    Cerrar Sesión
-                </button>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">
+            <h1>Nexial Suite</h1>
+            <p>Panel de Control - Director Corporativo</p>
+        </div>
+        <div class="user-info">
+            <div class="name" id="user-name">Marcelo Coarite</div>
+            <div class="role">DIRECTOR CORPORATIVO</div>
+            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </div>
+    
+    <!-- Contenido Principal -->
+    <div class="container">
+        <!-- Bienvenida -->
+        <div class="welcome-card">
+            <h2>Bienvenido, <span id="welcome-name">Marcelo</span></h2>
+            <p>Como Director Corporativo, tienes acceso total a todas las funcionalidades del sistema. 
+               Puedes gestionar empresas, usuarios, configuraciones y supervisar todas las operaciones.</p>
+        </div>
+        
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="empresas-count">1</div>
+                <div class="stat-label">Empresas Activas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="usuarios-count">1</div>
+                <div class="stat-label">Usuarios Totales</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="ventas-count">0</div>
+                <div class="stat-label">Ventas Hoy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="clientes-count">0</div>
+                <div class="stat-label">Clientes Activos</div>
             </div>
         </div>
         
-        <div id="error" style="color: red; display: none; margin-bottom: 10px; padding: 10px; background: #ffe6e6;"></div>
-        <div id="success" style="color: green; display: none; margin-bottom: 10px; padding: 10px; background: #e6ffe6;"></div>
-        
-        <!-- Pestañas -->
-        <div style="margin-bottom: 20px;">
-            <button onclick="mostrarTab('empresas')" id="tab-empresas" style="padding: 10px 20px; margin-right: 5px; cursor: pointer;">
-                Empresas
-            </button>
-            <button onclick="mostrarTab('usuarios')" id="tab-usuarios" style="padding: 10px 20px; margin-right: 5px; cursor: pointer;">
-                Usuarios
-            </button>
-            <button onclick="mostrarTab('empleados')" id="tab-empleados" style="padding: 10px 20px; cursor: pointer;">
-                Empleados
-            </button>
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <div class="dashboard-card" onclick="navigateTo('empresas')">
+                <div class="card-icon">🏢</div>
+                <h3>Gestionar Empresas</h3>
+                <p>Administra todas las empresas en el sistema, crea nuevas empresas, configura parámetros y supervisa operaciones.</p>
+            </div>
+            
+            <div class="dashboard-card" onclick="navigateTo('usuarios')">
+                <div class="card-icon">👥</div>
+                <h3>Usuarios y Permisos</h3>
+                <p>Gestiona usuarios, asigna roles, controla permisos y supervisa la actividad de todos los usuarios del sistema.</p>
+            </div>
+            
+            <div class="dashboard-card" onclick="navigateTo('configuracion')">
+                <div class="card-icon">⚙️</div>
+                <h3>Configuración Sistema</h3>
+                <p>Configura parámetros globales del sistema, monedas, impuestos y otras configuraciones corporativas.</p>
+            </div>
+            
+            <div class="dashboard-card" onclick="navigateTo('reportes')">
+                <div class="card-icon">📊</div>
+                <h3>Reportes Corporativos</h3>
+                <p>Genera reportes detallados, analiza métricas de todas las empresas y toma decisiones basadas en datos.</p>
+            </div>
+            
+            <div class="dashboard-card" onclick="navigateTo('auditoria')">
+                <div class="card-icon">🔍</div>
+                <h3>Auditoría del Sistema</h3>
+                <p>Revisa el historial completo de actividades, cambios y eventos en todas las empresas del sistema.</p>
+            </div>
+            
+            <div class="dashboard-card" onclick="navigateTo('soporte')">
+                <div class="card-icon">🛠️</div>
+                <h3>Soporte y Ayuda</h3>
+                <p>Accede a documentación, herramientas de soporte y recursos para administrar el sistema eficientemente.</p>
+            </div>
         </div>
         
-        <!-- Contenido de las pestañas -->
-        <div id="contenido">
-            <!-- Contenido se cargará dinámicamente -->
+        <!-- Acciones Rápidas -->
+        <div class="quick-actions">
+            <h3>Acciones Rápidas</h3>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="navigateTo('nueva-empresa')">Crear Nueva Empresa</button>
+                <button class="action-btn" onclick="navigateTo('nuevo-usuario')">Crear Nuevo Usuario</button>
+                <button class="action-btn" onclick="navigateTo('generar-reporte')">Generar Reporte</button>
+                <button class="action-btn" onclick="navigateTo('backup')">Realizar Backup</button>
+                <button class="action-btn" onclick="openConfiguracion()">Configuración Avanzada</button>
+            </div>
         </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+        <p>© 2024 Nexial Suite - Sistema de Gestión Empresarial Multi-Tenancy</p>
+        <p>Versión 1.0.0 | Último acceso: <span id="last-access"></span></p>
     </div>
 
     <script>
-        // Configuración de Supabase
-        const SUPABASE_URL = 'https://dcmzpbfhtcevinruphcz.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_kIb5dk3KdkVJLGBfKEeyog_OxrzqsjB';
-        
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        let usuarioActual = null;
-        let tabActual = 'empresas';
-        
-        // Verificar autenticación al cargar
+        // Verificar sesión al cargar
         document.addEventListener('DOMContentLoaded', function() {
-            const usuarioStr = sessionStorage.getItem('usuario');
-            
-            if (!usuarioStr) {
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            usuarioActual = JSON.parse(usuarioStr);
-            
-            // Verificar que sea Director Corporativo
-            if (usuarioActual.rol_sistema !== 'DIRECTOR_CORPORATIVO') {
-                alert('Acceso denegado. Solo para Director Corporativo');
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            // Mostrar información del usuario
-            document.getElementById('usuario-info').textContent = 
-                `${usuarioActual.username} (${usuarioActual.rol_sistema})`;
-            
-            // Cargar la pestaña inicial
-            mostrarTab('empresas');
+            checkSession();
+            loadUserInfo();
+            loadStats();
+            updateLastAccess();
         });
         
-        function mostrarTab(tab) {
-            tabActual = tab;
+        function checkSession() {
+            const loggedIn = localStorage.getItem('logged_in');
+            const userRole = localStorage.getItem('rol_sistema');
             
-            // Actualizar botones activos
-            ['empresas', 'usuarios', 'empleados'].forEach(t => {
-                const btn = document.getElementById(`tab-${t}`);
-                if (btn) {
-                    btn.style.background = t === tab ? '#007bff' : '#f8f9fa';
-                    btn.style.color = t === tab ? 'white' : 'black';
-                }
-            });
-            
-            // Cargar contenido
-            switch(tab) {
-                case 'empresas':
-                    cargarEmpresas();
-                    break;
-                case 'usuarios':
-                    cargarUsuarios();
-                    break;
-                case 'empleados':
-                    cargarEmpleados();
-                    break;
+            if (loggedIn !== 'true' || userRole !== 'DIRECTOR_CORPORATIVO') {
+                // Redirigir al login si no está autenticado o no es Director Corporativo
+                window.location.href = 'login.html';
+                return;
             }
+            
+            // Verificar tiempo de sesión (24 horas máximo)
+            const loginTime = localStorage.getItem('login_time');
+            if (loginTime) {
+                const loginDate = new Date(loginTime);
+                const now = new Date();
+                const hoursDiff = (now - loginDate) / (1000 * 60 * 60);
+                
+                if (hoursDiff > 24) {
+                    logout();
+                }
+            }
+        }
+        
+        function loadUserInfo() {
+            const userName = localStorage.getItem('user_name') || 'Marcelo Coarite';
+            const userEmail = localStorage.getItem('email') || 'marcelo@nexialsuite.bo';
+            
+            document.getElementById('user-name').textContent = userName;
+            document.getElementById('welcome-name').textContent = userName.split(' ')[0] || 'Usuario';
+        }
+        
+        async function loadStats() {
+            try {
+                // Aquí deberías reemplazar con tu URL y clave de Supabase
+                const supabaseUrl = 'https://tu-proyecto.supabase.co';
+                const supabaseAnonKey = 'tu-clave-anon-key-publica';
+                
+                if (typeof supabase === 'undefined') {
+                    var supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+                }
+                
+                // Obtener estadísticas (ejemplos - debes implementar según tus necesidades)
+                const empresas = await supabase.from('empresas').select('id', { count: 'exact' });
+                const usuarios = await supabase.from('usuarios').select('id', { count: 'exact' }).eq('eliminado', false);
+                
+                if (empresas.count !== null) {
+                    document.getElementById('empresas-count').textContent = empresas.count;
+                }
+                
+                if (usuarios.count !== null) {
+                    document.getElementById('usuarios-count').textContent = usuarios.count;
+                }
+                
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
+            }
+        }
+        
+        function updateLastAccess() {
+            const now = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            document.getElementById('last-access').textContent = now.toLocaleDateString('es-ES', options);
+        }
+        
+        function navigateTo(destination) {
+            // Aquí puedes implementar la navegación a diferentes secciones
+            alert(`Navegando a: ${destination} (Esta funcionalidad está en desarrollo)`);
+            
+            // Ejemplo de implementación futura:
+            // switch(destination) {
+            //     case 'empresas':
+            //         window.location.href = 'empresas.html';
+            //         break;
+            //     case 'usuarios':
+            //         window.location.href = 'usuarios.html';
+            //         break;
+            //     // etc...
+            // }
+        }
+        
+        function openConfiguracion() {
+            alert('Panel de configuración avanzada (En desarrollo)');
         }
         
         function logout() {
-            sessionStorage.removeItem('usuario');
+            // Limpiar localStorage
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('empresa_id');
+            localStorage.removeItem('username');
+            localStorage.removeItem('email');
+            localStorage.removeItem('rol_sistema');
+            localStorage.removeItem('nivel_acceso');
+            localStorage.removeItem('user_name');
+            localStorage.removeItem('cargo');
+            localStorage.removeItem('logged_in');
+            localStorage.removeItem('login_time');
+            localStorage.removeItem('remember_session');
+            
+            // Redirigir al login
             window.location.href = 'login.html';
         }
         
-        // ===== FUNCIONES PARA EMPRESAS =====
-        async function cargarEmpresas() {
-            try {
-                const { data: empresas, error } = await supabase
-                    .from('empresas')
-                    .select('*')
-                    .order('nombre_legal');
-                
-                if (error) throw error;
-                
-                let html = `
-                    <div style="margin-bottom: 20px;">
-                        <button onclick="mostrarFormularioEmpresa()" 
-                                style="padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer;">
-                            + Nueva Empresa
-                        </button>
-                    </div>
-                    
-                    <div id="formulario-empresa" style="display: none; margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; background: #f9f9f9;">
-                        <!-- Formulario se cargará aquí -->
-                    </div>
-                    
-                    <div style="overflow-x: auto;">
-                        <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: #f2f2f2;">
-                                    <th>Código</th>
-                                    <th>Nombre Legal</th>
-                                    <th>RUT/NIT</th>
-                                    <th>País</th>
-                                    <th>Moneda</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
-                
-                if (empresas && empresas.length > 0) {
-                    empresas.forEach(empresa => {
-                        html += `
-                            <tr>
-                                <td>${empresa.codigo_empresa || ''}</td>
-                                <td>${empresa.nombre_legal || ''}</td>
-                                <td>${empresa.rut_nit_identificacion || ''}</td>
-                                <td>${empresa.pais || ''}</td>
-                                <td>${empresa.moneda_principal || ''}</td>
-                                <td>${empresa.activa ? 'Activa' : 'Inactiva'}</td>
-                                <td>
-                                    <button onclick="editarEmpresa('${empresa.id}')" style="padding: 5px 10px; margin-right: 5px; cursor: pointer;">Editar</button>
-                                    <button onclick="eliminarEmpresa('${empresa.id}')" style="padding: 5px 10px; background: #dc3545; color: white; cursor: pointer;">Eliminar</button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                } else {
-                    html += `<tr><td colspan="7" style="text-align: center;">No hay empresas registradas</td></tr>`;
-                }
-                
-                html += `
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-                
-                document.getElementById('contenido').innerHTML = html;
-                
-            } catch (error) {
-                mostrarError('Error al cargar empresas: ' + error.message);
-            }
-        }
-        
-        function mostrarFormularioEmpresa(empresa = null) {
-            const esEdicion = empresa !== null;
-            
-            let html = `
-                <h3>${esEdicion ? 'Editar Empresa' : 'Nueva Empresa'}</h3>
-                <form id="formEmpresa" onsubmit="guardarEmpresa(event)">
-                    <input type="hidden" id="empresa_id" value="${empresa ? empresa.id : ''}">
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div>
-                            <label>Código Empresa *</label>
-                            <input type="text" id="codigo_empresa" value="${empresa ? empresa.codigo_empresa : ''}" required style="width: 100%; padding: 5px;">
-                        </div>
-                        <div>
-                            <label>RUT/NIT Identificación *</label>
-                            <input type="text" id="rut_nit" value="${empresa ? empresa.rut_nit_identificacion : ''}" required style="width: 100%; padding: 5px;">
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <label>Nombre Legal *</label>
-                        <input type="text" id="nombre_legal" value="${empresa ? empresa.nombre_legal : ''}" required style="width: 100%; padding: 5px;">
-                    </div>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <label>Nombre Comercial</label>
-                        <input type="text" id="nombre_comercial" value="${empresa ? empresa.nombre_comercial : ''}" style="width: 100%; padding: 5px;">
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div>
-                            <label>País *</label>
-                            <input type="text" id="pais" value="${empresa ? empresa.pais : ''}" required style="width: 100%; padding: 5px;">
-                        </div>
-                        <div>
-                            <label>Ciudad</label>
-                            <input type="text" id="ciudad" value="${empresa ? empresa.ciudad : ''}" style="width: 100%; padding: 5px;">
-                        </div>
-                        <div>
-                            <label>Moneda Principal *</label>
-                            <input type="text" id="moneda" value="${empresa ? empresa.moneda_principal : 'COP'}" required style="width: 100%; padding: 5px;">
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <label>Dirección</label>
-                        <textarea id="direccion" style="width: 100%; padding: 5px; height: 60px;">${empresa ? empresa.direccion : ''}</textarea>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div>
-                            <label>Teléfono</label>
-                            <input type="text" id="telefono" value="${empresa ? empresa.telefono : ''}" style="width: 100%; padding: 5px;">
-                        </div>
-                        <div>
-                            <label>Email</label>
-                            <input type="email" id="email" value="${empresa ? empresa.email : ''}" style="width: 100%; padding: 5px;">
-                        </div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div>
-                            <label>Zona Horaria *</label>
-                            <input type="text" id="zona_horaria" value="${empresa ? empresa.zona_horaria : 'America/Bogota'}" required style="width: 100%; padding: 5px;">
-                        </div>
-                        <div>
-                            <label>Estado</label>
-                            <select id="activa" style="width: 100%; padding: 5px;">
-                                <option value="true" ${empresa && empresa.activa ? 'selected' : ''}>Activa</option>
-                                <option value="false" ${empresa && !empresa.activa ? 'selected' : ''}>Inactiva</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 10px;">
-                        <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer;">
-                            ${esEdicion ? 'Actualizar' : 'Guardar'}
-                        </button>
-                        <button type="button" onclick="document.getElementById('formulario-empresa').style.display='none'" 
-                                style="padding: 10px 20px; background: #6c757d; color: white; border: none; cursor: pointer;">
-                            Cancelar
-                        </button>
-                    </div>
-                </form>
-            `;
-            
-            document.getElementById('formulario-empresa').innerHTML = html;
-            document.getElementById('formulario-empresa').style.display = 'block';
-        }
-        
-        async function guardarEmpresa(event) {
-            event.preventDefault();
-            
-            const empresaId = document.getElementById('empresa_id').value;
-            const esEdicion = empresaId !== '';
-            
-            const empresaData = {
-                codigo_empresa: document.getElementById('codigo_empresa').value,
-                nombre_legal: document.getElementById('nombre_legal').value,
-                nombre_comercial: document.getElementById('nombre_comercial').value,
-                rut_nit_identificacion: document.getElementById('rut_nit').value,
-                pais: document.getElementById('pais').value,
-                ciudad: document.getElementById('ciudad').value,
-                direccion: document.getElementById('direccion').value,
-                telefono: document.getElementById('telefono').value,
-                email: document.getElementById('email').value,
-                moneda_principal: document.getElementById('moneda').value,
-                zona_horaria: document.getElementById('zona_horaria').value,
-                activa: document.getElementById('activa').value === 'true'
-            };
-            
-            try {
-                let result;
-                
-                if (esEdicion) {
-                    result = await supabase
-                        .from('empresas')
-                        .update(empresaData)
-                        .eq('id', empresaId);
-                } else {
-                    result = await supabase
-                        .from('empresas')
-                        .insert([empresaData]);
-                }
-                
-                if (result.error) throw result.error;
-                
-                mostrarExito(`Empresa ${esEdicion ? 'actualizada' : 'creada'} correctamente`);
-                document.getElementById('formulario-empresa').style.display = 'none';
-                cargarEmpresas();
-                
-            } catch (error) {
-                mostrarError('Error al guardar empresa: ' + error.message);
-            }
-        }
-        
-        async function editarEmpresa(id) {
-            try {
-                const { data: empresa, error } = await supabase
-                    .from('empresas')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-                
-                if (error) throw error;
-                
-                mostrarFormularioEmpresa(empresa);
-                
-            } catch (error) {
-                mostrarError('Error al cargar empresa: ' + error.message);
-            }
-        }
-        
-        async function eliminarEmpresa(id) {
-            if (!confirm('¿Está seguro de eliminar esta empresa? Esta acción no se puede deshacer.')) {
-                return;
-            }
-            
-            try {
-                const { error } = await supabase
-                    .from('empresas')
-                    .delete()
-                    .eq('id', id);
-                
-                if (error) throw error;
-                
-                mostrarExito('Empresa eliminada correctamente');
-                cargarEmpresas();
-                
-            } catch (error) {
-                mostrarError('Error al eliminar empresa: ' + error.message);
-            }
-        }
-        
-        // ===== FUNCIONES PARA USUARIOS =====
-        async function cargarUsuarios() {
-            try {
-                const { data: usuarios, error } = await supabase
-                    .from('usuarios')
-                    .select('*, empresas(nombre_legal)')
-                    .eq('eliminado', false)
-                    .order('username');
-                
-                if (error) throw error;
-                
-                let html = `
-                    <div style="margin-bottom: 20px;">
-                        <button onclick="mostrarFormularioUsuario()" 
-                                style="padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer;">
-                            + Nuevo Usuario
-                        </button>
-                    </div>
-                    
-                    <div id="formulario-usuario" style="display: none; margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; background: #f9f9f9;">
-                        <!-- Formulario se cargará aquí -->
-                    </div>
-                    
-                    <div style="overflow-x: auto;">
-                        <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: #f2f2f2;">
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Empresa</th>
-                                    <th>Rol</th>
-                                    <th>Nivel Acceso</th>
-                                    <th>Estado</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
-                
-                if (usuarios && usuarios.length > 0) {
-                    usuarios.forEach(usuario => {
-                        html += `
-                            <tr>
-                                <td>${usuario.username || ''}</td>
-                                <td>${usuario.email || ''}</td>
-                                <td>${usuario.empresas ? usuario.empresas.nombre_legal : 'N/A'}</td>
-                                <td>${usuario.rol_sistema || ''}</td>
-                                <td>${usuario.nivel_acceso || ''}</td>
-                                <td>${usuario.cuenta_bloqueada ? 'Bloqueada' : 'Activa'}</td>
-                                <td>
-                                    <button onclick="editarUsuario('${usuario.id}')" style="padding: 5px 10px; margin-right: 5px; cursor: pointer;">Editar</button>
-                                    <button onclick="eliminarUsuario('${usuario.id}')" style="padding: 5px 10px; background: #dc3545; color: white; cursor: pointer;">Eliminar</button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                } else {
-                    html += `<tr><td colspan="7" style="text-align: center;">No hay usuarios registrados</td></tr>`;
-                }
-                
-                html += `
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-                
-                document.getElementById('contenido').innerHTML = html;
-                
-            } catch (error) {
-                mostrarError('Error al cargar usuarios: ' + error.message);
-            }
-        }
-        
-        async function mostrarFormularioUsuario(usuario = null) {
-            // Cargar empresas para el select
-            const { data: empresas, error } = await supabase
-                .from('empresas')
-                .select('id, nombre_legal')
-                .order('nombre_legal');
-            
-            if (error) {
-                mostrarError('Error al cargar empresas: ' + error.message);
-                return;
-            }
-            
-            const esEdicion = usuario !== null;
-            
-            let empresasOptions = '<option value="">Seleccionar Empresa</option>';
-            if (empresas) {
-                empresas.forEach(emp => {
-                    const selected = usuario && usuario.empresa_id === emp.id ? 'selected' : '';
-                    empresasOptions += `<option value="${emp.id}" ${selected}>${emp.nombre_legal}</option>`;
-                });
-            }
-            
-            // Roles disponibles
-            const roles = [
-                'DIRECTOR_CORPORATIVO',
-                'DIRECTOR_GENERAL', 
-                'DIRECTOR_FINANCIERO',
-                'SUPERVISOR_SENIOR',
-                'EJECUTIVO_COMERCIAL',
-                'ESPECIALISTA_LOGISTICO',
-                'GESTOR_ALMACEN'
-            ];
-            
-            let rolesOptions = '';
-            roles.forEach(rol => {
-                const selected = usuario && usuario.rol_sistema === rol ? 'selected' : '';
-                rolesOptions += `<option value="${rol}" ${selected}>${rol}</option>`;
-            });
-            
-            let html = `
-                <h3>${esEdicion ? 'Editar Usuario' : 'Nuevo Usuario'}</h3>
-                <form id="formUsuario" onsubmit="guardarUsuario(event)">
-                    <input type="hidden" id="usuario_id" value="${usuario ? usuario.id : ''}">
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div>
-                            <label>Username *</label>
-                            <input type="text" id="username" value="${usuario ? usuario.username : ''}" required style="width: 100%; padding: 5px;">
-                        </div>
-                        <div>
-                            <label>Email *</label>
-                            <input type="email" id="email" value="${usuario ? usuario.email : ''}" required style="width: 100%; padding: 5px;">
-                        </div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div>
-                            <label>Contraseña ${esEdicion ? '(dejar en blanco para no cambiar)' : '*'}</label>
-                            <input type="password" id="password" ${esEdicion ? '' : 'required'} style="width: 100%; padding: 5px;">
-                        </div>
-                        <div>
-                            <label>Confirmar Contraseña ${esEdicion ? '(dejar en blanco para no cambiar)' : '*'}</label>
-                            <input type="password" id="confirm_password" ${esEdicion ? '' : 'required'} style="width: 100%; padding: 5px;">
-                        </div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div>
-                            <label>Empresa *</label>
-                            <select id="empresa_id" required style="width: 100%; padding: 5px;">
-                                ${empresasOptions}
-                            </select>
-                        </div>
-                        <div>
-                            <label>Rol del Sistema *</label>
-                            <select id="rol_sistema" required style="width: 100%; padding: 5px;">
-                                ${rolesOptions}
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div>
-                            <label>Nivel de Acceso *</label>
-                            <input type="number" id="nivel_acceso" min="1" max="10" value="${usuario ? usuario.nivel_acceso : 1}" required style="width: 100%; padding: 5px;">
-                        </div>
-                        <div>
-                            <label>Estado de Cuenta</label>
-                            <select id="cuenta_bloqueada" style="width: 100%; padding: 5px;">
-                                <option value="false" ${usuario && !usuario.cuenta_bloqueada ? 'selected' : ''}>Activa</option>
-                                <option value="true" ${usuario && usuario.cuenta_bloqueada ? 'selected' : ''}>Bloqueada</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 10px;">
-                        <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer;">
-                            ${esEdicion ? 'Actualizar' : 'Guardar'}
-                        </button>
-                        <button type="button" onclick="document.getElementById('formulario-usuario').style.display='none'" 
-                                style="padding: 10px 20px; background: #6c757d; color: white; border: none; cursor: pointer;">
-                            Cancelar
-                        </button>
-                    </div>
-                </form>
-            `;
-            
-            document.getElementById('formulario-usuario').innerHTML = html;
-            document.getElementById('formulario-usuario').style.display = 'block';
-        }
-        
-        async function guardarUsuario(event) {
-            event.preventDefault();
-            
-            const usuarioId = document.getElementById('usuario_id').value;
-            const esEdicion = usuarioId !== '';
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
-            
-            // Validar contraseñas
-            if (!esEdicion && !password) {
-                mostrarError('La contraseña es requerida para nuevos usuarios');
-                return;
-            }
-            
-            if (password && password !== confirmPassword) {
-                mostrarError('Las contraseñas no coinciden');
-                return;
-            }
-            
-            const usuarioData = {
-                username: document.getElementById('username').value,
-                email: document.getElementById('email').value,
-                empresa_id: document.getElementById('empresa_id').value,
-                rol_sistema: document.getElementById('rol_sistema').value,
-                nivel_acceso: parseInt(document.getElementById('nivel_acceso').value),
-                cuenta_bloqueada: document.getElementById('cuenta_bloqueada').value === 'true'
-            };
-            
-            // Si hay contraseña nueva, hacer hash
-            if (password) {
-                usuarioData.password_hash = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
-            }
-            
-            // Si es nuevo usuario, activar cuenta
-            if (!esEdicion) {
-                usuarioData.cuenta_activada = true;
-                usuarioData.fecha_activacion = new Date().toISOString();
-            }
-            
-            try {
-                let result;
-                
-                if (esEdicion) {
-                    result = await supabase
-                        .from('usuarios')
-                        .update(usuarioData)
-                        .eq('id', usuarioId);
-                } else {
-                    result = await supabase
-                        .from('usuarios')
-                        .insert([usuarioData]);
-                }
-                
-                if (result.error) throw result.error;
-                
-                mostrarExito(`Usuario ${esEdicion ? 'actualizado' : 'creado'} correctamente`);
-                document.getElementById('formulario-usuario').style.display = 'none';
-                cargarUsuarios();
-                
-            } catch (error) {
-                mostrarError('Error al guardar usuario: ' + error.message);
-            }
-        }
-        
-        async function editarUsuario(id) {
-            try {
-                const { data: usuario, error } = await supabase
-                    .from('usuarios')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-                
-                if (error) throw error;
-                
-                mostrarFormularioUsuario(usuario);
-                
-            } catch (error) {
-                mostrarError('Error al cargar usuario: ' + error.message);
-            }
-        }
-        
-        async function eliminarUsuario(id) {
-            if (!confirm('¿Está seguro de eliminar este usuario? Se marcará como eliminado lógico.')) {
-                return;
-            }
-            
-            try {
-                const { error } = await supabase
-                    .from('usuarios')
-                    .update({ eliminado: true, fecha_eliminacion: new Date().toISOString() })
-                    .eq('id', id);
-                
-                if (error) throw error;
-                
-                mostrarExito('Usuario eliminado correctamente');
-                cargarUsuarios();
-                
-            } catch (error) {
-                mostrarError('Error al eliminar usuario: ' + error.message);
-            }
-        }
-        
-        // ===== FUNCIONES PARA EMPLEADOS =====
-        async function cargarEmpleados() {
-            try {
-                const { data: empleados, error } = await supabase
-                    .from('empleados')
-                    .select('*, empresas(nombre_legal), usuarios(username)')
-                    .eq('activo', true)
-                    .order('nombres');
-                
-                if (error) throw error;
-                
-                let html = `
-                    <div style="margin-bottom: 20px;">
-                        <button onclick="mostrarFormularioEmpleado()" 
-                                style="padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer;">
-                            + Nuevo Empleado
-                        </button>
-                    </div>
-                    
-                    <div id="formulario-empleado" style="display: none; margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; background: #f9f9f9;">
-                        <!-- Formulario se cargará aquí -->
-                    </div>
-                    
-                    <div style="overflow-x: auto;">
-                        <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: #f2f2f2;">
-                                    <th>Código</th>
-                                    <th>Nombres</th>
-                                    <th>Apellidos</th>
-                                    <th>Documento</th>
-                                    <th>Empresa</th>
-                                    <th>Cargo</th>
-                                    <th>Usuario</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
-                
-                if (empleados && empleados.length > 0) {
-                    empleados.forEach(empleado => {
-                        html += `
-                            <tr>
-                                <td>${empleado.codigo_empleado || ''}</td>
-                                <td>${empleado.nombres || ''}</td>
-                                <td>${empleado.apellidos || ''}</td>
-                                <td>${empleado.tipo_documento}: ${empleado.numero_documento || ''}</td>
-                                <td>${empleado.empresas ? empleado.empresas.nombre_legal : 'N/A'}</td>
-                                <td>${empleado.cargo || ''}</td>
-                                <td>${empleado.usuarios ? empleado.usuarios.username : 'Sin usuario'}</td>
-                                <td>
-                                    <button onclick="editarEmpleado('${empleado.id}')" style="padding: 5px 10px; margin-right: 5px; cursor: pointer;">Editar</button>
-                                    <button onclick="eliminarEmpleado('${empleado.id}')" style="padding: 5px 10px; background: #dc3545; color: white; cursor: pointer;">Eliminar</button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                } else {
-                    html += `<tr><td colspan="8" style="text-align: center;">No hay empleados registrados</td></tr>`;
-                }
-                
-                html += `
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-                
-                document.getElementById('contenido').innerHTML = html;
-                
-            } catch (error) {
-                mostrarError('Error al cargar empleados: ' + error.message);
-            }
-        }
-        
-        // ===== FUNCIONES UTILITARIAS =====
-        function mostrarError(mensaje) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.textContent = mensaje;
-            errorDiv.style.display = 'block';
-            
-            const successDiv = document.getElementById('success');
-            successDiv.style.display = 'none';
-            
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 5000);
-        }
-        
-        function mostrarExito(mensaje) {
-            const successDiv = document.getElementById('success');
-            successDiv.textContent = mensaje;
-            successDiv.style.display = 'block';
-            
-            const errorDiv = document.getElementById('error');
-            errorDiv.style.display = 'none';
-            
-            setTimeout(() => {
-                successDiv.style.display = 'none';
-            }, 3000);
-        }
-        
-        // Funciones placeholder para empleados (puedes completarlas después)
-        function mostrarFormularioEmpleado() {
-            mostrarExito('Funcionalidad de empleados en desarrollo. Se mostrará en la próxima versión.');
-        }
-        
-        function editarEmpleado(id) {
-            mostrarExito('Editar empleado - funcionalidad en desarrollo.');
-        }
-        
-        function eliminarEmpleado(id) {
-            if (confirm('¿Está seguro de eliminar este empleado?')) {
-                mostrarExito('Eliminar empleado - funcionalidad en desarrollo.');
-            }
-        }
+        // Manejar recarga de página
+        window.addEventListener('beforeunload', function(e) {
+            // Opcional: Guardar estado de la sesión
+        });
     </script>
 </body>
 </html>
