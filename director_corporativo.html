@@ -5,20 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Director Corporativo - Nexial Suite</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Director Corporativo - Gestión de Empresas</h1>
+
+    <h2>Agregar/Editar Empresa</h2>
+    <form id="formEmpresa">
+        <label for="codigo">Código:</label>
+        <input type="text" id="codigo" required><br><br>
+
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" required><br><br>
+
+        <label for="documento_identidad">Documento Identidad:</label>
+        <input type="text" id="documento_identidad"><br><br>
+
+        <label for="tipo_documento">Tipo Documento:</label>
+        <input type="text" id="tipo_documento"><br><br>
+
+        <label for="direccion">Dirección:</label>
+        <textarea id="direccion"></textarea><br><br>
+
+        <label for="ciudad">Ciudad:</label>
+        <input type="text" id="ciudad"><br><br>
+
+        <label for="estado">Estado:</label>
+        <input type="text" id="estado"><br><br>
+
+        <label for="codigo_postal">Código Postal:</label>
+        <input type="text" id="codigo_postal"><br><br>
+
+        <label for="pais">País:</label>
+        <input type="text" id="pais"><br><br>
+
+        <label for="telefono">Teléfono:</label>
+        <input type="text" id="telefono"><br><br>
+
+        <label for="telefono2">Teléfono 2:</label>
+        <input type="text" id="telefono2"><br><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email"><br><br>
+
+        <label for="email2">Email 2:</label>
+        <input type="email" id="email2"><br><br>
+
+        <label for="moneda_id">Moneda ID:</label>
+        <input type="number" id="moneda_id"><br><br>
+
+        <label for="logo_url">Logo URL:</label>
+        <input type="text" id="logo_url"><br><br>
+
+        <label for="activo">Activo:</label>
+        <input type="checkbox" id="activo" checked><br><br>
+
+        <label for="empresa_matriz_id">Empresa Matriz ID:</label>
+        <input type="number" id="empresa_matriz_id"><br><br>
+
+        <button type="submit" id="btnGuardar">Agregar Empresa</button>
+        <button type="button" id="btnCancelar" style="display:none;">Cancelar</button>
+    </form>
+
+    <h2>Lista de Empresas</h2>
+    <table id="tablaEmpresas" border="1">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Documento</th>
+                <th>Dirección</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Las filas se llenan con JavaScript -->
+        </tbody>
+    </table>
+
     <script>
         // Configuración de Supabase
         const supabaseUrl = 'https://xfggpijyisejhjjfnowv.supabase.co';
         const supabaseAnonKey = 'sb_publishable_IJWD3UeDtyC9x9ON3EhjbQ_1oGokAxb';
-        const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
         let empresas = [];
         let editingId = null;
 
+        // Verificar si el usuario está autenticado
+        const user = sessionStorage.getItem('user');
+        if (!user) {
+            window.location.href = 'login.html';
+        }
+
         // Cargar empresas al inicio
         document.addEventListener('DOMContentLoaded', cargarEmpresas);
 
+        // Agregar evento al formulario
+        document.getElementById('formEmpresa').addEventListener('submit', guardarEmpresa);
+        document.getElementById('btnCancelar').addEventListener('click', limpiarFormulario);
+
         async function cargarEmpresas() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('Empresas')
                 .select('*')
                 .order('id', { ascending: true });
@@ -78,19 +168,20 @@
             };
 
             let error = null;
-            let data = null;
 
             if (editingId) {
                 // Actualizar empresa existente
-                ({ data, error } = await supabase
+                const { error: updateError } = await supabaseClient
                     .from('Empresas')
                     .update(empresaData)
-                    .eq('id', editingId));
+                    .eq('id', editingId);
+                error = updateError;
             } else {
                 // Crear nueva empresa
-                ({ data, error } = await supabase
+                const { error: insertError } = await supabaseClient
                     .from('Empresas')
-                    .insert([empresaData]));
+                    .insert([empresaData]);
+                error = insertError;
             }
 
             if (error) {
@@ -143,7 +234,7 @@
         async function eliminarEmpresa(id) {
             if (!confirm('¿Está seguro de eliminar esta empresa?')) return;
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('Empresas')
                 .delete()
                 .eq('id', id);
@@ -156,84 +247,5 @@
             cargarEmpresas();
         }
     </script>
-</head>
-<body>
-    <h1>Director Corporativo - Gestión de Empresas</h1>
-
-    <h2>Agregar/Editar Empresa</h2>
-    <form id="formEmpresa" onsubmit="guardarEmpresa(event)">
-        <label for="codigo">Código:</label>
-        <input type="text" id="codigo" required><br><br>
-
-        <label for="nombre">Nombre:</label>
-        <input type="text" id="nombre" required><br><br>
-
-        <label for="documento_identidad">Documento Identidad:</label>
-        <input type="text" id="documento_identidad"><br><br>
-
-        <label for="tipo_documento">Tipo Documento:</label>
-        <input type="text" id="tipo_documento"><br><br>
-
-        <label for="direccion">Dirección:</label>
-        <textarea id="direccion"></textarea><br><br>
-
-        <label for="ciudad">Ciudad:</label>
-        <input type="text" id="ciudad"><br><br>
-
-        <label for="estado">Estado:</label>
-        <input type="text" id="estado"><br><br>
-
-        <label for="codigo_postal">Código Postal:</label>
-        <input type="text" id="codigo_postal"><br><br>
-
-        <label for="pais">País:</label>
-        <input type="text" id="pais"><br><br>
-
-        <label for="telefono">Teléfono:</label>
-        <input type="text" id="telefono"><br><br>
-
-        <label for="telefono2">Teléfono 2:</label>
-        <input type="text" id="telefono2"><br><br>
-
-        <label for="email">Email:</label>
-        <input type="email" id="email"><br><br>
-
-        <label for="email2">Email 2:</label>
-        <input type="email" id="email2"><br><br>
-
-        <label for="moneda_id">Moneda ID:</label>
-        <input type="number" id="moneda_id"><br><br>
-
-        <label for="logo_url">Logo URL:</label>
-        <input type="text" id="logo_url"><br><br>
-
-        <label for="activo">Activo:</label>
-        <input type="checkbox" id="activo" checked><br><br>
-
-        <label for="empresa_matriz_id">Empresa Matriz ID:</label>
-        <input type="number" id="empresa_matriz_id"><br><br>
-
-        <button type="submit" id="btnGuardar">Agregar Empresa</button>
-        <button type="button" id="btnCancelar" onclick="limpiarFormulario()" style="display:none;">Cancelar</button>
-    </form>
-
-    <h2>Lista de Empresas</h2>
-    <table id="tablaEmpresas" border="1">
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Documento</th>
-                <th>Dirección</th>
-                <th>Teléfono</th>
-                <th>Email</th>
-                <th>Activo</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Las filas se llenan con JavaScript -->
-        </tbody>
-    </table>
 </body>
 </html>
