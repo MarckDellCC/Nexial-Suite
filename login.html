@@ -9,14 +9,15 @@
         // Configuración de Supabase
         const supabaseUrl = 'https://xfggpijyisejhjjfnowv.supabase.co';
         const supabaseAnonKey = 'sb_publishable_IJWD3UeDtyC9x9ON3EhjbQ_1oGokAxb';
-        const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+        // Cambiamos el nombre de la variable a supabaseClient
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
         async function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
             // Consulta a la tabla Usuarios
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('Usuarios')
                 .select('*')
                 .eq('username', username)
