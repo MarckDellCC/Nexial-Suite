@@ -525,7 +525,8 @@
         const SUPABASE_URL = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
         
-        // Inicializar Supabase con un nombre diferente para evitar conflictos
+        // SOLUCIÓN: Usar una variable diferente o asignar directamente al objeto window
+        // Inicializar Supabase y asignarlo a una variable con nombre diferente
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // Estado de la aplicación
@@ -577,7 +578,7 @@
         // Verificar sesión y rol del usuario
         async function checkSession() {
             try {
-                // Obtener sesión actual
+                // Obtener sesión actual - usar supabaseClient en lugar de supabase
                 const { data: { session }, error } = await supabaseClient.auth.getSession();
                 
                 if (error) {
