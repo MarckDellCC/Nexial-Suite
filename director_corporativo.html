@@ -3,165 +3,668 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Director Corporativo</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script>
-        // Configuración de Supabase
-        const supabaseUrl = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
-        const supabaseKey = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
-        
-        let supabaseClient;
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            // Inicializar el cliente de Supabase
-            supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-            
-            // Cargar empresas al iniciar
-            cargarEmpresas();
-            
-            // Configurar botón de logout
-            document.getElementById('logoutBtn').addEventListener('click', logout);
-            
-            // Configurar otros botones
-            document.getElementById('verEmpresasBtn').addEventListener('click', function() {
-                alert('Funcionalidad en desarrollo');
-            });
-            
-            document.getElementById('crearEmpresaBtn').addEventListener('click', function() {
-                alert('Funcionalidad en desarrollo');
-            });
-            
-            document.getElementById('reportesBtn').addEventListener('click', function() {
-                alert('Funcionalidad en desarrollo');
-            });
-        });
-        
-        async function cargarEmpresas() {
-            try {
-                const { data: empresas, error } = await supabaseClient
-                    .from('empresas')
-                    .select('id, nombre, rfc, activo')
-                    .order('creado_en', { ascending: false });
-                
-                if (error) throw error;
-                
-                const lista = document.getElementById('lista-empresas');
-                lista.innerHTML = '';
-                
-                if (empresas && empresas.length > 0) {
-                    empresas.forEach(empresa => {
-                        const div = document.createElement('div');
-                        div.style.border = '1px solid #ddd';
-                        div.style.padding = '10px';
-                        div.style.margin = '5px';
-                        div.style.borderRadius = '4px';
-                        div.innerHTML = `
-                            <strong>${empresa.nombre}</strong><br>
-                            RFC: ${empresa.rfc}<br>
-                            Estado: <span style="color: ${empresa.activo ? 'green' : 'red'}">
-                                ${empresa.activo ? 'Activa' : 'Inactiva'}
-                            </span>
-                        `;
-                        lista.appendChild(div);
-                    });
-                } else {
-                    lista.innerHTML = '<p>No hay empresas registradas</p>';
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('lista-empresas').innerHTML = 
-                    '<p style="color: red;">Error al cargar empresas</p>';
-            }
-        }
-        
-        function logout() {
-            if (confirm('¿Cerrar sesión?')) {
-                window.location.href = 'login.html';
-            }
-        }
-    </script>
+    <title>Director Corporativo - Nexial Suite</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 800px; 
-            margin: 0 auto; 
-            padding: 20px; 
-        }
-        .header { 
-            background: #f8f9fa; 
-            padding: 15px; 
-            border-bottom: 2px solid #007bff; 
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .content { 
-            margin: 20px 0; 
-        }
-        button { 
-            padding: 10px 20px; 
-            margin: 5px; 
-            cursor: pointer; 
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .logout { 
-            background: #dc3545; 
-            color: white; 
-        }
-        .logout:hover { 
-            background: #c82333; 
-        }
-        .action-btn {
-            background: #28a745;
-            color: white;
-        }
-        .action-btn:hover {
-            background: #218838;
-        }
-        h2, h3 {
-            color: #333;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; }
+        
+        /* Header */
+        .header { background: white; padding: 15px 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #333; font-size: 20px; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .logout-btn { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 3px; cursor: pointer; }
+        .logout-btn:hover { background: #c82333; }
+        
+        /* Main Container */
+        .container { display: flex; min-height: calc(100vh - 70px); }
+        
+        /* Sidebar */
+        .sidebar { width: 250px; background: white; padding: 20px 0; border-right: 1px solid #ddd; }
+        .sidebar h3 { padding: 0 20px 15px; color: #555; border-bottom: 1px solid #eee; margin-bottom: 15px; }
+        .nav-list { list-style: none; }
+        .nav-item { padding: 12px 20px; cursor: pointer; border-left: 3px solid transparent; }
+        .nav-item:hover { background: #f8f9fa; }
+        .nav-item.active { background: #e3f2fd; border-left-color: #007bff; color: #007bff; }
+        .sub-nav { list-style: none; margin-left: 20px; display: none; }
+        .sub-nav.show { display: block; }
+        .sub-item { padding: 8px 0; cursor: pointer; color: #666; }
+        .sub-item:hover { color: #007bff; }
+        
+        /* Content Area */
+        .content { flex: 1; padding: 20px; }
+        .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .content-header h2 { color: #333; }
+        .btn { padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #545b62; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #c82333; }
+        
+        /* Data Table */
+        .data-table { width: 100%; background: white; border-collapse: collapse; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .data-table th, .data-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        .data-table th { background: #f8f9fa; font-weight: bold; color: #495057; }
+        .data-table tr:hover { background: #f8f9fa; }
+        
+        /* Form Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal-content { background: white; margin: 50px auto; padding: 20px; border-radius: 5px; max-width: 800px; max-height: 80vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { margin: 0; color: #333; }
+        .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+        .close-modal:hover { color: #333; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 5px; color: #555; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { padding: 8px; border: 1px solid #ddd; border-radius: 3px; font-size: 14px; }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        
+        /* Loading */
+        .loading { text-align: center; padding: 40px; color: #666; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #ddd; }
         }
     </style>
 </head>
 <body>
+    <!-- Header -->
     <div class="header">
-        <h2>Panel del Director Corporativo</h2>
-        <p>Acceso total multi-empresa</p>
-        <button class="logout" id="logoutBtn">Cerrar Sesión</button>
+        <h1>Nexial Suite - Director Corporativo</h1>
+        <div class="user-info">
+            <span id="userName"></span>
+            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        </div>
     </div>
     
-    <div class="content">
-        <h3>Empresas Registradas</h3>
-        <div id="lista-empresas">
-            <p>Cargando empresas...</p>
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h3>Menú Principal</h3>
+            <ul class="nav-list">
+                <li class="nav-item active" data-section="empresas">Empresas</li>
+                <li class="nav-item" data-section="usuarios">Usuarios</li>
+                <li class="nav-item" data-section="empleados">Empleados</li>
+                <li class="nav-item" data-section="clientes">Clientes</li>
+                <li class="nav-item" data-section="productos">Productos</li>
+                <li class="nav-item" data-section="almacenes">Almacenes</li>
+                <li class="nav-item" data-section="inventario">Inventario</li>
+                <li class="nav-item" data-section="ventas">Ventas</li>
+                <li class="nav-item" data-section="monedas">Monedas</li>
+                <li class="nav-item" data-section="categorias">Categorías</li>
+                <li class="nav-item" data-section="departamentos">Departamentos</li>
+                <li class="nav-item" data-section="areas">Áreas</li>
+                <li class="nav-item" data-section="comisiones">Comisiones</li>
+                <li class="nav-item" data-section="pagos">Pagos</li>
+                <li class="nav-item" data-section="rutas">Rutas Distribución</li>
+                <li class="nav-item" data-section="zonas">Zonas Geográficas</li>
+                <li class="nav-item" data-section="metas">Metas</li>
+                <li class="nav-item" data-section="objetivos">Objetivos</li>
+                <li class="nav-item" data-section="metricas">Métricas</li>
+                <li class="nav-item" data-section="beneficios">Beneficios</li>
+                <li class="nav-item" data-section="comportamiento">Comportamiento</li>
+                <li class="nav-item" data-section="analisis">Análisis Mercado</li>
+                <li class="nav-item" data-section="campanas">Campañas Marketing</li>
+                <li class="nav-item" data-section="eventos">Eventos Externos</li>
+                <li class="nav-item" data-section="incidencias">Incidencias</li>
+                <li class="nav-item" data-section="auditoria">Auditoría</li>
+                <li class="nav-item" data-section="configuraciones">Configuraciones</li>
+            </ul>
         </div>
         
-        <h3>Acciones Rápidas</h3>
-        <div>
-            <button class="action-btn" id="verEmpresasBtn">Ver Todas las Empresas</button>
-            <button class="action-btn" id="crearEmpresaBtn">Crear Nueva Empresa</button>
-            <button class="action-btn" id="reportesBtn">Reportes Generales</button>
+        <!-- Content Area -->
+        <div class="content">
+            <div class="content-header">
+                <h2 id="sectionTitle">Empresas</h2>
+                <button class="btn" id="btnNuevo" onclick="nuevoRegistro()">Nuevo</button>
+            </div>
+            
+            <!-- Data Table -->
+            <div id="dataContainer">
+                <table class="data-table" id="dataTable">
+                    <thead id="tableHeader">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>RFC</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="4" class="loading">Cargando datos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     
-    <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
-        <p><strong>Funciones del Director Corporativo:</strong></p>
-        <ul>
-            <li>Vista global de todas las empresas</li>
-            <li>Configuración de permisos multi-empresa</li>
-            <li>Reportes consolidados</li>
-            <li>Gestión de accesos</li>
-        </ul>
+    <!-- Modal para formularios -->
+    <div class="modal" id="formModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Nuevo Registro</h3>
+                <button class="close-modal" onclick="cerrarModal()">&times;</button>
+            </div>
+            <form id="dataForm" onsubmit="guardarRegistro(event)">
+                <div id="formFields" class="form-grid">
+                    <!-- Los campos se generan dinámicamente -->
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn" id="btnGuardar">Guardar</button>
+                </div>
+                <input type="hidden" id="registroId">
+                <input type="hidden" id="currentTable">
+            </form>
+        </div>
     </div>
-    
-    <!-- Eliminar los onclick del HTML -->
+
     <script>
-        // Eliminar todos los atributos onclick para evitar errores
-        document.getElementById('logoutBtn').removeAttribute('onclick');
-        document.getElementById('verEmpresasBtn').removeAttribute('onclick');
-        document.getElementById('crearEmpresaBtn').removeAttribute('onclick');
-        document.getElementById('reportesBtn').removeAttribute('onclick');
+        // Configuración Supabase
+        const SUPABASE_URL = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Variables globales
+        let currentSection = 'empresas';
+        let currentData = [];
+        let currentUsuario = null;
+        
+        // Definición de campos para cada tabla
+        const tableSchemas = {
+            empresas: {
+                fields: [
+                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
+                    { name: 'rfc', label: 'RFC', type: 'text', required: true },
+                    { name: 'direccion', label: 'Dirección', type: 'textarea' },
+                    { name: 'telefono', label: 'Teléfono', type: 'text' },
+                    { name: 'email', label: 'Email', type: 'email' },
+                    { name: 'website', label: 'Website', type: 'text' },
+                    { name: 'moneda_id', label: 'Moneda', type: 'select', options: [] },
+                    { name: 'logo_url', label: 'Logo URL', type: 'text' },
+                    { name: 'tipo_empresa', label: 'Tipo Empresa', type: 'text' },
+                    { name: 'regimen_fiscal', label: 'Régimen Fiscal', type: 'text' },
+                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
+                ]
+            },
+            usuarios: {
+                fields: [
+                    { name: 'empresa_id', label: 'Empresa', type: 'select', options: [], required: true },
+                    { name: 'empleado_id', label: 'Empleado', type: 'select', options: [] },
+                    { name: 'nombres', label: 'Nombres', type: 'text', required: true },
+                    { name: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', required: true },
+                    { name: 'apellido_materno', label: 'Apellido Materno', type: 'text' },
+                    { name: 'email', label: 'Email', type: 'email', required: true },
+                    { name: 'usuario', label: 'Usuario', type: 'text', required: true },
+                    { name: 'contrasena_plano', label: 'Contraseña', type: 'password', required: true },
+                    { name: 'rol', label: 'Rol', type: 'select', options: [
+                        'Director Corporativo', 'Administrador', 'Gerente', 'Supervisor', 'Empleado'
+                    ], required: true },
+                    { name: 'foto_url', label: 'Foto URL', type: 'text' },
+                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
+                ]
+            },
+            empleados: {
+                fields: [
+                    { name: 'empresa_id', label: 'Empresa', type: 'select', options: [], required: true },
+                    { name: 'nombres', label: 'Nombres', type: 'text', required: true },
+                    { name: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', required: true },
+                    { name: 'apellido_materno', label: 'Apellido Materno', type: 'text' },
+                    { name: 'documento_identidad', label: 'Documento Identidad', type: 'text' },
+                    { name: 'tipo_documento', label: 'Tipo Documento', type: 'text' },
+                    { name: 'direccion', label: 'Dirección', type: 'textarea' },
+                    { name: 'telefono', label: 'Teléfono', type: 'text' },
+                    { name: 'email', label: 'Email', type: 'email' },
+                    { name: 'fecha_nacimiento', label: 'Fecha Nacimiento', type: 'date' },
+                    { name: 'genero', label: 'Género', type: 'select', options: ['Masculino', 'Femenino', 'Otro'] },
+                    { name: 'foto_url', label: 'Foto URL', type: 'text' },
+                    { name: 'fecha_contratacion', label: 'Fecha Contratación', type: 'date' },
+                    { name: 'salario_base', label: 'Salario Base', type: 'number' },
+                    { name: 'moneda_id', label: 'Moneda', type: 'select', options: [] },
+                    { name: 'tipo_contrato', label: 'Tipo Contrato', type: 'text' },
+                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
+                ]
+            },
+            clientes: {
+                fields: [
+                    { name: 'empresa_id', label: 'Empresa', type: 'select', options: [], required: true },
+                    { name: 'categoria_negocio_id', label: 'Categoría Negocio', type: 'select', options: [] },
+                    { name: 'nombres', label: 'Nombres', type: 'text', required: true },
+                    { name: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', required: true },
+                    { name: 'apellido_materno', label: 'Apellido Materno', type: 'text' },
+                    { name: 'documento_identidad', label: 'Documento Identidad', type: 'text' },
+                    { name: 'tipo_documento', label: 'Tipo Documento', type: 'text' },
+                    { name: 'ciudad', label: 'Ciudad', type: 'text' },
+                    { name: 'estado', label: 'Estado', type: 'text' },
+                    { name: 'pais', label: 'País', type: 'text' },
+                    { name: 'codigo_postal', label: 'Código Postal', type: 'text' },
+                    { name: 'telefono', label: 'Teléfono', type: 'text' },
+                    { name: 'email', label: 'Email', type: 'email' },
+                    { name: 'fecha_nacimiento', label: 'Fecha Nacimiento', type: 'date' },
+                    { name: 'genero', label: 'Género', type: 'select', options: ['Masculino', 'Femenino', 'Otro'] },
+                    { name: 'foto_url', label: 'Foto URL', type: 'text' },
+                    { name: 'direcciones', label: 'Direcciones (JSON)', type: 'textarea', placeholder: 'Formato JSON' },
+                    { name: 'horarios_apertura', label: 'Horarios Apertura (JSON)', type: 'textarea', placeholder: 'Formato JSON' },
+                    { name: 'tipo_cliente', label: 'Tipo Cliente', type: 'text' },
+                    { name: 'limite_credito', label: 'Límite Crédito', type: 'number' },
+                    { name: 'dias_credito', label: 'Días Crédito', type: 'number' },
+                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
+                ]
+            },
+            productos: {
+                fields: [
+                    { name: 'empresa_id', label: 'Empresa', type: 'select', options: [], required: true },
+                    { name: 'codigo', label: 'Código', type: 'text', required: true },
+                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
+                    { name: 'descripcion', label: 'Descripción', type: 'textarea' },
+                    { name: 'categoria_id', label: 'Categoría', type: 'select', options: [] },
+                    { name: 'precio_compra', label: 'Precio Compra', type: 'number' },
+                    { name: 'precio_venta', label: 'Precio Venta', type: 'number', required: true },
+                    { name: 'moneda_id', label: 'Moneda', type: 'select', options: [], required: true },
+                    { name: 'imagen_url', label: 'Imagen URL', type: 'text' },
+                    { name: 'peso', label: 'Peso', type: 'number' },
+                    { name: 'dimensiones', label: 'Dimensiones', type: 'text' },
+                    { name: 'unidad_medida', label: 'Unidad Medida', type: 'text' },
+                    { name: 'es_producto_clave', label: 'Producto Clave', type: 'checkbox' },
+                    { name: 'compra_minima_cantidad', label: 'Compra Mínima Cantidad', type: 'number', default: 1 },
+                    { name: 'compra_minima_monto', label: 'Compra Mínima Monto', type: 'number', default: 0 },
+                    { name: 'compra_minima_peso', label: 'Compra Mínima Peso', type: 'number', default: 0 },
+                    { name: 'codigo_barras', label: 'Código Barras', type: 'text' },
+                    { name: 'ubicacion_almacen', label: 'Ubicación Almacén', type: 'text' },
+                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
+                ]
+            }
+            // ... (añadir schemas para las demás tablas)
+        };
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Verificar autenticación
+            const usuarioData = localStorage.getItem('usuario');
+            if (!usuarioData) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            currentUsuario = JSON.parse(usuarioData);
+            
+            // Verificar rol
+            if (currentUsuario.rol !== 'Director Corporativo') {
+                alert('Acceso denegado. Solo el Director Corporativo puede acceder.');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Mostrar nombre de usuario
+            document.getElementById('userName').textContent = 
+                `${currentUsuario.nombres} ${currentUsuario.apellido_paterno}`;
+            
+            // Cargar datos iniciales
+            await cargarDatos(currentSection);
+            
+            // Configurar navegación
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', async function() {
+                    // Remover clase activa de todos
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    // Agregar clase activa al seleccionado
+                    this.classList.add('active');
+                    
+                    currentSection = this.dataset.section;
+                    document.getElementById('sectionTitle').textContent = 
+                        this.textContent;
+                    
+                    await cargarDatos(currentSection);
+                });
+            });
+            
+            // Cargar opciones para selects
+            await cargarOpcionesSelects();
+        });
+        
+        // Cargar opciones para selects dinámicos
+        async function cargarOpcionesSelects() {
+            // Cargar empresas
+            const { data: empresas } = await supabase
+                .from('empresas')
+                .select('id, nombre')
+                .eq('activo', true);
+            
+            tableSchemas.empresas.fields.find(f => f.name === 'moneda_id').options = 
+                await cargarMonedas();
+            
+            tableSchemas.usuarios.fields.find(f => f.name === 'empresa_id').options = 
+                empresas.map(e => ({ value: e.id, label: e.nombre }));
+            
+            tableSchemas.empleados.fields.find(f => f.name === 'empresa_id').options = 
+                empresas.map(e => ({ value: e.id, label: e.nombre }));
+            
+            tableSchemas.clientes.fields.find(f => f.name === 'empresa_id').options = 
+                empresas.map(e => ({ value: e.id, label: e.nombre }));
+                
+            tableSchemas.productos.fields.find(f => f.name === 'empresa_id').options = 
+                empresas.map(e => ({ value: e.id, label: e.nombre }));
+            
+            // Cargar monedas para otros campos
+            const monedas = await cargarMonedas();
+            
+            tableSchemas.empleados.fields.find(f => f.name === 'moneda_id').options = monedas;
+            tableSchemas.productos.fields.find(f => f.name === 'moneda_id').options = monedas;
+            
+            // Cargar categorías de productos
+            const { data: categorias } = await supabase
+                .from('categoria_productos')
+                .select('id, nombre');
+            
+            tableSchemas.productos.fields.find(f => f.name === 'categoria_id').options = 
+                categorias.map(c => ({ value: c.id, label: c.nombre }));
+            
+            // Cargar categorías de negocios
+            const { data: categoriasNegocios } = await supabase
+                .from('categoria_negocios')
+                .select('id, nombre');
+            
+            tableSchemas.clientes.fields.find(f => f.name === 'categoria_negocio_id').options = 
+                categoriasNegocios.map(c => ({ value: c.id, label: c.nombre }));
+        }
+        
+        async function cargarMonedas() {
+            const { data } = await supabase
+                .from('monedas')
+                .select('id, codigo, nombre')
+                .eq('activo', true);
+            return data.map(m => ({ value: m.id, label: `${m.codigo} - ${m.nombre}` }));
+        }
+        
+        // Cargar datos de la sección actual
+        async function cargarDatos(tabla) {
+            try {
+                const { data, error } = await supabase
+                    .from(tabla)
+                    .select('*')
+                    .order('creado_en', { ascending: false });
+                
+                if (error) throw error;
+                
+                currentData = data || [];
+                mostrarDatos(tabla, currentData);
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                document.getElementById('tableBody').innerHTML = 
+                    `<tr><td colspan="4">Error cargando datos: ${error.message}</td></tr>`;
+            }
+        }
+        
+        // Mostrar datos en la tabla
+        function mostrarDatos(tabla, datos) {
+            const tbody = document.getElementById('tableBody');
+            
+            if (!datos || datos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4">No hay registros</td></tr>`;
+                return;
+            }
+            
+            // Generar encabezados dinámicos basados en el primer registro
+            const thead = document.getElementById('tableHeader');
+            const firstRow = datos[0];
+            
+            let headers = '';
+            for (const key in firstRow) {
+                if (key === 'id' || key === 'empresa_id') continue;
+                if (Object.keys(firstRow).indexOf(key) > 6) break; // Mostrar solo primeras 6 columnas
+                
+                const label = key.replace(/_/g, ' ').toUpperCase();
+                headers += `<th>${label}</th>`;
+            }
+            headers += '<th>Acciones</th>';
+            thead.innerHTML = `<tr><th>ID</th>${headers}</tr>`;
+            
+            // Generar filas
+            let rows = '';
+            datos.forEach(registro => {
+                let row = `<td>${registro.id.substring(0, 8)}...</td>`;
+                let colCount = 0;
+                
+                for (const key in registro) {
+                    if (key === 'id' || key === 'empresa_id') continue;
+                    if (colCount >= 6) break;
+                    
+                    let value = registro[key];
+                    if (value === null || value === undefined) value = '';
+                    if (typeof value === 'boolean') value = value ? 'Sí' : 'No';
+                    if (typeof value === 'object') value = JSON.stringify(value).substring(0, 50) + '...';
+                    
+                    row += `<td>${value}</td>`;
+                    colCount++;
+                }
+                
+                row += `<td>
+                    <button class="btn" onclick="editarRegistro('${tabla}', '${registro.id}')">Editar</button>
+                    <button class="btn-danger" onclick="eliminarRegistro('${tabla}', '${registro.id}')">Eliminar</button>
+                </td>`;
+                
+                rows += `<tr>${row}</tr>`;
+            });
+            
+            tbody.innerHTML = rows;
+        }
+        
+        // Nuevo registro
+        function nuevoRegistro() {
+            document.getElementById('modalTitle').textContent = `Nuevo ${currentSection}`;
+            document.getElementById('registroId').value = '';
+            document.getElementById('currentTable').value = currentSection;
+            
+            generarFormulario(currentSection);
+            document.getElementById('formModal').style.display = 'block';
+        }
+        
+        // Editar registro
+        async function editarRegistro(tabla, id) {
+            const registro = currentData.find(r => r.id === id);
+            if (!registro) return;
+            
+            document.getElementById('modalTitle').textContent = `Editar ${tabla}`;
+            document.getElementById('registroId').value = id;
+            document.getElementById('currentTable').value = tabla;
+            
+            generarFormulario(tabla, registro);
+            document.getElementById('formModal').style.display = 'block';
+        }
+        
+        // Generar formulario dinámico
+        function generarFormulario(tabla, datos = null) {
+            const schema = tableSchemas[tabla];
+            const formFields = document.getElementById('formFields');
+            
+            if (!schema) {
+                formFields.innerHTML = '<p>Formulario no disponible para esta tabla</p>';
+                return;
+            }
+            
+            let fieldsHTML = '';
+            
+            schema.fields.forEach(field => {
+                const value = datos ? datos[field.name] : (field.default || '');
+                
+                let fieldHTML = '';
+                switch (field.type) {
+                    case 'select':
+                        let options = '<option value="">Seleccionar...</option>';
+                        if (field.options) {
+                            if (Array.isArray(field.options)) {
+                                field.options.forEach(opt => {
+                                    const selected = (typeof opt === 'string' && opt === value) || 
+                                                   (typeof opt === 'object' && opt.value === value) ? 'selected' : '';
+                                    const optValue = typeof opt === 'string' ? opt : opt.value;
+                                    const optLabel = typeof opt === 'string' ? opt : opt.label;
+                                    options += `<option value="${optValue}" ${selected}>${optLabel}</option>`;
+                                });
+                            } else if (typeof field.options === 'function') {
+                                // Para opciones cargadas dinámicamente
+                                options = '<option value="">Cargando...</option>';
+                            }
+                        }
+                        fieldHTML = `
+                            <select id="${field.name}" name="${field.name}" ${field.required ? 'required' : ''}>
+                                ${options}
+                            </select>
+                        `;
+                        break;
+                        
+                    case 'checkbox':
+                        fieldHTML = `
+                            <input type="checkbox" id="${field.name}" name="${field.name}" 
+                                   ${value ? 'checked' : ''} style="width: auto;">
+                        `;
+                        break;
+                        
+                    case 'textarea':
+                        fieldHTML = `
+                            <textarea id="${field.name}" name="${field.name}" 
+                                      ${field.required ? 'required' : ''}
+                                      placeholder="${field.placeholder || ''}">${value || ''}</textarea>
+                        `;
+                        break;
+                        
+                    default:
+                        fieldHTML = `
+                            <input type="${field.type}" id="${field.name}" name="${field.name}" 
+                                   value="${value || ''}" ${field.required ? 'required' : ''}
+                                   placeholder="${field.placeholder || ''}">
+                        `;
+                }
+                
+                fieldsHTML += `
+                    <div class="form-group">
+                        <label for="${field.name}">${field.label}:</label>
+                        ${fieldHTML}
+                    </div>
+                `;
+            });
+            
+            formFields.innerHTML = fieldsHTML;
+            
+            // Si hay datos, llenar campos adicionales
+            if (datos) {
+                Object.keys(datos).forEach(key => {
+                    const input = document.getElementById(key);
+                    if (input && input.type !== 'checkbox') {
+                        input.value = datos[key];
+                    } else if (input && input.type === 'checkbox') {
+                        input.checked = datos[key];
+                    }
+                });
+            }
+        }
+        
+        // Guardar registro
+        async function guardarRegistro(event) {
+            event.preventDefault();
+            
+            const tabla = document.getElementById('currentTable').value;
+            const id = document.getElementById('registroId').value;
+            const form = document.getElementById('dataForm');
+            const formData = new FormData(form);
+            
+            const registro = {};
+            const schema = tableSchemas[tabla];
+            
+            schema.fields.forEach(field => {
+                if (field.type === 'checkbox') {
+                    registro[field.name] = document.getElementById(field.name).checked;
+                } else {
+                    const value = formData.get(field.name);
+                    if (value !== null && value !== '') {
+                        if (field.type === 'number') {
+                            registro[field.name] = parseFloat(value);
+                        } else {
+                            registro[field.name] = value;
+                        }
+                    }
+                }
+            });
+            
+            try {
+                let result;
+                if (id) {
+                    // Actualizar
+                    const { data, error } = await supabase
+                        .from(tabla)
+                        .update(registro)
+                        .eq('id', id);
+                    
+                    if (error) throw error;
+                    result = data;
+                } else {
+                    // Insertar
+                    const { data, error } = await supabase
+                        .from(tabla)
+                        .insert([registro])
+                        .select();
+                    
+                    if (error) throw error;
+                    result = data;
+                }
+                
+                cerrarModal();
+                await cargarDatos(tabla);
+                alert('Registro guardado exitosamente');
+                
+            } catch (error) {
+                console.error('Error guardando registro:', error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+        
+        // Eliminar registro
+        async function eliminarRegistro(tabla, id) {
+            if (!confirm('¿Está seguro de eliminar este registro?')) return;
+            
+            try {
+                const { error } = await supabase
+                    .from(tabla)
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                await cargarDatos(tabla);
+                alert('Registro eliminado exitosamente');
+                
+            } catch (error) {
+                console.error('Error eliminando registro:', error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+        
+        // Cerrar modal
+        function cerrarModal() {
+            document.getElementById('formModal').style.display = 'none';
+            document.getElementById('dataForm').reset();
+        }
+        
+        // Logout
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+        
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('formModal');
+            if (event.target === modal) {
+                cerrarModal();
+            }
+        };
     </script>
 </body>
 </html>
