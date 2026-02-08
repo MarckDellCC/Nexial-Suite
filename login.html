@@ -6,12 +6,29 @@
     <title>Login - Sistema de Gestión</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
-        // Configuración de Supabase
+        // Configuración de Supabase - SIN redeclarar la variable supabase
         const supabaseUrl = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
         const supabaseKey = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-        async function login() {
+        
+        // Inicializar Supabase
+        let supabaseClient;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar el cliente de Supabase
+            supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+            
+            // Configurar evento Enter en password
+            document.getElementById('password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    iniciarSesion();
+                }
+            });
+            
+            // Configurar evento click en botón
+            document.getElementById('loginBtn').addEventListener('click', iniciarSesion);
+        });
+        
+        async function iniciarSesion() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
@@ -22,7 +39,7 @@
             
             try {
                 // Buscar usuario en la tabla usuarios
-                const { data: usuarios, error } = await supabase
+                const { data: usuarios, error } = await supabaseClient
                     .from('usuarios')
                     .select('*')
                     .eq('email', email)
@@ -39,7 +56,6 @@
                     if (rol === 'Director Corporativo') {
                         window.location.href = 'director_corporativo.html';
                     } else {
-                        // Aquí puedes agregar más redirecciones para otros roles
                         alert(`Bienvenido ${rol}. Página para ${rol} en desarrollo.`);
                     }
                 } else {
@@ -47,24 +63,40 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error al conectar con la base de datos');
+                alert('Error al conectar con la base de datos: ' + error.message);
             }
         }
-        
-        // Permitir login con Enter
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('password').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    login();
-                }
-            });
-        });
     </script>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 400px; margin: 50px auto; padding: 20px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; }
-        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
-        button:hover { background: #0056b3; }
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 400px; 
+            margin: 50px auto; 
+            padding: 20px; 
+        }
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border: 1px solid #ccc; 
+            box-sizing: border-box;
+        }
+        button { 
+            width: 100%; 
+            padding: 10px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        button:hover { 
+            background: #0056b3; 
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -72,10 +104,15 @@
     <div>
         <input type="email" id="email" placeholder="Correo electrónico" required>
         <input type="password" id="password" placeholder="Contraseña" required>
-        <button onclick="login()">Ingresar</button>
+        <button id="loginBtn">Ingresar</button>
     </div>
-    <p style="margin-top: 20px; font-size: 12px; color: #666;">
+    <p style="margin-top: 20px; font-size: 12px; color: #666; text-align: center;">
         Usa las credenciales de tu usuario en la base de datos Supabase
     </p>
+    
+    <script>
+        // Eliminar el atributo onclick del HTML para evitar errores
+        document.getElementById('loginBtn').removeAttribute('onclick');
+    </script>
 </body>
 </html>
