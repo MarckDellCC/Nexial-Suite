@@ -3,902 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel - Director Corporativo</title>
+    <title>Director Corporativo - Panel</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        * {
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background: #f5f5f5;
+            min-height: 100vh;
         }
         
         .header {
-            background: #2c3e50;
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
             color: white;
             padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
         
         .logout-btn {
             background: #e74c3c;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            padding: 8px 16px;
+            border-radius: 5px;
             cursor: pointer;
-            float: right;
+            font-weight: 500;
         }
         
         .logout-btn:hover {
             background: #c0392b;
         }
         
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #ddd;
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
         }
         
-        .tab {
-            padding: 12px 24px;
-            cursor: pointer;
-            background: #f8f9fa;
-            margin-right: 5px;
-            border: 1px solid #ddd;
-            border-bottom: none;
-            border-radius: 4px 4px 0 0;
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
         }
         
-        .tab.active {
+        .card {
             background: white;
-            border-bottom: 2px solid white;
-            margin-bottom: -2px;
-            font-weight: bold;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
         }
         
-        .tab-content {
-            background: white;
-            padding: 20px;
-            border-radius: 0 8px 8px 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: none;
+        .card:hover {
+            transform: translateY(-5px);
         }
         
-        .tab-content.active {
-            display: block;
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
         }
         
-        .form-group {
+        .card p {
+            color: #666;
+            line-height: 1.6;
             margin-bottom: 15px;
         }
         
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #555;
-            font-weight: bold;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-        
-        button {
-            padding: 10px 20px;
-            background-color: #2c3e50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        button:hover {
-            background-color: #1a252f;
-        }
-        
-        .form-row {
-            display: flex;
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .form-row .form-group {
-            flex: 1;
-        }
-        
-        .message {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-            display: none;
-        }
-        
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
             margin-top: 20px;
         }
         
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
         }
         
-        th {
-            background-color: #f8f9fa;
+        .stat-number {
+            font-size: 24px;
             font-weight: bold;
+            color: #3498db;
+            margin-bottom: 5px;
         }
         
-        tr:hover {
-            background-color: #f5f5f5;
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .alert {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+            margin-top: 40px;
         }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Panel del Director Corporativo</h1>
-        <p>Bienvenido, <span id="user-name"></span></p>
-        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-        <div style="clear: both;"></div>
-    </div>
-    
-    <div class="tabs">
-        <div class="tab active" onclick="showTab('empresas')">Empresas</div>
-        <div class="tab" onclick="showTab('empleados')">Empleados</div>
-        <div class="tab" onclick="showTab('usuarios')">Usuarios</div>
-    </div>
-    
-    <!-- Tab: Empresas -->
-    <div id="empresas-tab" class="tab-content active">
-        <h2>Registrar Nueva Empresa</h2>
-        
-        <div id="empresa-message" class="message"></div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="empresa-nombre">Nombre de la Empresa *</label>
-                <input type="text" id="empresa-nombre" placeholder="Ej: Mi Empresa S.A.">
-            </div>
-            <div class="form-group">
-                <label for="empresa-rfc">RFC *</label>
-                <input type="text" id="empresa-rfc" placeholder="Ej: MEM123456ABC">
-            </div>
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="empresa-email">Email</label>
-                <input type="email" id="empresa-email" placeholder="contacto@empresa.com">
-            </div>
-            <div class="form-group">
-                <label for="empresa-telefono">Teléfono</label>
-                <input type="text" id="empresa-telefono" placeholder="+52 55 1234 5678">
-            </div>
-        </div>
-        
-        <div class="form-group">
-            <label for="empresa-direccion">Dirección</label>
-            <textarea id="empresa-direccion" rows="3" placeholder="Dirección completa"></textarea>
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="empresa-tipo">Tipo de Empresa</label>
-                <select id="empresa-tipo">
-                    <option value="">Seleccionar...</option>
-                    <option value="SA">S.A.</option>
-                    <option value="SRL">S.R.L.</option>
-                    <option value="SC">S.C.</option>
-                    <option value="Otro">Otro</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="empresa-regimen">Régimen Fiscal</label>
-                <input type="text" id="empresa-regimen" placeholder="Régimen fiscal">
-            </div>
-        </div>
-        
-        <button onclick="registrarEmpresa()">Registrar Empresa</button>
-        
-        <h2 style="margin-top: 40px;">Empresas Registradas</h2>
-        <div id="empresas-list">
-            <p>Cargando empresas...</p>
+        <div class="user-info">
+            <span id="userName">Cargando...</span>
+            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
         </div>
     </div>
     
-    <!-- Tab: Empleados -->
-    <div id="empleados-tab" class="tab-content">
-        <h2>Registrar Nuevo Empleado</h2>
-        
-        <div id="empleado-message" class="message"></div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="empleado-empresa">Empresa *</label>
-                <select id="empleado-empresa">
-                    <option value="">Cargando empresas...</option>
-                </select>
-            </div>
+    <div class="container">
+        <div class="alert">
+            <strong>¡Bienvenido Director Corporativo!</strong> Esta es una vista preliminar. Las funcionalidades completas se implementarán posteriormente.
         </div>
         
-        <div class="form-row">
-            <div class="form-group">
-                <label for="empleado-nombres">Nombres *</label>
-                <input type="text" id="empleado-nombres" placeholder="Ej: Juan Carlos">
+        <div class="dashboard">
+            <div class="card">
+                <h3>Empresas Registradas</h3>
+                <p>Gestión completa de todas las empresas en el sistema.</p>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="empresasCount">0</div>
+                        <div class="stat-label">Empresas Activas</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="usuariosCount">0</div>
+                        <div class="stat-label">Usuarios Totales</div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="empleado-apellido-paterno">Apellido Paterno *</label>
-                <input type="text" id="empleado-apellido-paterno" placeholder="Ej: Pérez">
+            
+            <div class="card">
+                <h3>Accesos Multi-Empresa</h3>
+                <p>Acceso total a todas las empresas del sistema.</p>
+                <ul style="color: #666; padding-left: 20px; margin-top: 10px;">
+                    <li>Visualizar todas las empresas</li>
+                    <li>Gestionar usuarios globales</li>
+                    <li>Monitoreo corporativo</li>
+                    <li>Reportes consolidados</li>
+                </ul>
             </div>
-            <div class="form-group">
-                <label for="empleado-apellido-materno">Apellido Materno</label>
-                <input type="text" id="empleado-apellido-materno" placeholder="Ej: López">
+            
+            <div class="card">
+                <h3>Información de Sesión</h3>
+                <p>Datos de la sesión actual:</p>
+                <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <p><strong>Usuario:</strong> <span id="userEmail">Cargando...</span></p>
+                    <p><strong>Rol:</strong> <span id="userRole">Cargando...</span></p>
+                    <p><strong>Empresa:</strong> <span id="userEmpresa">Cargando...</span></p>
+                    <p><strong>Hora de inicio:</strong> <span id="sessionTime">Cargando...</span></p>
+                </div>
             </div>
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="empleado-email">Email</label>
-                <input type="email" id="empleado-email" placeholder="empleado@empresa.com">
-            </div>
-            <div class="form-group">
-                <label for="empleado-telefono">Teléfono</label>
-                <input type="text" id="empleado-telefono" placeholder="+52 55 9876 5432">
-            </div>
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="empleado-documento">Documento de Identidad</label>
-                <input type="text" id="empleado-documento" placeholder="Número de documento">
-            </div>
-            <div class="form-group">
-                <label for="empleado-tipo-documento">Tipo de Documento</label>
-                <select id="empleado-tipo-documento">
-                    <option value="">Seleccionar...</option>
-                    <option value="INE">INE</option>
-                    <option value="Pasaporte">Pasaporte</option>
-                    <option value="Cédula">Cédula</option>
-                    <option value="Otro">Otro</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="empleado-salario">Salario Base</label>
-                <input type="number" id="empleado-salario" placeholder="0.00" step="0.01">
-            </div>
-            <div class="form-group">
-                <label for="empleado-tipo-contrato">Tipo de Contrato</label>
-                <select id="empleado-tipo-contrato">
-                    <option value="">Seleccionar...</option>
-                    <option value="Indefinido">Indefinido</option>
-                    <option value="Temporal">Temporal</option>
-                    <option value="Por Obra">Por Obra</option>
-                    <option value="Honorarios">Honorarios</option>
-                </select>
-            </div>
-        </div>
-        
-        <button onclick="registrarEmpleado()">Registrar Empleado</button>
-        
-        <h2 style="margin-top: 40px;">Empleados Registrados</h2>
-        <div id="empleados-list">
-            <p>Seleccione una empresa para ver sus empleados</p>
         </div>
     </div>
     
-    <!-- Tab: Usuarios -->
-    <div id="usuarios-tab" class="tab-content">
-        <h2>Registrar Nuevo Usuario</h2>
-        
-        <div id="usuario-message" class="message"></div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="usuario-empresa">Empresa *</label>
-                <select id="usuario-empresa">
-                    <option value="">Cargando empresas...</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="usuario-empleado">Empleado (Opcional)</label>
-                <select id="usuario-empleado">
-                    <option value="">Seleccionar empleado...</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="usuario-nombres">Nombres *</label>
-                <input type="text" id="usuario-nombres" placeholder="Ej: María Guadalupe">
-            </div>
-            <div class="form-group">
-                <label for="usuario-apellido-paterno">Apellido Paterno *</label>
-                <input type="text" id="usuario-apellido-paterno" placeholder="Ej: García">
-            </div>
-            <div class="form-group">
-                <label for="usuario-apellido-materno">Apellido Materno</label>
-                <input type="text" id="usuario-apellido-materno" placeholder="Ej: Hernández">
-            </div>
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="usuario-email">Email *</label>
-                <input type="email" id="usuario-email" placeholder="usuario@empresa.com">
-            </div>
-            <div class="form-group">
-                <label for="usuario-usuario">Nombre de Usuario *</label>
-                <input type="text" id="usuario-usuario" placeholder="Ej: mgarcia">
-            </div>
-        </div>
-        
-        <div class="form-row">
-            <div class="form-group">
-                <label for="usuario-contrasena">Contraseña *</label>
-                <input type="password" id="usuario-contrasena" placeholder="Contraseña">
-            </div>
-            <div class="form-group">
-                <label for="usuario-rol">Rol *</label>
-                <select id="usuario-rol">
-                    <option value="">Seleccionar...</option>
-                    <option value="Director Corporativo">Director Corporativo</option>
-                    <option value="Director General">Director General</option>
-                    <option value="Director Financiero">Director Financiero</option>
-                    <option value="Supervisor Senior">Supervisor Senior</option>
-                    <option value="Ejecutivo Comercial">Ejecutivo Comercial</option>
-                    <option value="Especialista Logístico">Especialista Logístico</option>
-                    <option value="Gestor de Almacén">Gestor de Almacén</option>
-                </select>
-            </div>
-        </div>
-        
-        <button onclick="registrarUsuario()">Registrar Usuario</button>
-        
-        <h2 style="margin-top: 40px;">Usuarios Registrados</h2>
-        <div id="usuarios-list">
-            <p>Seleccione una empresa para ver sus usuarios</p>
-        </div>
+    <div class="footer">
+        Sistema Corporativo - Panel de Director Corporativo
     </div>
 
     <script>
         // Configuración de Supabase
         const supabaseUrl = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
         const supabaseKey = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
         
-        // Verificar si el usuario está autenticado
-        window.onload = function() {
-            const userId = sessionStorage.getItem('user_id');
-            const userRol = sessionStorage.getItem('rol');
+        // Verificar sesión al cargar
+        document.addEventListener('DOMContentLoaded', async function() {
+            const userData = localStorage.getItem('userData');
             
-            if (!userId || userRol !== 'Director Corporativo') {
+            if (!userData) {
+                // No hay sesión, redirigir al login
                 window.location.href = 'login.html';
                 return;
             }
             
-            // Mostrar nombre del usuario
-            document.getElementById('user-name').textContent = 
-                `${sessionStorage.getItem('nombres')} ${sessionStorage.getItem('apellido_paterno')}`;
+            const data = JSON.parse(userData);
             
-            // Cargar datos iniciales
-            cargarEmpresas();
+            // Verificar si el usuario es Director Corporativo
+            if (data.rol !== 'Director Corporativo') {
+                alert('Acceso denegado. Esta página es solo para Directores Corporativos.');
+                window.location.href = 'login.html';
+                return;
+            }
             
-            // Configurar eventos para select de empresas
-            document.getElementById('empleado-empresa').addEventListener('change', function() {
-                if (this.value) {
-                    cargarEmpleados(this.value);
-                }
-            });
+            // Mostrar información del usuario
+            document.getElementById('userName').textContent = data.nombres + ' ' + data.apellidos;
+            document.getElementById('userEmail').textContent = data.email;
+            document.getElementById('userRole').textContent = data.rol;
+            document.getElementById('userEmpresa').textContent = data.empresa;
             
-            document.getElementById('usuario-empresa').addEventListener('change', function() {
-                if (this.value) {
-                    cargarEmpleadosParaUsuario(this.value);
-                    cargarUsuarios(this.value);
-                }
-            });
-        };
+            // Formatear hora de inicio
+            const sessionDate = new Date(data.sessionTime);
+            document.getElementById('sessionTime').textContent = 
+                sessionDate.toLocaleDateString('es-ES') + ' ' + 
+                sessionDate.toLocaleTimeString('es-ES');
+            
+            // Cargar estadísticas
+            await loadStats();
+        });
         
-        function showTab(tabName) {
-            // Ocultar todas las pestañas
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Mostrar la pestaña seleccionada
-            document.getElementById(`${tabName}-tab`).classList.add('active');
-            event.target.classList.add('active');
-            
-            // Cargar datos si es necesario
-            if (tabName === 'empleados') {
-                cargarSelectEmpresas('empleado-empresa');
-            } else if (tabName === 'usuarios') {
-                cargarSelectEmpresas('usuario-empresa');
+        async function loadStats() {
+            try {
+                // Contar empresas activas
+                const { count: empresasCount } = await supabase
+                    .from('empresas')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('activo', true);
+                
+                // Contar usuarios activos
+                const { count: usuariosCount } = await supabase
+                    .from('usuarios')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('activo', true);
+                
+                // Actualizar UI
+                document.getElementById('empresasCount').textContent = empresasCount || 0;
+                document.getElementById('usuariosCount').textContent = usuariosCount || 0;
+                
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
             }
         }
         
         function logout() {
-            sessionStorage.clear();
-            window.location.href = 'login.html';
-        }
-        
-        // Funciones para Empresas
-        async function cargarEmpresas() {
-            try {
-                const response = await fetch(`${supabaseUrl}/rest/v1/empresas?select=*&order=creado_en.desc`, {
-                    method: 'GET',
-                    headers: {
-                        'apikey': supabaseKey,
-                        'Authorization': `Bearer ${supabaseKey}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                const empresas = await response.json();
-                mostrarEmpresas(empresas);
-                
-                // También cargar en selects
-                cargarSelectEmpresas('empleado-empresa');
-                cargarSelectEmpresas('usuario-empresa');
-            } catch (error) {
-                console.error('Error al cargar empresas:', error);
-                document.getElementById('empresas-list').innerHTML = '<p class="error">Error al cargar empresas</p>';
+            // Confirmar cierre de sesión
+            if (confirm('¿Está seguro que desea cerrar sesión?')) {
+                localStorage.removeItem('userData');
+                window.location.href = 'login.html';
             }
         }
         
-        function mostrarEmpresas(empresas) {
-            const container = document.getElementById('empresas-list');
-            
-            if (!empresas || empresas.length === 0) {
-                container.innerHTML = '<p>No hay empresas registradas</p>';
-                return;
+        // Proteger contra navegación sin sesión
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'userData' && !e.newValue) {
+                window.location.href = 'login.html';
             }
-            
-            let html = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>RFC</th>
-                            <th>Email</th>
-                            <th>Teléfono</th>
-                            <th>Estado</th>
-                            <th>Registro</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            empresas.forEach(empresa => {
-                const fecha = new Date(empresa.creado_en).toLocaleDateString('es-MX');
-                const estado = empresa.activo ? 'Activa' : 'Inactiva';
-                
-                html += `
-                    <tr>
-                        <td><strong>${empresa.nombre}</strong></td>
-                        <td>${empresa.rfc || 'N/A'}</td>
-                        <td>${empresa.email || 'N/A'}</td>
-                        <td>${empresa.telefono || 'N/A'}</td>
-                        <td>${estado}</td>
-                        <td>${fecha}</td>
-                    </tr>
-                `;
-            });
-            
-            html += '</tbody></table>';
-            container.innerHTML = html;
-        }
-        
-        function cargarSelectEmpresas(selectId) {
-            fetch(`${supabaseUrl}/rest/v1/empresas?select=id,nombre&activo=eq.true&order=nombre.asc`, {
-                method: 'GET',
-                headers: {
-                    'apikey': supabaseKey,
-                    'Authorization': `Bearer ${supabaseKey}`,
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(empresas => {
-                const select = document.getElementById(selectId);
-                select.innerHTML = '<option value="">Seleccionar empresa...</option>';
-                
-                empresas.forEach(empresa => {
-                    const option = document.createElement('option');
-                    option.value = empresa.id;
-                    option.textContent = empresa.nombre;
-                    select.appendChild(option);
-                });
-            })
-            .catch(error => {
-                console.error('Error al cargar empresas:', error);
-                document.getElementById(selectId).innerHTML = '<option value="">Error al cargar empresas</option>';
-            });
-        }
-        
-        async function registrarEmpresa() {
-            const nombre = document.getElementById('empresa-nombre').value.trim();
-            const rfc = document.getElementById('empresa-rfc').value.trim();
-            const email = document.getElementById('empresa-email').value.trim();
-            const telefono = document.getElementById('empresa-telefono').value.trim();
-            const direccion = document.getElementById('empresa-direccion').value.trim();
-            const tipo = document.getElementById('empresa-tipo').value;
-            const regimen = document.getElementById('empresa-regimen').value.trim();
-            
-            if (!nombre || !rfc) {
-                showMessage('empresa-message', 'error', 'Nombre y RFC son campos obligatorios');
-                return;
-            }
-            
-            const empresaData = {
-                nombre,
-                rfc,
-                email: email || null,
-                telefono: telefono || null,
-                direccion: direccion || null,
-                tipo_empresa: tipo || null,
-                regimen_fiscal: regimen || null,
-                activo: true
-            };
-            
-            try {
-                const response = await fetch(`${supabaseUrl}/rest/v1/empresas`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': supabaseKey,
-                        'Authorization': `Bearer ${supabaseKey}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=representation'
-                    },
-                    body: JSON.stringify(empresaData)
-                });
-                
-                if (response.ok) {
-                    showMessage('empresa-message', 'success', 'Empresa registrada exitosamente');
-                    
-                    // Limpiar formulario
-                    document.getElementById('empresa-nombre').value = '';
-                    document.getElementById('empresa-rfc').value = '';
-                    document.getElementById('empresa-email').value = '';
-                    document.getElementById('empresa-telefono').value = '';
-                    document.getElementById('empresa-direccion').value = '';
-                    document.getElementById('empresa-tipo').value = '';
-                    document.getElementById('empresa-regimen').value = '';
-                    
-                    // Actualizar lista
-                    cargarEmpresas();
-                } else {
-                    showMessage('empresa-message', 'error', 'Error al registrar empresa');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('empresa-message', 'error', 'Error de conexión');
-            }
-        }
-        
-        // Funciones para Empleados
-        async function cargarEmpleados(empresaId) {
-            try {
-                const response = await fetch(`${supabaseUrl}/rest/v1/empleados?empresa_id=eq.${empresaId}&select=*&order=creado_en.desc`, {
-                    method: 'GET',
-                    headers: {
-                        'apikey': supabaseKey,
-                        'Authorization': `Bearer ${supabaseKey}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                const empleados = await response.json();
-                mostrarEmpleados(empleados);
-            } catch (error) {
-                console.error('Error al cargar empleados:', error);
-                document.getElementById('empleados-list').innerHTML = '<p class="error">Error al cargar empleados</p>';
-            }
-        }
-        
-        function mostrarEmpleados(empleados) {
-            const container = document.getElementById('empleados-list');
-            
-            if (!empleados || empleados.length === 0) {
-                container.innerHTML = '<p>No hay empleados registrados para esta empresa</p>';
-                return;
-            }
-            
-            let html = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Documento</th>
-                            <th>Email</th>
-                            <th>Teléfono</th>
-                            <th>Contrato</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            empleados.forEach(empleado => {
-                const nombreCompleto = `${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno || ''}`;
-                const estado = empleado.activo ? 'Activo' : 'Inactivo';
-                
-                html += `
-                    <tr>
-                        <td><strong>${nombreCompleto}</strong></td>
-                        <td>${empleado.documento_identidad || 'N/A'}</td>
-                        <td>${empleado.email || 'N/A'}</td>
-                        <td>${empleado.telefono || 'N/A'}</td>
-                        <td>${empleado.tipo_contrato || 'N/A'}</td>
-                        <td>${estado}</td>
-                    </tr>
-                `;
-            });
-            
-            html += '</tbody></table>';
-            container.innerHTML = html;
-        }
-        
-        function cargarEmpleadosParaUsuario(empresaId) {
-            fetch(`${supabaseUrl}/rest/v1/empleados?empresa_id=eq.${empresaId}&activo=eq.true&select=id,nombres,apellido_paterno,apellido_materno&order=nombres.asc`, {
-                method: 'GET',
-                headers: {
-                    'apikey': supabaseKey,
-                    'Authorization': `Bearer ${supabaseKey}`,
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(empleados => {
-                const select = document.getElementById('usuario-empleado');
-                select.innerHTML = '<option value="">Seleccionar empleado (opcional)...</option>';
-                
-                empleados.forEach(empleado => {
-                    const option = document.createElement('option');
-                    option.value = empleado.id;
-                    option.textContent = `${empleado.nombres} ${empleado.apellido_paterno} ${empleado.apellido_materno || ''}`;
-                    select.appendChild(option);
-                });
-            })
-            .catch(error => {
-                console.error('Error al cargar empleados:', error);
-            });
-        }
-        
-        async function registrarEmpleado() {
-            const empresaId = document.getElementById('empleado-empresa').value;
-            const nombres = document.getElementById('empleado-nombres').value.trim();
-            const apellidoPaterno = document.getElementById('empleado-apellido-paterno').value.trim();
-            const apellidoMaterno = document.getElementById('empleado-apellido-materno').value.trim();
-            const email = document.getElementById('empleado-email').value.trim();
-            const telefono = document.getElementById('empleado-telefono').value.trim();
-            const documento = document.getElementById('empleado-documento').value.trim();
-            const tipoDocumento = document.getElementById('empleado-tipo-documento').value;
-            const salario = document.getElementById('empleado-salario').value;
-            const tipoContrato = document.getElementById('empleado-tipo-contrato').value;
-            
-            if (!empresaId || !nombres || !apellidoPaterno) {
-                showMessage('empleado-message', 'error', 'Empresa, nombres y apellido paterno son obligatorios');
-                return;
-            }
-            
-            const empleadoData = {
-                empresa_id: empresaId,
-                nombres,
-                apellido_paterno: apellidoPaterno,
-                apellido_materno: apellidoMaterno || null,
-                email: email || null,
-                telefono: telefono || null,
-                documento_identidad: documento || null,
-                tipo_documento: tipoDocumento || null,
-                salario_base: salario ? parseFloat(salario) : null,
-                tipo_contrato: tipoContrato || null,
-                activo: true
-            };
-            
-            try {
-                const response = await fetch(`${supabaseUrl}/rest/v1/empleados`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': supabaseKey,
-                        'Authorization': `Bearer ${supabaseKey}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=representation'
-                    },
-                    body: JSON.stringify(empleadoData)
-                });
-                
-                if (response.ok) {
-                    showMessage('empleado-message', 'success', 'Empleado registrado exitosamente');
-                    
-                    // Limpiar formulario
-                    document.getElementById('empleado-nombres').value = '';
-                    document.getElementById('empleado-apellido-paterno').value = '';
-                    document.getElementById('empleado-apellido-materno').value = '';
-                    document.getElementById('empleado-email').value = '';
-                    document.getElementById('empleado-telefono').value = '';
-                    document.getElementById('empleado-documento').value = '';
-                    document.getElementById('empleado-salario').value = '';
-                    
-                    // Actualizar lista
-                    cargarEmpleados(empresaId);
-                } else {
-                    showMessage('empleado-message', 'error', 'Error al registrar empleado');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('empleado-message', 'error', 'Error de conexión');
-            }
-        }
-        
-        // Funciones para Usuarios
-        async function cargarUsuarios(empresaId) {
-            try {
-                const response = await fetch(`${supabaseUrl}/rest/v1/usuarios?empresa_id=eq.${empresaId}&select=*&order=creado_en.desc`, {
-                    method: 'GET',
-                    headers: {
-                        'apikey': supabaseKey,
-                        'Authorization': `Bearer ${supabaseKey}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                const usuarios = await response.json();
-                mostrarUsuarios(usuarios);
-            } catch (error) {
-                console.error('Error al cargar usuarios:', error);
-                document.getElementById('usuarios-list').innerHTML = '<p class="error">Error al cargar usuarios</p>';
-            }
-        }
-        
-        function mostrarUsuarios(usuarios) {
-            const container = document.getElementById('usuarios-list');
-            
-            if (!usuarios || usuarios.length === 0) {
-                container.innerHTML = '<p>No hay usuarios registrados para esta empresa</p>';
-                return;
-            }
-            
-            let html = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Usuario</th>
-                            <th>Nombre</th>
-                            <th>Email</th>
-                            <th>Rol</th>
-                            <th>Estado</th>
-                            <th>Último Acceso</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            usuarios.forEach(usuario => {
-                const nombreCompleto = `${usuario.nombres} ${usuario.apellido_paterno} ${usuario.apellido_materno || ''}`;
-                const estado = usuario.activo ? 'Activo' : 'Inactivo';
-                const ultimoAcceso = usuario.ultimo_acceso ? 
-                    new Date(usuario.ultimo_acceso).toLocaleDateString('es-MX') : 'Nunca';
-                
-                html += `
-                    <tr>
-                        <td><strong>${usuario.usuario}</strong></td>
-                        <td>${nombreCompleto}</td>
-                        <td>${usuario.email}</td>
-                        <td>${usuario.rol}</td>
-                        <td>${estado}</td>
-                        <td>${ultimoAcceso}</td>
-                    </tr>
-                `;
-            });
-            
-            html += '</tbody></table>';
-            container.innerHTML = html;
-        }
-        
-        async function registrarUsuario() {
-            const empresaId = document.getElementById('usuario-empresa').value;
-            const empleadoId = document.getElementById('usuario-empleado').value || null;
-            const nombres = document.getElementById('usuario-nombres').value.trim();
-            const apellidoPaterno = document.getElementById('usuario-apellido-paterno').value.trim();
-            const apellidoMaterno = document.getElementById('usuario-apellido-materno').value.trim();
-            const email = document.getElementById('usuario-email').value.trim();
-            const usuario = document.getElementById('usuario-usuario').value.trim();
-            const contrasena = document.getElementById('usuario-contrasena').value;
-            const rol = document.getElementById('usuario-rol').value;
-            
-            if (!empresaId || !nombres || !apellidoPaterno || !email || !usuario || !contrasena || !rol) {
-                showMessage('usuario-message', 'error', 'Todos los campos marcados con * son obligatorios');
-                return;
-            }
-            
-            const usuarioData = {
-                empresa_id: empresaId,
-                empleado_id: empleadoId,
-                nombres,
-                apellido_paterno: apellidoPaterno,
-                apellido_materno: apellidoMaterno || null,
-                email,
-                usuario,
-                contrasena_plano: contrasena,
-                rol,
-                activo: true
-            };
-            
-            try {
-                const response = await fetch(`${supabaseUrl}/rest/v1/usuarios`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': supabaseKey,
-                        'Authorization': `Bearer ${supabaseKey}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=representation'
-                    },
-                    body: JSON.stringify(usuarioData)
-                });
-                
-                if (response.ok) {
-                    showMessage('usuario-message', 'success', 'Usuario registrado exitosamente');
-                    
-                    // Limpiar formulario
-                    document.getElementById('usuario-nombres').value = '';
-                    document.getElementById('usuario-apellido-paterno').value = '';
-                    document.getElementById('usuario-apellido-materno').value = '';
-                    document.getElementById('usuario-email').value = '';
-                    document.getElementById('usuario-usuario').value = '';
-                    document.getElementById('usuario-contrasena').value = '';
-                    document.getElementById('usuario-rol').value = '';
-                    document.getElementById('usuario-empleado').value = '';
-                    
-                    // Actualizar lista
-                    cargarUsuarios(empresaId);
-                } else {
-                    showMessage('usuario-message', 'error', 'Error al registrar usuario');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('usuario-message', 'error', 'Error de conexión');
-            }
-        }
-        
-        // Función auxiliar para mostrar mensajes
-        function showMessage(elementId, type, text) {
-            const element = document.getElementById(elementId);
-            element.textContent = text;
-            element.className = `message ${type}`;
-            element.style.display = 'block';
-            
-            // Ocultar mensaje después de 5 segundos
-            setTimeout(() => {
-                element.style.display = 'none';
-            }, 5000);
-        }
+        });
     </script>
 </body>
 </html>
