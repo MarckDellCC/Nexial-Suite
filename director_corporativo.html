@@ -3,249 +3,1060 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Director Corporativo - Nexial Suite</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <title>Panel Director Corporativo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-info h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .header-info p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-info span {
+            font-weight: 500;
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        .tab.active {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: #dde4e6;
+        }
+        
+        .tab-content {
+            display: none;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .btn-success {
+            background-color: #27ae60;
+        }
+        
+        .btn-success:hover {
+            background-color: #219653;
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d5edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .data-section {
+            margin-top: 30px;
+        }
+        
+        .data-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .form-group {
+                min-width: 100%;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Director Corporativo - Gestión de Empresas</h1>
-
-    <h2>Agregar/Editar Empresa</h2>
-    <form id="formEmpresa">
-        <label for="codigo">Código:</label>
-        <input type="text" id="codigo" required><br><br>
-
-        <label for="nombre">Nombre:</label>
-        <input type="text" id="nombre" required><br><br>
-
-        <label for="documento_identidad">Documento Identidad:</label>
-        <input type="text" id="documento_identidad"><br><br>
-
-        <label for="tipo_documento">Tipo Documento:</label>
-        <input type="text" id="tipo_documento"><br><br>
-
-        <label for="direccion">Dirección:</label>
-        <textarea id="direccion"></textarea><br><br>
-
-        <label for="ciudad">Ciudad:</label>
-        <input type="text" id="ciudad"><br><br>
-
-        <label for="estado">Estado:</label>
-        <input type="text" id="estado"><br><br>
-
-        <label for="codigo_postal">Código Postal:</label>
-        <input type="text" id="codigo_postal"><br><br>
-
-        <label for="pais">País:</label>
-        <input type="text" id="pais"><br><br>
-
-        <label for="telefono">Teléfono:</label>
-        <input type="text" id="telefono"><br><br>
-
-        <label for="telefono2">Teléfono 2:</label>
-        <input type="text" id="telefono2"><br><br>
-
-        <label for="email">Email:</label>
-        <input type="email" id="email"><br><br>
-
-        <label for="email2">Email 2:</label>
-        <input type="email" id="email2"><br><br>
-
-        <label for="moneda_id">Moneda ID:</label>
-        <input type="number" id="moneda_id"><br><br>
-
-        <label for="logo_url">Logo URL:</label>
-        <input type="text" id="logo_url"><br><br>
-
-        <label for="activo">Activo:</label>
-        <input type="checkbox" id="activo" checked><br><br>
-
-        <label for="empresa_matriz_id">Empresa Matriz ID:</label>
-        <input type="number" id="empresa_matriz_id"><br><br>
-
-        <button type="submit" id="btnGuardar">Agregar Empresa</button>
-        <button type="button" id="btnCancelar" style="display:none;">Cancelar</button>
-    </form>
-
-    <h2>Lista de Empresas</h2>
-    <table id="tablaEmpresas" border="1">
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Documento</th>
-                <th>Dirección</th>
-                <th>Teléfono</th>
-                <th>Email</th>
-                <th>Activo</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Las filas se llenan con JavaScript -->
-        </tbody>
-    </table>
+    <div class="container">
+        <header>
+            <div class="header-info">
+                <h1>Panel de Director Corporativo</h1>
+                <p>Sistema Multi-Empresa - Nexial Suite</p>
+            </div>
+            <div class="user-info">
+                <span id="userName">Usuario</span>
+                <button class="logout-btn" id="logoutBtn">Cerrar Sesión</button>
+            </div>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="empresas">Empresas</div>
+            <div class="tab" data-tab="empleados">Empleados</div>
+            <div class="tab" data-tab="usuarios">Usuarios</div>
+            <div class="tab" data-tab="monedas">Monedas</div>
+        </div>
+        
+        <!-- Tab: Empresas -->
+        <div class="tab-content active" id="empresas">
+            <h2>Registrar Nueva Empresa</h2>
+            
+            <div id="empresaMessage" class="message"></div>
+            
+            <form id="empresaForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="empresaNombre">Nombre de la Empresa *</label>
+                        <input type="text" id="empresaNombre" name="nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="empresaRFC">RFC *</label>
+                        <input type="text" id="empresaRFC" name="rfc" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="empresaEmail">Email</label>
+                        <input type="email" id="empresaEmail" name="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="empresaTelefono">Teléfono</label>
+                        <input type="text" id="empresaTelefono" name="telefono">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="empresaDireccion">Dirección</label>
+                        <textarea id="empresaDireccion" name="direccion" rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="empresaTipo">Tipo de Empresa</label>
+                        <input type="text" id="empresaTipo" name="tipo_empresa" placeholder="Ej. Comercio, Servicios, Manufactura">
+                    </div>
+                    <div class="form-group">
+                        <label for="empresaRegimen">Régimen Fiscal</label>
+                        <input type="text" id="empresaRegimen" name="regimen_fiscal">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="empresaWebsite">Sitio Web</label>
+                        <input type="text" id="empresaWebsite" name="website">
+                    </div>
+                    <div class="form-group">
+                        <label for="empresaMoneda">Moneda (UUID)</label>
+                        <input type="text" id="empresaMoneda" name="moneda_id" placeholder="UUID de la moneda">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-success">Registrar Empresa</button>
+            </form>
+            
+            <div class="data-section">
+                <div class="data-actions">
+                    <h2>Empresas Registradas</h2>
+                    <button class="btn btn-secondary" id="refreshEmpresas">Actualizar Lista</button>
+                </div>
+                <div id="empresasList">
+                    <div class="loading">Cargando empresas...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab: Empleados -->
+        <div class="tab-content" id="empleados">
+            <h2>Registrar Nuevo Empleado</h2>
+            
+            <div id="empleadoMessage" class="message"></div>
+            
+            <form id="empleadoForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="empleadoEmpresa">Empresa (UUID) *</label>
+                        <input type="text" id="empleadoEmpresa" name="empresa_id" required placeholder="UUID de la empresa">
+                    </div>
+                    <div class="form-group">
+                        <label for="empleadoNombres">Nombres *</label>
+                        <input type="text" id="empleadoNombres" name="nombres" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="empleadoApellidoPaterno">Apellido Paterno *</label>
+                        <input type="text" id="empleadoApellidoPaterno" name="apellido_paterno" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="empleadoApellidoMaterno">Apellido Materno</label>
+                        <input type="text" id="empleadoApellidoMaterno" name="apellido_materno">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="empleadoEmail">Email</label>
+                        <input type="email" id="empleadoEmail" name="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="empleadoTelefono">Teléfono</label>
+                        <input type="text" id="empleadoTelefono" name="telefono">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="empleadoDocumento">Documento de Identidad</label>
+                        <input type="text" id="empleadoDocumento" name="documento_identidad">
+                    </div>
+                    <div class="form-group">
+                        <label for="empleadoTipoDocumento">Tipo de Documento</label>
+                        <select id="empleadoTipoDocumento" name="tipo_documento">
+                            <option value="">Seleccionar</option>
+                            <option value="DNI">DNI</option>
+                            <option value="RUT">RUT</option>
+                            <option value="CURP">CURP</option>
+                            <option value="Pasaporte">Pasaporte</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="empleadoSalario">Salario Base</label>
+                        <input type="number" id="empleadoSalario" name="salario_base" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="empleadoMoneda">Moneda (UUID)</label>
+                        <input type="text" id="empleadoMoneda" name="moneda_id" placeholder="UUID de la moneda">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-success">Registrar Empleado</button>
+            </form>
+            
+            <div class="data-section">
+                <div class="data-actions">
+                    <h2>Empleados Registrados</h2>
+                    <button class="btn btn-secondary" id="refreshEmpleados">Actualizar Lista</button>
+                </div>
+                <div id="empleadosList">
+                    <div class="loading">Cargando empleados...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab: Usuarios -->
+        <div class="tab-content" id="usuarios">
+            <h2>Registrar Nuevo Usuario</h2>
+            
+            <div id="usuarioMessage" class="message"></div>
+            
+            <form id="usuarioForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="usuarioEmpresa">Empresa (UUID) *</label>
+                        <input type="text" id="usuarioEmpresa" name="empresa_id" required placeholder="UUID de la empresa">
+                    </div>
+                    <div class="form-group">
+                        <label for="usuarioEmpleado">Empleado (UUID)</label>
+                        <input type="text" id="usuarioEmpleado" name="empleado_id" placeholder="UUID del empleado (opcional)">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="usuarioNombres">Nombres *</label>
+                        <input type="text" id="usuarioNombres" name="nombres" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="usuarioApellidoPaterno">Apellido Paterno *</label>
+                        <input type="text" id="usuarioApellidoPaterno" name="apellido_paterno" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="usuarioApellidoMaterno">Apellido Materno</label>
+                        <input type="text" id="usuarioApellidoMaterno" name="apellido_materno">
+                    </div>
+                    <div class="form-group">
+                        <label for="usuarioEmail">Email *</label>
+                        <input type="email" id="usuarioEmail" name="email" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="usuarioUsuario">Nombre de Usuario *</label>
+                        <input type="text" id="usuarioUsuario" name="usuario" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="usuarioContrasena">Contraseña *</label>
+                        <input type="text" id="usuarioContrasena" name="contrasena_plano" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="usuarioRol">Rol *</label>
+                        <select id="usuarioRol" name="rol" required>
+                            <option value="">Seleccionar Rol</option>
+                            <option value="Director Corporativo">Director Corporativo</option>
+                            <option value="Director General">Director General</option>
+                            <option value="Director Financiero">Director Financiero</option>
+                            <option value="Supervisor Senior">Supervisor Senior</option>
+                            <option value="Ejecutivo Comercial">Ejecutivo Comercial</option>
+                            <option value="Especialista Logístico">Especialista Logístico</option>
+                            <option value="Gestor de Almacén">Gestor de Almacén</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-success">Registrar Usuario</button>
+            </form>
+            
+            <div class="data-section">
+                <div class="data-actions">
+                    <h2>Usuarios Registrados</h2>
+                    <button class="btn btn-secondary" id="refreshUsuarios">Actualizar Lista</button>
+                </div>
+                <div id="usuariosList">
+                    <div class="loading">Cargando usuarios...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab: Monedas -->
+        <div class="tab-content" id="monedas">
+            <h2>Registrar Nueva Moneda</h2>
+            
+            <div id="monedaMessage" class="message"></div>
+            
+            <form id="monedaForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="monedaCodigo">Código (3 letras) *</label>
+                        <input type="text" id="monedaCodigo" name="codigo" maxlength="3" required placeholder="Ej: USD, MXN, EUR">
+                    </div>
+                    <div class="form-group">
+                        <label for="monedaNombre">Nombre *</label>
+                        <input type="text" id="monedaNombre" name="nombre" required placeholder="Ej: Dólar Estadounidense">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="monedaSimbolo">Símbolo</label>
+                        <input type="text" id="monedaSimbolo" name="simbolo" placeholder="Ej: $, €, £">
+                    </div>
+                    <div class="form-group">
+                        <label for="monedaPais">País</label>
+                        <input type="text" id="monedaPais" name="pais" placeholder="País de origen">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="monedaTasa">Tasa de Cambio</label>
+                        <input type="number" id="monedaTasa" name="tasa_cambio" step="0.000001" placeholder="Tasa respecto a moneda base">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-success">Registrar Moneda</button>
+            </form>
+            
+            <div class="data-section">
+                <div class="data-actions">
+                    <h2>Monedas Registradas</h2>
+                    <button class="btn btn-secondary" id="refreshMonedas">Actualizar Lista</button>
+                </div>
+                <div id="monedasList">
+                    <div class="loading">Cargando monedas...</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Configuración de Supabase
-        const supabaseUrl = 'https://xfggpijyisejhjjfnowv.supabase.co';
-        const supabaseAnonKey = 'sb_publishable_IJWD3UeDtyC9x9ON3EhjbQ_1oGokAxb';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
-
-        let empresas = [];
-        let editingId = null;
-
-        // Verificar si el usuario está autenticado
-        const user = sessionStorage.getItem('user');
-        if (!user) {
-            window.location.href = 'login.html';
-        }
-
-        // Cargar empresas al inicio
-        document.addEventListener('DOMContentLoaded', cargarEmpresas);
-
-        // Agregar evento al formulario
-        document.getElementById('formEmpresa').addEventListener('submit', guardarEmpresa);
-        document.getElementById('btnCancelar').addEventListener('click', limpiarFormulario);
-
-        async function cargarEmpresas() {
-            const { data, error } = await supabaseClient
-                .from('Empresas')
-                .select('*')
-                .order('id', { ascending: true });
-
-            if (error) {
-                alert('Error al cargar empresas: ' + error.message);
-                return;
+        const SUPABASE_URL = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
+        
+        let supabase;
+        let userData;
+        
+        // Inicializar Supabase
+        function initSupabase() {
+            if (window.supabase) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase inicializado');
+                return supabase;
+            } else {
+                // Cargar la biblioteca si no está disponible
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.21.0/dist/umd/supabase.min.js';
+                script.onload = function() {
+                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    console.log('Supabase cargado e inicializado');
+                    // Inicializar funcionalidades después de cargar Supabase
+                    initAfterSupabase();
+                };
+                document.head.appendChild(script);
+                return null;
             }
-
-            empresas = data;
-            mostrarEmpresas();
         }
-
-        function mostrarEmpresas() {
-            const tbody = document.querySelector('#tablaEmpresas tbody');
-            tbody.innerHTML = '';
-
-            empresas.forEach(empresa => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${empresa.codigo}</td>
-                    <td>${empresa.nombre}</td>
-                    <td>${empresa.documento_identidad || ''}</td>
-                    <td>${empresa.direccion || ''}</td>
-                    <td>${empresa.telefono || ''}</td>
-                    <td>${empresa.email || ''}</td>
-                    <td>${empresa.activo ? 'Sí' : 'No'}</td>
-                    <td>
-                        <button onclick="editarEmpresa(${empresa.id})">Editar</button>
-                        <button onclick="eliminarEmpresa(${empresa.id})">Eliminar</button>
-                    </td>
-                `;
+        
+        // Verificar autenticación y cargar datos
+        function checkAuth() {
+            const storedUser = localStorage.getItem('userData');
+            if (!storedUser) {
+                // No hay usuario autenticado, redirigir a login
+                window.location.href = 'login.html';
+                return null;
+            }
+            
+            userData = JSON.parse(storedUser);
+            
+            // Verificar si es Director Corporativo
+            if (userData.rol !== 'Director Corporativo') {
+                alert('Acceso denegado. Solo el Director Corporativo puede acceder a este panel.');
+                window.location.href = 'login.html';
+                return null;
+            }
+            
+            // Mostrar nombre de usuario
+            document.getElementById('userName').textContent = `${userData.nombres} ${userData.apellido_paterno}`;
+            
+            return userData;
+        }
+        
+        // Funciones para manejar los tabs
+        function initTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // Remover clase active de todos los tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(tc => tc.classList.remove('active'));
+                    
+                    // Agregar clase active al tab seleccionado
+                    tab.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Cargar datos del tab seleccionado
+                    loadTabData(tabId);
+                });
             });
         }
-
-        async function guardarEmpresa(event) {
-            event.preventDefault();
-            
-            const empresaData = {
-                codigo: document.getElementById('codigo').value,
-                nombre: document.getElementById('nombre').value,
-                documento_identidad: document.getElementById('documento_identidad').value,
-                tipo_documento: document.getElementById('tipo_documento').value,
-                direccion: document.getElementById('direccion').value,
-                ciudad: document.getElementById('ciudad').value,
-                estado: document.getElementById('estado').value,
-                codigo_postal: document.getElementById('codigo_postal').value,
-                pais: document.getElementById('pais').value,
-                telefono: document.getElementById('telefono').value,
-                telefono2: document.getElementById('telefono2').value,
-                email: document.getElementById('email').value,
-                email2: document.getElementById('email2').value,
-                moneda_id: document.getElementById('moneda_id').value ? parseInt(document.getElementById('moneda_id').value) : null,
-                logo_url: document.getElementById('logo_url').value,
-                activo: document.getElementById('activo').checked,
-                empresa_matriz_id: document.getElementById('empresa_matriz_id').value ? parseInt(document.getElementById('empresa_matriz_id').value) : null
-            };
-
-            let error = null;
-
-            if (editingId) {
-                // Actualizar empresa existente
-                const { error: updateError } = await supabaseClient
-                    .from('Empresas')
-                    .update(empresaData)
-                    .eq('id', editingId);
-                error = updateError;
-            } else {
-                // Crear nueva empresa
-                const { error: insertError } = await supabaseClient
-                    .from('Empresas')
-                    .insert([empresaData]);
-                error = insertError;
+        
+        // Cargar datos para el tab seleccionado
+        async function loadTabData(tabId) {
+            switch(tabId) {
+                case 'empresas':
+                    await loadEmpresas();
+                    break;
+                case 'empleados':
+                    await loadEmpleados();
+                    break;
+                case 'usuarios':
+                    await loadUsuarios();
+                    break;
+                case 'monedas':
+                    await loadMonedas();
+                    break;
             }
-
-            if (error) {
-                alert('Error al guardar empresa: ' + error.message);
-                return;
-            }
-
-            // Recargar la lista
-            cargarEmpresas();
-            // Limpiar formulario
-            limpiarFormulario();
         }
-
-        async function editarEmpresa(id) {
-            const empresa = empresas.find(e => e.id === id);
-            if (!empresa) return;
-
-            editingId = id;
+        
+        // Función para mostrar mensajes
+        function showMessage(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `message ${type}`;
+            element.style.display = 'block';
             
-            // Llenar formulario con datos
-            document.getElementById('codigo').value = empresa.codigo;
-            document.getElementById('nombre').value = empresa.nombre;
-            document.getElementById('documento_identidad').value = empresa.documento_identidad || '';
-            document.getElementById('tipo_documento').value = empresa.tipo_documento || '';
-            document.getElementById('direccion').value = empresa.direccion || '';
-            document.getElementById('ciudad').value = empresa.ciudad || '';
-            document.getElementById('estado').value = empresa.estado || '';
-            document.getElementById('codigo_postal').value = empresa.codigo_postal || '';
-            document.getElementById('pais').value = empresa.pais || '';
-            document.getElementById('telefono').value = empresa.telefono || '';
-            document.getElementById('telefono2').value = empresa.telefono2 || '';
-            document.getElementById('email').value = empresa.email || '';
-            document.getElementById('email2').value = empresa.email2 || '';
-            document.getElementById('moneda_id').value = empresa.moneda_id || '';
-            document.getElementById('logo_url').value = empresa.logo_url || '';
-            document.getElementById('activo').checked = empresa.activo;
-            document.getElementById('empresa_matriz_id').value = empresa.empresa_matriz_id || '';
-            
-            document.getElementById('btnGuardar').textContent = 'Actualizar Empresa';
-            document.getElementById('btnCancelar').style.display = 'inline';
+            // Ocultar mensaje después de 5 segundos
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
         }
-
-        function limpiarFormulario() {
-            document.getElementById('formEmpresa').reset();
-            editingId = null;
-            document.getElementById('btnGuardar').textContent = 'Agregar Empresa';
-            document.getElementById('btnCancelar').style.display = 'none';
-        }
-
-        async function eliminarEmpresa(id) {
-            if (!confirm('¿Está seguro de eliminar esta empresa?')) return;
-
-            const { error } = await supabaseClient
-                .from('Empresas')
-                .delete()
-                .eq('id', id);
-
-            if (error) {
-                alert('Error al eliminar empresa: ' + error.message);
-                return;
+        
+        // ========== FUNCIONES PARA EMPRESAS ==========
+        
+        // Registrar nueva empresa
+        async function registrarEmpresa(formData) {
+            try {
+                const { data, error } = await supabase
+                    .from('empresas')
+                    .insert([formData])
+                    .select();
+                
+                if (error) {
+                    throw error;
+                }
+                
+                showMessage('empresaMessage', 'Empresa registrada exitosamente', 'success');
+                document.getElementById('empresaForm').reset();
+                await loadEmpresas();
+                
+                return data;
+            } catch (error) {
+                console.error('Error al registrar empresa:', error);
+                showMessage('empresaMessage', `Error: ${error.message}`, 'error');
+                return null;
             }
-
-            cargarEmpresas();
         }
+        
+        // Cargar lista de empresas
+        async function loadEmpresas() {
+            const empresasList = document.getElementById('empresasList');
+            empresasList.innerHTML = '<div class="loading">Cargando empresas...</div>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('empresas')
+                    .select('*')
+                    .order('creado_en', { ascending: false });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (data.length === 0) {
+                    empresasList.innerHTML = '<div class="loading">No hay empresas registradas</div>';
+                    return;
+                }
+                
+                let html = '<table><thead><tr><th>Nombre</th><th>RFC</th><th>Email</th><th>Teléfono</th><th>Tipo</th><th>Registro</th></tr></thead><tbody>';
+                
+                data.forEach(empresa => {
+                    html += `<tr>
+                        <td>${empresa.nombre}</td>
+                        <td>${empresa.rfc}</td>
+                        <td>${empresa.email || '-'}</td>
+                        <td>${empresa.telefono || '-'}</td>
+                        <td>${empresa.tipo_empresa || '-'}</td>
+                        <td>${new Date(empresa.creado_en).toLocaleDateString()}</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                empresasList.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error al cargar empresas:', error);
+                empresasList.innerHTML = `<div class="loading error">Error al cargar empresas: ${error.message}</div>`;
+            }
+        }
+        
+        // ========== FUNCIONES PARA EMPLEADOS ==========
+        
+        // Registrar nuevo empleado
+        async function registrarEmpleado(formData) {
+            try {
+                const { data, error } = await supabase
+                    .from('empleados')
+                    .insert([formData])
+                    .select();
+                
+                if (error) {
+                    throw error;
+                }
+                
+                showMessage('empleadoMessage', 'Empleado registrado exitosamente', 'success');
+                document.getElementById('empleadoForm').reset();
+                await loadEmpleados();
+                
+                return data;
+            } catch (error) {
+                console.error('Error al registrar empleado:', error);
+                showMessage('empleadoMessage', `Error: ${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        // Cargar lista de empleados
+        async function loadEmpleados() {
+            const empleadosList = document.getElementById('empleadosList');
+            empleadosList.innerHTML = '<div class="loading">Cargando empleados...</div>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('empleados')
+                    .select('*')
+                    .order('creado_en', { ascending: false });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (data.length === 0) {
+                    empleadosList.innerHTML = '<div class="loading">No hay empleados registrados</div>';
+                    return;
+                }
+                
+                let html = '<table><thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Documento</th><th>Salario</th><th>Registro</th></tr></thead><tbody>';
+                
+                data.forEach(empleado => {
+                    html += `<tr>
+                        <td>${empleado.nombres} ${empleado.apellido_paterno}</td>
+                        <td>${empleado.email || '-'}</td>
+                        <td>${empleado.telefono || '-'}</td>
+                        <td>${empleado.documento_identidad || '-'}</td>
+                        <td>${empleado.salario_base ? '$' + empleado.salario_base : '-'}</td>
+                        <td>${new Date(empleado.creado_en).toLocaleDateString()}</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                empleadosList.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error al cargar empleados:', error);
+                empleadosList.innerHTML = `<div class="loading error">Error al cargar empleados: ${error.message}</div>`;
+            }
+        }
+        
+        // ========== FUNCIONES PARA USUARIOS ==========
+        
+        // Registrar nuevo usuario
+        async function registrarUsuario(formData) {
+            try {
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .insert([formData])
+                    .select();
+                
+                if (error) {
+                    throw error;
+                }
+                
+                showMessage('usuarioMessage', 'Usuario registrado exitosamente', 'success');
+                document.getElementById('usuarioForm').reset();
+                await loadUsuarios();
+                
+                return data;
+            } catch (error) {
+                console.error('Error al registrar usuario:', error);
+                showMessage('usuarioMessage', `Error: ${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        // Cargar lista de usuarios
+        async function loadUsuarios() {
+            const usuariosList = document.getElementById('usuariosList');
+            usuariosList.innerHTML = '<div class="loading">Cargando usuarios...</div>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .select('*')
+                    .order('creado_en', { ascending: false });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (data.length === 0) {
+                    usuariosList.innerHTML = '<div class="loading">No hay usuarios registrados</div>';
+                    return;
+                }
+                
+                let html = '<table><thead><tr><th>Usuario</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Activo</th><th>Registro</th></tr></thead><tbody>';
+                
+                data.forEach(usuario => {
+                    html += `<tr>
+                        <td>${usuario.usuario}</td>
+                        <td>${usuario.nombres} ${usuario.apellido_paterno}</td>
+                        <td>${usuario.email}</td>
+                        <td>${usuario.rol}</td>
+                        <td>${usuario.activo ? 'Sí' : 'No'}</td>
+                        <td>${new Date(usuario.creado_en).toLocaleDateString()}</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                usuariosList.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error al cargar usuarios:', error);
+                usuariosList.innerHTML = `<div class="loading error">Error al cargar usuarios: ${error.message}</div>`;
+            }
+        }
+        
+        // ========== FUNCIONES PARA MONEDAS ==========
+        
+        // Registrar nueva moneda
+        async function registrarMoneda(formData) {
+            try {
+                const { data, error } = await supabase
+                    .from('monedas')
+                    .insert([formData])
+                    .select();
+                
+                if (error) {
+                    throw error;
+                }
+                
+                showMessage('monedaMessage', 'Moneda registrada exitosamente', 'success');
+                document.getElementById('monedaForm').reset();
+                await loadMonedas();
+                
+                return data;
+            } catch (error) {
+                console.error('Error al registrar moneda:', error);
+                showMessage('monedaMessage', `Error: ${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        // Cargar lista de monedas
+        async function loadMonedas() {
+            const monedasList = document.getElementById('monedasList');
+            monedasList.innerHTML = '<div class="loading">Cargando monedas...</div>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('monedas')
+                    .select('*')
+                    .order('creado_en', { ascending: false });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (data.length === 0) {
+                    monedasList.innerHTML = '<div class="loading">No hay monedas registradas</div>';
+                    return;
+                }
+                
+                let html = '<table><thead><tr><th>Código</th><th>Nombre</th><th>Símbolo</th><th>País</th><th>Tasa</th><th>Registro</th></tr></thead><tbody>';
+                
+                data.forEach(moneda => {
+                    html += `<tr>
+                        <td>${moneda.codigo}</td>
+                        <td>${moneda.nombre}</td>
+                        <td>${moneda.simbolo || '-'}</td>
+                        <td>${moneda.pais || '-'}</td>
+                        <td>${moneda.tasa_cambio || '-'}</td>
+                        <td>${new Date(moneda.creado_en).toLocaleDateString()}</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table>';
+                monedasList.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error al cargar monedas:', error);
+                monedasList.innerHTML = `<div class="loading error">Error al cargar monedas: ${error.message}</div>`;
+            }
+        }
+        
+        // ========== INICIALIZACIÓN DE FORMULARIOS Y EVENTOS ==========
+        
+        function initForms() {
+            // Formulario de empresas
+            document.getElementById('empresaForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    nombre: document.getElementById('empresaNombre').value,
+                    rfc: document.getElementById('empresaRFC').value,
+                    email: document.getElementById('empresaEmail').value || null,
+                    telefono: document.getElementById('empresaTelefono').value || null,
+                    direccion: document.getElementById('empresaDireccion').value || null,
+                    tipo_empresa: document.getElementById('empresaTipo').value || null,
+                    regimen_fiscal: document.getElementById('empresaRegimen').value || null,
+                    website: document.getElementById('empresaWebsite').value || null,
+                    moneda_id: document.getElementById('empresaMoneda').value || null,
+                    activo: true
+                };
+                
+                await registrarEmpresa(formData);
+            });
+            
+            // Formulario de empleados
+            document.getElementById('empleadoForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    empresa_id: document.getElementById('empleadoEmpresa').value,
+                    nombres: document.getElementById('empleadoNombres').value,
+                    apellido_paterno: document.getElementById('empleadoApellidoPaterno').value,
+                    apellido_materno: document.getElementById('empleadoApellidoMaterno').value || null,
+                    email: document.getElementById('empleadoEmail').value || null,
+                    telefono: document.getElementById('empleadoTelefono').value || null,
+                    documento_identidad: document.getElementById('empleadoDocumento').value || null,
+                    tipo_documento: document.getElementById('empleadoTipoDocumento').value || null,
+                    salario_base: document.getElementById('empleadoSalario').value || null,
+                    moneda_id: document.getElementById('empleadoMoneda').value || null,
+                    activo: true
+                };
+                
+                await registrarEmpleado(formData);
+            });
+            
+            // Formulario de usuarios
+            document.getElementById('usuarioForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    empresa_id: document.getElementById('usuarioEmpresa').value,
+                    empleado_id: document.getElementById('usuarioEmpleado').value || null,
+                    nombres: document.getElementById('usuarioNombres').value,
+                    apellido_paterno: document.getElementById('usuarioApellidoPaterno').value,
+                    apellido_materno: document.getElementById('usuarioApellidoMaterno').value || null,
+                    email: document.getElementById('usuarioEmail').value,
+                    usuario: document.getElementById('usuarioUsuario').value,
+                    contrasena_plano: document.getElementById('usuarioContrasena').value,
+                    rol: document.getElementById('usuarioRol').value,
+                    activo: true
+                };
+                
+                await registrarUsuario(formData);
+            });
+            
+            // Formulario de monedas
+            document.getElementById('monedaForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    codigo: document.getElementById('monedaCodigo').value.toUpperCase(),
+                    nombre: document.getElementById('monedaNombre').value,
+                    simbolo: document.getElementById('monedaSimbolo').value || null,
+                    pais: document.getElementById('monedaPais').value || null,
+                    tasa_cambio: document.getElementById('monedaTasa').value || null,
+                    activo: true
+                };
+                
+                await registrarMoneda(formData);
+            });
+            
+            // Botones para actualizar listas
+            document.getElementById('refreshEmpresas').addEventListener('click', loadEmpresas);
+            document.getElementById('refreshEmpleados').addEventListener('click', loadEmpleados);
+            document.getElementById('refreshUsuarios').addEventListener('click', loadUsuarios);
+            document.getElementById('refreshMonedas').addEventListener('click', loadMonedas);
+            
+            // Botón de logout
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                localStorage.removeItem('userData');
+                window.location.href = 'login.html';
+            });
+        }
+        
+        // Inicializar después de cargar Supabase
+        function initAfterSupabase() {
+            // Verificar autenticación
+            if (!checkAuth()) return;
+            
+            // Inicializar tabs
+            initTabs();
+            
+            // Inicializar formularios
+            initForms();
+            
+            // Cargar datos iniciales (empresas)
+            loadEmpresas();
+        }
+        
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Primero cargamos Supabase
+            initSupabase();
+            
+            // Si Supabase ya está cargado, inicializamos directamente
+            if (window.supabase) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                initAfterSupabase();
+            }
+        });
     </script>
 </body>
 </html>
