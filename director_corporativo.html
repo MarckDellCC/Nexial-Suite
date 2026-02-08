@@ -3,92 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Director Corporativo - Nexial</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <title>Panel Director Corporativo - Nexial Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #f5f7fa;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .btn-logout {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .main-content {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .dashboard {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .welcome-section h2 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-section p {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.1);
+        }
+        
+        .stat-card h3 {
+            color: #555;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .description {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .access-level {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .alert {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 30px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Panel del Director Corporativo</h1>
-    <div id="user-info"></div>
-    <div id="empresas-list"></div>
-    <button onclick="logout()">Cerrar Sesión</button>
+    <div class="header">
+        <div class="logo">
+            <h1>🏢 Nexial Suite - Panel Corporativo</h1>
+        </div>
+        <div class="user-info">
+            <div id="userAvatar" class="user-avatar">DC</div>
+            <div id="userName"></div>
+            <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="dashboard">
+            <div class="welcome-section">
+                <h2 id="welcomeMessage">Bienvenido, Director Corporativo</h2>
+                <p>Sistema de gestión empresarial multi-empresa</p>
+                <div class="access-level">Nivel de acceso: MÁXIMO</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Empresas Registradas</h3>
+                    <div class="value" id="empresasCount">0</div>
+                    <div class="description">Total de empresas en el sistema</div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Usuarios Activos</h3>
+                    <div class="value" id="usuariosCount">0</div>
+                    <div class="description">Usuarios con sesión activa</div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Ventas Hoy</h3>
+                    <div class="value">$0.00</div>
+                    <div class="description">Ventas totales del día</div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Alertas Activas</h3>
+                    <div class="value">0</div>
+                    <div class="description">Incidencias pendientes</div>
+                </div>
+            </div>
+            
+            <div class="alert">
+                <strong>⚠️ Acceso Total Multi-Empresa:</strong> Como Director Corporativo, tienes acceso completo a todas las empresas registradas en el sistema.
+            </div>
+        </div>
+    </div>
 
+    <!-- Incluir Supabase SDK -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
         // Configuración de Supabase
-        const supabaseUrl = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
-        const supabaseAnonKey = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-
-        // Verificar sesión al cargar la página
-        document.addEventListener('DOMContentLoaded', async function() {
-            await checkSession();
-            await loadEmpresas();
+        const SUPABASE_URL = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Verificar autenticación al cargar
+        window.addEventListener('DOMContentLoaded', async () => {
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+            
+            if (!usuario) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Verificar que sea Director Corporativo
+            if (usuario.rol !== 'Director Corporativo') {
+                alert('Acceso denegado. Solo para Directores Corporativos.');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Mostrar información del usuario
+            document.getElementById('userName').textContent = 
+                `${usuario.nombres} ${usuario.apellido_paterno} - ${usuario.rol}`;
+            
+            document.getElementById('welcomeMessage').textContent = 
+                `Bienvenido, ${usuario.nombres} ${usuario.apellido_paterno}`;
+            
+            // Obtener iniciales para el avatar
+            const iniciales = `${usuario.nombres[0]}${usuario.apellido_paterno[0]}`.toUpperCase();
+            document.getElementById('userAvatar').textContent = iniciales;
+            
+            // Cargar estadísticas
+            await cargarEstadisticas();
         });
-
-        async function checkSession() {
-            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-            
-            if (sessionError || !sessionData.session) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // Obtener información del usuario
-            const { data: userData } = await supabase.auth.getUser();
-            
-            if (userData.user) {
-                const { data: dbUser } = await supabase
+        
+        async function cargarEstadisticas() {
+            try {
+                // Contar empresas
+                const { count: empresasCount } = await supabase
+                    .from('empresas')
+                    .select('*', { count: 'exact', head: true });
+                
+                document.getElementById('empresasCount').textContent = empresasCount || 0;
+                
+                // Contar usuarios activos
+                const { count: usuariosCount } = await supabase
                     .from('usuarios')
-                    .select('*')
-                    .eq('email', userData.user.email)
-                    .single();
-
-                if (dbUser && dbUser.rol.toLowerCase().includes('director corporativo')) {
-                    document.getElementById('user-info').innerHTML = `
-                        <p>Bienvenido: ${dbUser.nombres} ${dbUser.apellido_paterno}</p>
-                        <p>Rol: ${dbUser.rol}</p>
-                        <p>Email: ${dbUser.email}</p>
-                    `;
-                } else {
-                    alert('No tienes permisos para acceder a esta página.');
-                    window.location.href = 'login.html';
-                }
-            } else {
-                window.location.href = 'login.html';
+                    .select('*', { count: 'exact', head: true })
+                    .eq('activo', true);
+                
+                document.getElementById('usuariosCount').textContent = usuariosCount || 0;
+                
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
             }
         }
-
-        async function loadEmpresas() {
-            const { data: empresas, error } = await supabase
-                .from('empresas')
-                .select('*')
-                .order('creado_en', { ascending: false });
-
-            if (error) {
-                console.error('Error cargando empresas:', error);
-                return;
-            }
-
-            const empresasDiv = document.getElementById('empresas-list');
-            if (empresas && empresas.length > 0) {
-                empresasDiv.innerHTML = '<h3>Empresas en el sistema:</h3>';
-                empresas.forEach(empresa => {
-                    empresasDiv.innerHTML += `
-                        <div style="border: 1px solid #ccc; padding: 10px; margin: 5px;">
-                            <strong>${empresa.nombre}</strong><br>
-                            RFC: ${empresa.rfc}<br>
-                            Estado: ${empresa.activo ? 'Activa' : 'Inactiva'}
-                        </div>
-                    `;
-                });
-            } else {
-                empresasDiv.innerHTML = '<p>No hay empresas registradas.</p>';
-            }
-        }
-
-        async function logout() {
-            await supabase.auth.signOut();
+        
+        function cerrarSesion() {
+            localStorage.removeItem('usuario');
             window.location.href = 'login.html';
         }
+        
+        // Proteger contra navegación atrás
+        window.onpageshow = function(event) {
+            if (event.persisted) {
+                const usuario = localStorage.getItem('usuario');
+                if (!usuario) {
+                    window.location.href = 'login.html';
+                }
+            }
+        };
     </script>
 </body>
 </html>
