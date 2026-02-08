@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Director Corporativo - Panel de Gestión</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Director Corporativo - Panel de Administración</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
         }
         
         body {
@@ -21,133 +20,87 @@
         }
         
         .container {
-            display: flex;
-            min-height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
         }
         
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
+        header {
             background-color: #2c3e50;
             color: white;
-            padding: 20px 0;
-            overflow-y: auto;
-            position: fixed;
-            height: 100vh;
-            z-index: 100;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
         
         .logo {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid #34495e;
-            margin-bottom: 20px;
-        }
-        
-        .logo h1 {
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .logo h1 i {
+            font-size: 24px;
+            font-weight: bold;
             color: #3498db;
         }
         
         .user-info {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid #34495e;
-            margin-bottom: 20px;
+            text-align: right;
         }
         
-        .user-info p {
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-        
-        .user-info .role {
-            background-color: #3498db;
+        .logout-btn {
+            background-color: #e74c3c;
             color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            display: inline-block;
-            margin-top: 5px;
-        }
-        
-        .menu {
-            padding: 0 20px;
-        }
-        
-        .menu h3 {
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-            color: #7f8c8d;
-        }
-        
-        .menu-item {
-            padding: 12px 15px;
-            border-radius: 5px;
-            margin-bottom: 8px;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .control-panel {
             display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .menu-item:hover {
-            background-color: #34495e;
-        }
-        
-        .menu-item.active {
-            background-color: #3498db;
-        }
-        
-        .menu-item i {
-            width: 20px;
-            text-align: center;
-        }
-        
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            margin-left: 280px;
-            padding: 20px;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 20px;
             margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #ddd;
+            flex-wrap: wrap;
         }
         
-        .header h2 {
-            font-size: 1.8rem;
-            color: #2c3e50;
+        .table-selector {
+            flex: 1;
+            min-width: 250px;
         }
         
-        .header-actions {
+        .table-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: white;
+        }
+        
+        .action-buttons {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
         
         .btn {
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 12px 20px;
             border: none;
+            border-radius: 4px;
             cursor: pointer;
+            font-size: 14px;
             font-weight: 600;
             transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
         }
         
         .btn-primary {
@@ -159,6 +112,15 @@
             background-color: #2980b9;
         }
         
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #219653;
+        }
+        
         .btn-danger {
             background-color: #e74c3c;
             color: white;
@@ -168,143 +130,73 @@
             background-color: #c0392b;
         }
         
-        .btn-success {
-            background-color: #2ecc71;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background-color: #27ae60;
-        }
-        
-        .btn-secondary {
-            background-color: #95a5a6;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background-color: #7f8c8d;
-        }
-        
-        /* Table Container */
-        .table-container {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            margin-bottom: 30px;
-        }
-        
-        .table-header {
-            padding: 20px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .table-header h3 {
-            font-size: 1.3rem;
-            color: #2c3e50;
-        }
-        
-        .table-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        thead {
-            background-color: #f8f9fa;
-        }
-        
-        th {
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            color: #2c3e50;
-            border-bottom: 1px solid #eee;
-        }
-        
-        td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        tr:hover {
-            background-color: #f9f9f9;
-        }
-        
-        .actions-cell {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .action-btn {
-            padding: 5px 10px;
-            border-radius: 3px;
-            border: none;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.2s;
-        }
-        
-        .edit-btn {
+        .btn-warning {
             background-color: #f39c12;
             color: white;
         }
         
-        .edit-btn:hover {
+        .btn-warning:hover {
             background-color: #d68910;
         }
         
-        .delete-btn {
-            background-color: #e74c3c;
-            color: white;
-        }
-        
-        .delete-btn:hover {
-            background-color: #c0392b;
-        }
-        
-        .view-btn {
-            background-color: #3498db;
-            color: white;
-        }
-        
-        .view-btn:hover {
-            background-color: #2980b9;
-        }
-        
-        /* Form Container */
-        .form-container {
+        .data-section {
             background-color: white;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 30px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 30px;
-            display: none;
+            overflow-x: auto;
         }
         
-        .form-container.active {
-            display: block;
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
         }
         
-        .form-header {
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+        .data-table th {
+            background-color: #f8f9fa;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+        }
+        
+        .data-table td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .table-actions {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 5px;
         }
         
-        .form-header h3 {
-            font-size: 1.4rem;
+        .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .form-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .form-section h3 {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
             color: #2c3e50;
         }
         
@@ -320,1105 +212,864 @@
         
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-weight: 600;
-            color: #2c3e50;
+            color: #555;
         }
         
         .form-control {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
+            border-radius: 4px;
+            font-size: 14px;
         }
         
         .form-control:focus {
-            outline: none;
             border-color: #3498db;
+            outline: none;
             box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
         }
         
-        .checkbox-group {
+        .form-buttons {
             display: flex;
-            align-items: center;
             gap: 10px;
+            margin-top: 20px;
+            grid-column: 1 / -1;
         }
         
-        .checkbox-group input {
-            width: auto;
-        }
-        
-        .form-actions {
-            margin-top: 30px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-        }
-        
-        /* Status Messages */
-        .status-message {
+        .alert {
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 4px;
             margin-bottom: 20px;
-            display: none;
         }
         
-        .status-message.success {
+        .alert-success {
             background-color: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
-            display: block;
         }
         
-        .status-message.error {
+        .alert-danger {
             background-color: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
-            display: block;
         }
         
-        .status-message.warning {
+        .alert-warning {
             background-color: #fff3cd;
             color: #856404;
             border: 1px solid #ffeaa7;
-            display: block;
         }
         
-        /* Loading */
+        .hidden {
+            display: none;
+        }
+        
+        .status-active {
+            color: #27ae60;
+            font-weight: 600;
+        }
+        
+        .status-inactive {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        
         .loading {
             text-align: center;
-            padding: 40px;
-            font-size: 1.2rem;
+            padding: 30px;
             color: #7f8c8d;
         }
         
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #7f8c8d;
-        }
-        
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            color: #bdc3c7;
-        }
-        
-        /* Logout */
-        .logout-btn {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background-color: #34495e;
-            color: white;
-            padding: 12px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
+        .pagination {
             display: flex;
-            align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
+            margin-top: 20px;
         }
         
-        .logout-btn:hover {
-            background-color: #2c3e50;
+        .page-btn {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
         }
         
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .sidebar {
-                width: 240px;
-            }
-            
-            .main-content {
-                margin-left: 240px;
-            }
+        .page-btn.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-top: 5px;
         }
         
         @media (max-width: 768px) {
-            .sidebar {
-                width: 70px;
-                padding: 20px 0;
-            }
-            
-            .sidebar .menu-text, 
-            .sidebar .logo h1 span, 
-            .sidebar .user-info,
-            .sidebar .menu h3 {
-                display: none;
-            }
-            
-            .main-content {
-                margin-left: 70px;
-            }
-            
-            .menu-item {
-                justify-content: center;
-                padding: 15px;
-            }
-            
-            .menu-item i {
-                font-size: 1.2rem;
-            }
-            
-            .header {
+            .control-panel {
                 flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
             }
             
             .form-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .data-table {
+                font-size: 14px;
+            }
+            
+            .table-actions {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="logo">
-                <h1><i class="fas fa-crown"></i> <span>Director Corporativo</span></h1>
+        <header>
+            <div class="logo-section">
+                <div class="logo">DIRECTOR CORPORATIVO</div>
+                <div class="user-role" id="userRole">Cargando rol...</div>
             </div>
-            
             <div class="user-info">
-                <p id="user-name">Cargando...</p>
-                <p id="user-email">Cargando...</p>
-                <span class="role" id="user-role">Director Corporativo</span>
+                <div id="userEmail">usuario@empresa.com</div>
+                <button class="logout-btn" id="logoutBtn">Cerrar Sesión</button>
             </div>
-            
-            <div class="menu">
-                <h3>Tablas Principales</h3>
-                <div class="menu-item active" data-table="empresas">
-                    <i class="fas fa-building"></i>
-                    <span class="menu-text">Empresas</span>
-                </div>
-                <div class="menu-item" data-table="usuarios">
-                    <i class="fas fa-users"></i>
-                    <span class="menu-text">Usuarios</span>
-                </div>
-                <div class="menu-item" data-table="empleados">
-                    <i class="fas fa-user-tie"></i>
-                    <span class="menu-text">Empleados</span>
-                </div>
-                <div class="menu-item" data-table="clientes">
-                    <i class="fas fa-users"></i>
-                    <span class="menu-text">Clientes</span>
-                </div>
-                <div class="menu-item" data-table="productos">
-                    <i class="fas fa-box"></i>
-                    <span class="menu-text">Productos</span>
-                </div>
-                
-                <h3>Tablas Secundarias</h3>
-                <div class="menu-item" data-table="monedas">
-                    <i class="fas fa-money-bill-wave"></i>
-                    <span class="menu-text">Monedas</span>
-                </div>
-                <div class="menu-item" data-table="categoria_negocios">
-                    <i class="fas fa-tags"></i>
-                    <span class="menu-text">Categorías Negocios</span>
-                </div>
-                <div class="menu-item" data-table="departamentos">
-                    <i class="fas fa-sitemap"></i>
-                    <span class="menu-text">Departamentos</span>
-                </div>
-                <div class="menu-item" data-table="categoria_productos">
-                    <i class="fas fa-th-large"></i>
-                    <span class="menu-text">Categorías Productos</span>
-                </div>
-                <div class="menu-item" data-table="almacenes">
-                    <i class="fas fa-warehouse"></i>
-                    <span class="menu-text">Almacenes</span>
-                </div>
-                <div class="menu-item" data-table="inventario">
-                    <i class="fas fa-boxes"></i>
-                    <span class="menu-text">Inventario</span>
-                </div>
-                <div class="menu-item" data-table="ventas">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span class="menu-text">Ventas</span>
-                </div>
-                
-                <button class="logout-btn" id="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span class="menu-text">Cerrar Sesión</span>
-                </button>
+        </header>
+        
+        <div id="accessDenied" class="hidden">
+            <div class="alert alert-danger">
+                <h2>Acceso Denegado</h2>
+                <p>No tienes permisos para acceder a esta sección. Solo los usuarios con rol "Director Corporativo" pueden acceder.</p>
+                <p>Tu rol actual es: <span id="currentRole"></span></p>
+                <button class="btn btn-primary" onclick="window.location.href='index.html'">Volver al Inicio</button>
             </div>
         </div>
         
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="header">
-                <h2 id="table-title">Gestión de Empresas</h2>
-                <div class="header-actions">
-                    <button class="btn btn-primary" id="refresh-btn">
-                        <i class="fas fa-sync-alt"></i> Actualizar
-                    </button>
-                    <button class="btn btn-success" id="add-btn">
-                        <i class="fas fa-plus"></i> Agregar Nuevo
-                    </button>
+        <div id="adminPanel" class="hidden">
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-value" id="empresasCount">0</div>
+                    <div class="stat-label">Empresas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="usuariosCount">0</div>
+                    <div class="stat-label">Usuarios</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="empleadosCount">0</div>
+                    <div class="stat-label">Empleados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="clientesCount">0</div>
+                    <div class="stat-label">Clientes</div>
                 </div>
             </div>
             
-            <!-- Status Message -->
-            <div id="status-message" class="status-message"></div>
-            
-            <!-- Form Container -->
-            <div class="form-container" id="form-container">
-                <div class="form-header">
-                    <h3 id="form-title">Agregar Nueva Empresa</h3>
-                    <button class="btn btn-secondary" id="cancel-btn">
-                        <i class="fas fa-times"></i> Cancelar
-                    </button>
+            <div class="control-panel">
+                <div class="table-selector">
+                    <select id="tableSelector">
+                        <option value="">Selecciona una tabla</option>
+                        <option value="empresas">Empresas</option>
+                        <option value="usuarios">Usuarios</option>
+                        <option value="empleados">Empleados</option>
+                        <option value="clientes">Clientes</option>
+                        <option value="productos">Productos</option>
+                        <option value="categoria_productos">Categorías de Productos</option>
+                        <option value="almacenes">Almacenes</option>
+                        <option value="inventario">Inventario</option>
+                        <option value="monedas">Monedas</option>
+                        <option value="categoria_negocios">Categorías de Negocios</option>
+                        <option value="departamentos">Departamentos</option>
+                        <option value="areas">Áreas</option>
+                        <option value="ventas">Ventas</option>
+                        <option value="detalle_ventas">Detalle de Ventas</option>
+                        <option value="pagos">Pagos</option>
+                        <option value="comisiones">Comisiones</option>
+                        <option value="rutas_distribucion">Rutas de Distribución</option>
+                        <option value="zonas_geograficas">Zonas Geográficas</option>
+                        <option value="niveles_antiguedad">Niveles de Antigüedad</option>
+                        <option value="metas">Metas</option>
+                        <option value="objetivos">Objetivos</option>
+                        <option value="metricas_empleados">Métricas de Empleados</option>
+                        <option value="beneficios_clientes">Beneficios de Clientes</option>
+                        <option value="comportamiento_clientes">Comportamiento de Clientes</option>
+                        <option value="analisis_mercado">Análisis de Mercado</option>
+                        <option value="campanas_marketing">Campañas de Marketing</option>
+                        <option value="eventos_externos">Eventos Externos</option>
+                        <option value="historico_precios">Histórico de Precios</option>
+                        <option value="incidencias_ventas">Incidencias de Ventas</option>
+                        <option value="solicitudes_cambios">Solicitudes de Cambios</option>
+                        <option value="auditoria">Auditoría</option>
+                        <option value="configuraciones_empresa">Configuraciones de Empresa</option>
+                        <option value="registros_vencimientos">Registros de Vencimientos</option>
+                    </select>
                 </div>
-                <form id="data-form">
-                    <!-- Form fields will be dynamically generated here -->
-                    <div id="form-fields"></div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" id="cancel-form-btn">Cancelar</button>
-                        <button type="submit" class="btn btn-primary" id="submit-btn">Guardar</button>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="loadTableBtn">Cargar Tabla</button>
+                    <button class="btn btn-success" id="newRecordBtn">Nuevo Registro</button>
+                    <button class="btn btn-warning" id="refreshDataBtn">Actualizar Datos</button>
+                </div>
+            </div>
+            
+            <div class="alert hidden" id="messageAlert"></div>
+            
+            <div class="data-section">
+                <div class="loading" id="tableLoading">Cargando datos...</div>
+                <div id="tableContainer"></div>
+                <div class="pagination" id="pagination"></div>
+            </div>
+            
+            <div class="form-section hidden" id="formSection">
+                <h3 id="formTitle">Nuevo Registro</h3>
+                <form id="dataForm">
+                    <div class="form-grid" id="formFields"></div>
+                    <div class="form-buttons">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Guardar</button>
+                        <button type="button" class="btn btn-danger" id="cancelBtn">Cancelar</button>
+                        <button type="button" class="btn btn-warning hidden" id="deleteBtn">Eliminar</button>
                     </div>
                 </form>
-            </div>
-            
-            <!-- Table Container -->
-            <div class="table-container">
-                <div class="table-header">
-                    <h3 id="table-subtitle">Lista de Registros</h3>
-                    <div class="table-actions">
-                        <input type="text" id="search-input" class="form-control" placeholder="Buscar..." style="width: 250px;">
-                        <button class="btn btn-secondary" id="clear-search-btn">
-                            <i class="fas fa-times"></i> Limpiar
-                        </button>
-                    </div>
-                </div>
-                <div id="table-content">
-                    <div class="loading">
-                        <i class="fas fa-spinner fa-spin"></i> Cargando datos...
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Supabase configuration
-        const SUPABASE_URL = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
+        // Configuración de Supabase
+        const supabaseUrl = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
+        const supabaseKey = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
         
-        // Initialize Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // Current user and state
+        // Variables de estado
         let currentUser = null;
-        let currentTable = 'empresas';
+        let currentTable = '';
         let currentData = [];
-        let currentEditId = null;
-        let currentFormFields = {};
+        let currentRecordId = null;
+        let currentPage = 1;
+        const recordsPerPage = 20;
         
-        // Table definitions with their fields and types
-        const tableDefinitions = {
-            empresas: {
-                name: 'Empresas',
-                fields: [
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
-                    { name: 'rfc', label: 'RFC', type: 'text', required: true },
-                    { name: 'direccion', label: 'Dirección', type: 'textarea' },
-                    { name: 'telefono', label: 'Teléfono', type: 'text' },
-                    { name: 'email', label: 'Email', type: 'email' },
-                    { name: 'website', label: 'Sitio Web', type: 'text' },
-                    { name: 'moneda_id', label: 'ID Moneda', type: 'text' },
-                    { name: 'logo_url', label: 'URL del Logo', type: 'text' },
-                    { name: 'tipo_empresa', label: 'Tipo de Empresa', type: 'text' },
-                    { name: 'regimen_fiscal', label: 'Régimen Fiscal', type: 'text' },
-                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
-                ]
-            },
-            usuarios: {
-                name: 'Usuarios',
-                fields: [
-                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
-                    { name: 'empleado_id', label: 'ID Empleado', type: 'text' },
-                    { name: 'nombres', label: 'Nombres', type: 'text', required: true },
-                    { name: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', required: true },
-                    { name: 'apellido_materno', label: 'Apellido Materno', type: 'text' },
-                    { name: 'email', label: 'Email', type: 'email', required: true },
-                    { name: 'usuario', label: 'Usuario', type: 'text', required: true },
-                    { name: 'contrasena_plano', label: 'Contraseña', type: 'password', required: true },
-                    { name: 'rol', label: 'Rol', type: 'text', required: true },
-                    { name: 'foto_url', label: 'URL de Foto', type: 'text' },
-                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
-                ]
-            },
-            empleados: {
-                name: 'Empleados',
-                fields: [
-                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
-                    { name: 'nombres', label: 'Nombres', type: 'text', required: true },
-                    { name: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', required: true },
-                    { name: 'apellido_materno', label: 'Apellido Materno', type: 'text' },
-                    { name: 'documento_identidad', label: 'Documento Identidad', type: 'text' },
-                    { name: 'tipo_documento', label: 'Tipo Documento', type: 'text' },
-                    { name: 'direccion', label: 'Dirección', type: 'textarea' },
-                    { name: 'telefono', label: 'Teléfono', type: 'text' },
-                    { name: 'email', label: 'Email', type: 'email' },
-                    { name: 'fecha_nacimiento', label: 'Fecha Nacimiento', type: 'date' },
-                    { name: 'genero', label: 'Género', type: 'text' },
-                    { name: 'foto_url', label: 'URL de Foto', type: 'text' },
-                    { name: 'fecha_contratacion', label: 'Fecha Contratación', type: 'date' },
-                    { name: 'salario_base', label: 'Salario Base', type: 'number' },
-                    { name: 'moneda_id', label: 'ID Moneda', type: 'text' },
-                    { name: 'tipo_contrato', label: 'Tipo Contrato', type: 'text' },
-                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
-                ]
-            },
-            clientes: {
-                name: 'Clientes',
-                fields: [
-                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
-                    { name: 'categoria_negocio_id', label: 'ID Categoría Negocio', type: 'text' },
-                    { name: 'nombres', label: 'Nombres', type: 'text', required: true },
-                    { name: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', required: true },
-                    { name: 'apellido_materno', label: 'Apellido Materno', type: 'text' },
-                    { name: 'documento_identidad', label: 'Documento Identidad', type: 'text' },
-                    { name: 'tipo_documento', label: 'Tipo Documento', type: 'text' },
-                    { name: 'ciudad', label: 'Ciudad', type: 'text' },
-                    { name: 'estado', label: 'Estado', type: 'text' },
-                    { name: 'pais', label: 'País', type: 'text' },
-                    { name: 'codigo_postal', label: 'Código Postal', type: 'text' },
-                    { name: 'telefono', label: 'Teléfono', type: 'text' },
-                    { name: 'email', label: 'Email', type: 'email' },
-                    { name: 'fecha_nacimiento', label: 'Fecha Nacimiento', type: 'date' },
-                    { name: 'genero', label: 'Género', type: 'text' },
-                    { name: 'foto_url', label: 'URL de Foto', type: 'text' },
-                    { name: 'direcciones', label: 'Direcciones (JSON)', type: 'textarea' },
-                    { name: 'horarios_apertura', label: 'Horarios Apertura (JSON)', type: 'textarea' },
-                    { name: 'tipo_cliente', label: 'Tipo Cliente', type: 'text' },
-                    { name: 'limite_credito', label: 'Límite Crédito', type: 'number' },
-                    { name: 'dias_credito', label: 'Días Crédito', type: 'number' },
-                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
-                ]
-            },
-            productos: {
-                name: 'Productos',
-                fields: [
-                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
-                    { name: 'codigo', label: 'Código', type: 'text', required: true },
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
-                    { name: 'descripcion', label: 'Descripción', type: 'textarea' },
-                    { name: 'categoria_id', label: 'ID Categoría', type: 'text' },
-                    { name: 'precio_compra', label: 'Precio Compra', type: 'number' },
-                    { name: 'precio_venta', label: 'Precio Venta', type: 'number', required: true },
-                    { name: 'moneda_id', label: 'ID Moneda', type: 'text', required: true },
-                    { name: 'imagen_url', label: 'URL Imagen', type: 'text' },
-                    { name: 'peso', label: 'Peso', type: 'number' },
-                    { name: 'dimensiones', label: 'Dimensiones', type: 'text' },
-                    { name: 'unidad_medida', label: 'Unidad Medida', type: 'text' },
-                    { name: 'es_producto_clave', label: 'Es Producto Clave', type: 'checkbox' },
-                    { name: 'compra_minima_cantidad', label: 'Compra Mínima Cantidad', type: 'number' },
-                    { name: 'compra_minima_monto', label: 'Compra Mínima Monto', type: 'number' },
-                    { name: 'compra_minima_peso', label: 'Compra Mínima Peso', type: 'number' },
-                    { name: 'codigo_barras', label: 'Código Barras', type: 'text' },
-                    { name: 'ubicacion_almacen', label: 'Ubicación Almacén', type: 'text' },
-                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
-                ]
-            },
-            monedas: {
-                name: 'Monedas',
-                fields: [
-                    { name: 'codigo', label: 'Código', type: 'text', required: true },
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
-                    { name: 'simbolo', label: 'Símbolo', type: 'text' },
-                    { name: 'pais', label: 'País', type: 'text' },
-                    { name: 'tasa_cambio', label: 'Tasa Cambio', type: 'number' },
-                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
-                ]
-            },
-            categoria_negocios: {
-                name: 'Categorías de Negocios',
-                fields: [
-                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
-                    { name: 'descripcion', label: 'Descripción', type: 'textarea' },
-                    { name: 'tipo_negocio', label: 'Tipo Negocio', type: 'text', required: true },
-                    { name: 'nivel', label: 'Nivel', type: 'text' },
-                    { name: 'monto_minimo_compra', label: 'Monto Mínimo Compra', type: 'number' },
-                    { name: 'caracteristicas', label: 'Características (JSON)', type: 'textarea' }
-                ]
-            },
-            departamentos: {
-                name: 'Departamentos',
-                fields: [
-                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
-                    { name: 'descripcion', label: 'Descripción', type: 'textarea' },
-                    { name: 'jefe_departamento', label: 'ID Jefe Departamento', type: 'text' },
-                    { name: 'presupuesto', label: 'Presupuesto', type: 'number' },
-                    { name: 'moneda_id', label: 'ID Moneda', type: 'text' }
-                ]
-            },
-            categoria_productos: {
-                name: 'Categorías de Productos',
-                fields: [
-                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
-                    { name: 'descripcion', label: 'Descripción', type: 'textarea' },
-                    { name: 'categoria_padre', label: 'ID Categoría Padre', type: 'text' },
-                    { name: 'impuesto_porcentaje', label: 'Impuesto Porcentaje', type: 'number' }
-                ]
-            },
-            almacenes: {
-                name: 'Almacenes',
-                fields: [
-                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
-                    { name: 'direccion', label: 'Dirección', type: 'textarea' },
-                    { name: 'ciudad', label: 'Ciudad', type: 'text' },
-                    { name: 'estado', label: 'Estado', type: 'text' },
-                    { name: 'pais', label: 'País', type: 'text' },
-                    { name: 'codigo_postal', label: 'Código Postal', type: 'text' },
-                    { name: 'telefono', label: 'Teléfono', type: 'text' },
-                    { name: 'encargado', label: 'ID Encargado', type: 'text' },
-                    { name: 'capacidad', label: 'Capacidad', type: 'number' },
-                    { name: 'tipo_almacen', label: 'Tipo Almacén', type: 'text' },
-                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
-                ]
-            },
-            inventario: {
-                name: 'Inventario',
-                fields: [
-                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
-                    { name: 'producto_id', label: 'ID Producto', type: 'text', required: true },
-                    { name: 'almacen_id', label: 'ID Almacén', type: 'text', required: true },
-                    { name: 'lote', label: 'Lote', type: 'text' },
-                    { name: 'fecha_vencimiento', label: 'Fecha Vencimiento', type: 'date' },
-                    { name: 'cantidad', label: 'Cantidad', type: 'number', required: true, default: 0 },
-                    { name: 'cantidad_minima', label: 'Cantidad Mínima', type: 'number', default: 10 },
-                    { name: 'cantidad_maxima', label: 'Cantidad Máxima', type: 'number' },
-                    { name: 'ubicacion', label: 'Ubicación', type: 'text' },
-                    { name: 'estado_stock', label: 'Estado Stock', type: 'text' }
-                ]
-            },
-            ventas: {
-                name: 'Ventas',
-                fields: [
-                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
-                    { name: 'cliente_id', label: 'ID Cliente', type: 'text', required: true },
-                    { name: 'empleado_id', label: 'ID Empleado', type: 'text' },
-                    { name: 'almacen_id', label: 'ID Almacén', type: 'text' },
-                    { name: 'numero_venta', label: 'Número Venta', type: 'text', required: true },
-                    { name: 'fecha', label: 'Fecha', type: 'datetime-local' },
-                    { name: 'subtotal', label: 'Subtotal', type: 'number', required: true },
-                    { name: 'impuesto', label: 'Impuesto', type: 'number', required: true },
-                    { name: 'total', label: 'Total', type: 'number', required: true },
-                    { name: 'moneda_id', label: 'ID Moneda', type: 'text', required: true },
-                    { name: 'estado', label: 'Estado', type: 'text', default: 'pendiente' },
-                    { name: 'metodo_pago', label: 'Método Pago', type: 'text' },
-                    { name: 'tipo_venta', label: 'Tipo Venta', type: 'text' },
-                    { name: 'observaciones', label: 'Observaciones', type: 'textarea' }
-                ]
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Verificar si el usuario está autenticado
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (!session) {
+                // Redirigir al login si no hay sesión
+                window.location.href = 'login.html';
+                return;
             }
-        };
-        
-        // DOM elements
-        const tableTitle = document.getElementById('table-title');
-        const tableSubtitle = document.getElementById('table-subtitle');
-        const tableContent = document.getElementById('table-content');
-        const formContainer = document.getElementById('form-container');
-        const formTitle = document.getElementById('form-title');
-        const formFields = document.getElementById('form-fields');
-        const dataForm = document.getElementById('data-form');
-        const statusMessage = document.getElementById('status-message');
-        const searchInput = document.getElementById('search-input');
-        const clearSearchBtn = document.getElementById('clear-search-btn');
-        
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            // Check if user is Director Corporativo
-            checkUserRole();
             
-            // Load initial data
-            loadTableData();
+            currentUser = session.user;
+            document.getElementById('userEmail').textContent = currentUser.email;
             
-            // Setup event listeners
-            setupEventListeners();
+            // Obtener el rol del usuario desde la tabla usuarios
+            await checkUserRole();
+            
+            // Configurar eventos
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('loadTableBtn').addEventListener('click', loadTableData);
+            document.getElementById('newRecordBtn').addEventListener('click', showNewForm);
+            document.getElementById('refreshDataBtn').addEventListener('click', refreshData);
+            document.getElementById('cancelBtn').addEventListener('click', hideForm);
+            document.getElementById('deleteBtn').addEventListener('click', deleteRecord);
+            document.getElementById('dataForm').addEventListener('submit', saveRecord);
+            
+            // Cargar estadísticas iniciales
+            loadStatistics();
         });
         
-        // Check user role and authentication
+        // Verificar el rol del usuario
         async function checkUserRole() {
             try {
-                // In a real app, you would check the actual user session
-                // For this demo, we'll simulate a Director Corporativo user
-                const { data: { user }, error } = await supabase.auth.getUser();
+                // Buscar al usuario en la tabla usuarios por email
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .select('rol')
+                    .eq('email', currentUser.email)
+                    .single();
                 
-                if (error || !user) {
-                    // No user session, redirect to login
-                    showMessage('Por favor, inicie sesión como Director Corporativo para acceder a esta página.', 'error');
-                    
-                    // In a real app, redirect to login page
-                    // window.location.href = 'login.html';
-                    
-                    // For demo purposes, we'll continue with a simulated user
-                    simulateDirectorUser();
+                if (error || !data) {
+                    showMessage('No se pudo verificar tu rol. Contacta al administrador.', 'danger');
+                    document.getElementById('currentRole').textContent = 'No encontrado';
+                    return;
+                }
+                
+                const userRole = data.rol;
+                document.getElementById('userRole').textContent = `Rol: ${userRole}`;
+                document.getElementById('currentRole').textContent = userRole;
+                
+                // Verificar si es Director Corporativo
+                if (userRole === 'Director Corporativo') {
+                    document.getElementById('adminPanel').classList.remove('hidden');
                 } else {
-                    // Check if user has Director Corporativo role
-                    const { data: usuario, error: usuarioError } = await supabase
-                        .from('usuarios')
-                        .select('rol, nombres, apellido_paterno, email')
-                        .eq('email', user.email)
-                        .single();
-                    
-                    if (usuarioError || !usuario || usuario.rol !== 'Director Corporativo') {
-                        showMessage('Acceso denegado. Solo los Directores Corporativos pueden acceder a esta página.', 'error');
-                        
-                        // In a real app, redirect to unauthorized page
-                        // window.location.href = 'unauthorized.html';
-                        
-                        // For demo, simulate director user
-                        simulateDirectorUser();
-                    } else {
-                        currentUser = {
-                            id: user.id,
-                            email: user.email,
-                            name: `${usuario.nombres} ${usuario.apellido_paterno}`,
-                            role: usuario.rol
-                        };
-                        
-                        updateUserInfo();
-                    }
+                    document.getElementById('accessDenied').classList.remove('hidden');
                 }
             } catch (error) {
-                console.error('Error checking user role:', error);
-                simulateDirectorUser();
+                console.error('Error al verificar rol:', error);
+                document.getElementById('accessDenied').classList.remove('hidden');
             }
         }
         
-        function simulateDirectorUser() {
-            // For demo purposes, simulate a Director Corporativo user
-            currentUser = {
-                id: 'demo-director-id',
-                email: 'director@empresa.com',
-                name: 'Juan Pérez',
-                role: 'Director Corporativo'
-            };
-            
-            updateUserInfo();
-            showMessage('Modo demostración: Usuario Director Corporativo simulado.', 'warning');
+        // Cargar estadísticas
+        async function loadStatistics() {
+            try {
+                // Contar empresas
+                const { count: empresasCount } = await supabase
+                    .from('empresas')
+                    .select('*', { count: 'exact', head: true });
+                document.getElementById('empresasCount').textContent = empresasCount || 0;
+                
+                // Contar usuarios
+                const { count: usuariosCount } = await supabase
+                    .from('usuarios')
+                    .select('*', { count: 'exact', head: true });
+                document.getElementById('usuariosCount').textContent = usuariosCount || 0;
+                
+                // Contar empleados
+                const { count: empleadosCount } = await supabase
+                    .from('empleados')
+                    .select('*', { count: 'exact', head: true });
+                document.getElementById('empleadosCount').textContent = empleadosCount || 0;
+                
+                // Contar clientes
+                const { count: clientesCount } = await supabase
+                    .from('clientes')
+                    .select('*', { count: 'exact', head: true });
+                document.getElementById('clientesCount').textContent = clientesCount || 0;
+            } catch (error) {
+                console.error('Error al cargar estadísticas:', error);
+            }
         }
         
-        function updateUserInfo() {
-            document.getElementById('user-name').textContent = currentUser.name;
-            document.getElementById('user-email').textContent = currentUser.email;
-            document.getElementById('user-role').textContent = currentUser.role;
-        }
-        
-        function setupEventListeners() {
-            // Menu items
-            document.querySelectorAll('.menu-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const table = item.getAttribute('data-table');
-                    switchTable(table);
-                    
-                    // Update active menu item
-                    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-                    item.classList.add('active');
-                });
-            });
-            
-            // Buttons
-            document.getElementById('refresh-btn').addEventListener('click', loadTableData);
-            document.getElementById('add-btn').addEventListener('click', showAddForm);
-            document.getElementById('cancel-btn').addEventListener('click', hideForm);
-            document.getElementById('cancel-form-btn').addEventListener('click', hideForm);
-            
-            // Form submission
-            dataForm.addEventListener('submit', handleFormSubmit);
-            
-            // Search
-            searchInput.addEventListener('input', handleSearch);
-            clearSearchBtn.addEventListener('click', () => {
-                searchInput.value = '';
-                loadTableData();
-            });
-            
-            // Logout
-            document.getElementById('logout-btn').addEventListener('click', handleLogout);
-        }
-        
-        function switchTable(table) {
-            currentTable = table;
-            currentEditId = null;
-            
-            // Update titles
-            const tableDef = tableDefinitions[table] || { name: table };
-            tableTitle.textContent = `Gestión de ${tableDef.name}`;
-            tableSubtitle.textContent = `Lista de ${tableDef.name}`;
-            
-            // Update add button text
-            document.getElementById('add-btn').innerHTML = `<i class="fas fa-plus"></i> Agregar ${tableDef.name.slice(0, -1)}`;
-            
-            // Load data for the new table
-            loadTableData();
-            hideForm();
-        }
-        
+        // Cargar datos de la tabla seleccionada
         async function loadTableData() {
-            showLoading();
+            const tableSelect = document.getElementById('tableSelector');
+            currentTable = tableSelect.value;
+            
+            if (!currentTable) {
+                showMessage('Selecciona una tabla primero', 'warning');
+                return;
+            }
+            
+            document.getElementById('tableLoading').classList.remove('hidden');
+            document.getElementById('tableContainer').innerHTML = '';
+            document.getElementById('pagination').innerHTML = '';
             
             try {
-                const { data, error } = await supabase
+                // Obtener datos de la tabla
+                const { data, error, count } = await supabase
                     .from(currentTable)
-                    .select('*')
-                    .order('creado_en', { ascending: false });
+                    .select('*', { count: 'exact' })
+                    .order('creado_en', { ascending: false })
+                    .range((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage - 1);
                 
-                if (error) {
-                    throw error;
-                }
+                if (error) throw error;
                 
                 currentData = data || [];
-                renderTable();
                 
-                if (currentData.length === 0) {
-                    showEmptyState();
+                // Obtener información de las columnas
+                const columns = await getTableColumns(currentTable);
+                
+                // Mostrar los datos
+                displayTableData(currentData, columns);
+                
+                // Mostrar paginación si hay muchos registros
+                if (count > recordsPerPage) {
+                    displayPagination(count);
                 }
+                
+                showMessage(`Se cargaron ${currentData.length} registros de la tabla ${currentTable}`, 'success');
+                
             } catch (error) {
-                console.error(`Error loading ${currentTable}:`, error);
-                showMessage(`Error al cargar datos: ${error.message}`, 'error');
-                showEmptyState();
+                console.error('Error al cargar datos:', error);
+                showMessage(`Error al cargar datos: ${error.message}`, 'danger');
+            } finally {
+                document.getElementById('tableLoading').classList.add('hidden');
             }
         }
         
-        function renderTable() {
-            if (currentData.length === 0) {
-                showEmptyState();
+        // Obtener información de columnas de una tabla
+        async function getTableColumns(tableName) {
+            // Mapeo de tipos de datos para mostrar controles adecuados en el formulario
+            const typeMapping = {
+                'uuid': 'text',
+                'text': 'textarea',
+                'varchar': 'text',
+                'boolean': 'checkbox',
+                'integer': 'number',
+                'decimal': 'number',
+                'numeric': 'number',
+                'date': 'date',
+                'timestamp': 'datetime-local',
+                'jsonb': 'textarea'
+            };
+            
+            // Para simplificar, definimos las columnas principales de cada tabla
+            // En un sistema real, esto se obtendría de information_schema.columns
+            const tableColumns = {
+                'empresas': [
+                    { name: 'id', type: 'uuid', required: false, pk: true },
+                    { name: 'nombre', type: 'varchar', required: true },
+                    { name: 'rfc', type: 'varchar', required: true },
+                    { name: 'direccion', type: 'text', required: false },
+                    { name: 'telefono', type: 'varchar', required: false },
+                    { name: 'email', type: 'varchar', required: false },
+                    { name: 'website', type: 'varchar', required: false },
+                    { name: 'moneda_id', type: 'uuid', required: false, fk: 'monedas' },
+                    { name: 'logo_url', type: 'text', required: false },
+                    { name: 'tipo_empresa', type: 'varchar', required: false },
+                    { name: 'regimen_fiscal', type: 'varchar', required: false },
+                    { name: 'activo', type: 'boolean', required: false },
+                    { name: 'creado_en', type: 'timestamp', required: false },
+                    { name: 'actualizado_en', type: 'timestamp', required: false }
+                ],
+                'usuarios': [
+                    { name: 'id', type: 'uuid', required: false, pk: true },
+                    { name: 'empresa_id', type: 'uuid', required: true, fk: 'empresas' },
+                    { name: 'empleado_id', type: 'uuid', required: false, fk: 'empleados' },
+                    { name: 'nombres', type: 'varchar', required: true },
+                    { name: 'apellido_paterno', type: 'varchar', required: true },
+                    { name: 'apellido_materno', type: 'varchar', required: false },
+                    { name: 'email', type: 'varchar', required: true },
+                    { name: 'usuario', type: 'varchar', required: true },
+                    { name: 'contrasena_plano', type: 'varchar', required: true },
+                    { name: 'rol', type: 'varchar', required: true },
+                    { name: 'foto_url', type: 'text', required: false },
+                    { name: 'activo', type: 'boolean', required: false },
+                    { name: 'ultimo_acceso', type: 'timestamp', required: false },
+                    { name: 'creado_en', type: 'timestamp', required: false },
+                    { name: 'actualizado_en', type: 'timestamp', required: false }
+                ],
+                'clientes': [
+                    { name: 'id', type: 'uuid', required: false, pk: true },
+                    { name: 'empresa_id', type: 'uuid', required: true, fk: 'empresas' },
+                    { name: 'categoria_negocio_id', type: 'uuid', required: false, fk: 'categoria_negocios' },
+                    { name: 'nombres', type: 'varchar', required: true },
+                    { name: 'apellido_paterno', type: 'varchar', required: true },
+                    { name: 'apellido_materno', type: 'varchar', required: false },
+                    { name: 'documento_identidad', type: 'varchar', required: false },
+                    { name: 'tipo_documento', type: 'varchar', required: false },
+                    { name: 'ciudad', type: 'varchar', required: false },
+                    { name: 'estado', type: 'varchar', required: false },
+                    { name: 'pais', type: 'varchar', required: false },
+                    { name: 'codigo_postal', type: 'varchar', required: false },
+                    { name: 'telefono', type: 'varchar', required: false },
+                    { name: 'email', type: 'varchar', required: false },
+                    { name: 'fecha_nacimiento', type: 'date', required: false },
+                    { name: 'genero', type: 'varchar', required: false },
+                    { name: 'foto_url', type: 'text', required: false },
+                    { name: 'direcciones', type: 'jsonb', required: false },
+                    { name: 'horarios_apertura', type: 'jsonb', required: false },
+                    { name: 'tipo_cliente', type: 'varchar', required: false },
+                    { name: 'limite_credito', type: 'decimal', required: false },
+                    { name: 'dias_credito', type: 'integer', required: false },
+                    { name: 'activo', type: 'boolean', required: false },
+                    { name: 'creado_en', type: 'timestamp', required: false },
+                    { name: 'actualizado_en', type: 'timestamp', required: false }
+                ]
+            };
+            
+            // Si tenemos definición para esta tabla, la devolvemos
+            if (tableColumns[tableName]) {
+                return tableColumns[tableName].map(col => ({
+                    ...col,
+                    inputType: typeMapping[col.type] || 'text'
+                }));
+            }
+            
+            // Para tablas no definidas, usamos un enfoque genérico
+            // Obtenemos la primera fila para inferir las columnas
+            const { data } = await supabase
+                .from(tableName)
+                .select('*')
+                .limit(1);
+            
+            if (data && data.length > 0) {
+                return Object.keys(data[0]).map(key => ({
+                    name: key,
+                    type: typeof data[0][key] === 'boolean' ? 'boolean' : 
+                          typeof data[0][key] === 'number' ? 'number' :
+                          key.includes('fecha') || key.includes('creado') || key.includes('actualizado') ? 'timestamp' :
+                          'text',
+                    required: false,
+                    inputType: typeof data[0][key] === 'boolean' ? 'checkbox' : 
+                              typeof data[0][key] === 'number' ? 'number' :
+                              key.includes('fecha') || key.includes('creado') || key.includes('actualizado') ? 'datetime-local' :
+                              'text'
+                }));
+            }
+            
+            return [];
+        }
+        
+        // Mostrar datos en una tabla
+        function displayTableData(data, columns) {
+            if (data.length === 0) {
+                document.getElementById('tableContainer').innerHTML = '<p>No hay registros en esta tabla.</p>';
                 return;
             }
             
-            // Get table definition
-            const tableDef = tableDefinitions[currentTable] || { name: currentTable, fields: [] };
+            let tableHTML = '<table class="data-table"><thead><tr>';
             
-            // Get first few fields to display in table
-            const displayFields = tableDef.fields.slice(0, 4);
-            const hasIdField = tableDef.fields.some(f => f.name === 'id');
-            
-            // Create table
-            let html = `
-                <table>
-                    <thead>
-                        <tr>
-                            ${hasIdField ? '<th>ID</th>' : ''}
-                            ${displayFields.map(field => `<th>${field.label}</th>`).join('')}
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            // Add rows
-            currentData.forEach(item => {
-                html += `
-                    <tr>
-                        ${hasIdField ? `<td title="${item.id}">${item.id.substring(0, 8)}...</td>` : ''}
-                        ${displayFields.map(field => {
-                            let value = item[field.name];
-                            
-                            // Format values for display
-                            if (value === null || value === undefined) {
-                                value = '';
-                            } else if (typeof value === 'boolean') {
-                                value = value ? 'Sí' : 'No';
-                            } else if (field.type === 'textarea' && value.length > 50) {
-                                value = value.substring(0, 50) + '...';
-                            } else if (field.name === 'creado_en' || field.name === 'actualizado_en') {
-                                value = new Date(value).toLocaleString();
-                            }
-                            
-                            return `<td title="${item[field.name]}">${value}</td>`;
-                        }).join('')}
-                        <td class="actions-cell">
-                            <button class="action-btn view-btn" onclick="viewItem('${item.id}')">
-                                <i class="fas fa-eye"></i> Ver
-                            </button>
-                            <button class="action-btn edit-btn" onclick="editItem('${item.id}')">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                            <button class="action-btn delete-btn" onclick="deleteItem('${item.id}')">
-                                <i class="fas fa-trash"></i> Eliminar
-                            </button>
-                        </td>
-                    </tr>
-                `;
+            // Encabezados de columna
+            columns.forEach(col => {
+                tableHTML += `<th>${col.name}</th>`;
             });
             
-            html += `
-                    </tbody>
-                </table>
-                <div style="padding: 15px; text-align: right; color: #7f8c8d; font-size: 0.9rem;">
-                    Mostrando ${currentData.length} registros
-                </div>
-            `;
+            tableHTML += '<th>Acciones</th></tr></thead><tbody>';
             
-            tableContent.innerHTML = html;
-        }
-        
-        function showLoading() {
-            tableContent.innerHTML = `
-                <div class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> Cargando datos de ${tableDefinitions[currentTable]?.name || currentTable}...
-                </div>
-            `;
-        }
-        
-        function showEmptyState() {
-            tableContent.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-database"></i>
-                    <h3>No hay datos disponibles</h3>
-                    <p>No se encontraron registros en la tabla ${tableDefinitions[currentTable]?.name || currentTable}.</p>
-                    <button class="btn btn-primary" onclick="showAddForm()" style="margin-top: 15px;">
-                        <i class="fas fa-plus"></i> Agregar primer registro
-                    </button>
-                </div>
-            `;
-        }
-        
-        function showAddForm() {
-            currentEditId = null;
-            const tableDef = tableDefinitions[currentTable] || { name: currentTable, fields: [] };
-            formTitle.textContent = `Agregar ${tableDef.name.slice(0, -1)}`;
-            
-            // Generate form fields
-            generateFormFields();
-            
-            // Show form
-            formContainer.classList.add('active');
-            
-            // Scroll to form
-            formContainer.scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        function generateFormFields(item = null) {
-            const tableDef = tableDefinitions[currentTable];
-            if (!tableDef) {
-                formFields.innerHTML = '<p>No hay definición de campos para esta tabla.</p>';
-                return;
-            }
-            
-            let html = '<div class="form-grid">';
-            
-            tableDef.fields.forEach(field => {
-                const value = item ? item[field.name] : (field.default !== undefined ? field.default : '');
+            // Filas de datos
+            data.forEach(row => {
+                tableHTML += '<tr>';
                 
-                html += `
-                    <div class="form-group">
-                        <label for="${field.name}">${field.label}${field.required ? ' *' : ''}</label>
-                `;
-                
-                if (field.type === 'textarea') {
-                    html += `
-                        <textarea id="${field.name}" name="${field.name}" class="form-control" 
-                            ${field.required ? 'required' : ''}>${value || ''}</textarea>
-                    `;
-                } else if (field.type === 'checkbox') {
-                    html += `
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="${field.name}" name="${field.name}" 
-                                ${value ? 'checked' : ''}>
-                            <label for="${field.name}" style="font-weight: normal;">${field.label}</label>
-                        </div>
-                    `;
-                } else {
-                    const inputType = field.type === 'password' ? 'password' : 
-                                     field.type === 'email' ? 'email' : 
-                                     field.type === 'number' ? 'number' : 
-                                     field.type === 'date' ? 'date' : 
-                                     field.type === 'datetime-local' ? 'datetime-local' : 'text';
+                columns.forEach(col => {
+                    const value = row[col.name];
+                    let displayValue = value;
                     
-                    html += `
-                        <input type="${inputType}" id="${field.name}" name="${field.name}" 
-                            class="form-control" value="${value || ''}" 
-                            ${field.required ? 'required' : ''}>
-                    `;
-                }
-                
-                html += `</div>`;
-            });
-            
-            html += '</div>';
-            formFields.innerHTML = html;
-        }
-        
-        function hideForm() {
-            formContainer.classList.remove('active');
-            dataForm.reset();
-            currentEditId = null;
-        }
-        
-        async function handleFormSubmit(e) {
-            e.preventDefault();
-            
-            const tableDef = tableDefinitions[currentTable];
-            if (!tableDef) return;
-            
-            // Get form data
-            const formData = new FormData(dataForm);
-            const data = {};
-            
-            tableDef.fields.forEach(field => {
-                if (field.type === 'checkbox') {
-                    data[field.name] = document.getElementById(field.name).checked;
-                } else {
-                    const value = formData.get(field.name);
-                    
-                    // Convert empty strings to null for non-required fields
-                    if (!field.required && (value === '' || value === null)) {
-                        data[field.name] = null;
-                    } else if (field.type === 'number' && value !== '') {
-                        data[field.name] = parseFloat(value);
-                    } else {
-                        data[field.name] = value;
+                    if (value === null || value === undefined) {
+                        displayValue = '<em>NULL</em>';
+                    } else if (col.type === 'boolean') {
+                        displayValue = value ? 
+                            '<span class="status-active">Activo</span>' : 
+                            '<span class="status-inactive">Inactivo</span>';
+                    } else if (col.type === 'timestamp' || col.type === 'date') {
+                        displayValue = new Date(value).toLocaleString();
+                    } else if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value).substring(0, 50) + '...';
+                    } else if (typeof value === 'string' && value.length > 50) {
+                        displayValue = value.substring(0, 50) + '...';
                     }
-                }
+                    
+                    tableHTML += `<td>${displayValue}</td>`;
+                });
+                
+                // Botones de acción
+                tableHTML += `
+                    <td>
+                        <div class="table-actions">
+                            <button class="action-btn btn-primary" onclick="editRecord('${row.id}')">Editar</button>
+                            <button class="action-btn btn-danger" onclick="confirmDelete('${row.id}')">Eliminar</button>
+                        </div>
+                    </td>
+                `;
+                
+                tableHTML += '</tr>';
             });
             
-            // Add UUID if needed (for new records)
-            if (!currentEditId && !data.id) {
-                // In a real app, generate UUID
-                // For demo, we'll let Supabase handle it with DEFAULT uuid_generate_v4()
+            tableHTML += '</tbody></table>';
+            document.getElementById('tableContainer').innerHTML = tableHTML;
+        }
+        
+        // Mostrar paginación
+        function displayPagination(totalCount) {
+            const totalPages = Math.ceil(totalCount / recordsPerPage);
+            let paginationHTML = '';
+            
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `
+                    <button class="page-btn ${i === currentPage ? 'active' : ''}" 
+                            onclick="goToPage(${i})">
+                        ${i}
+                    </button>
+                `;
             }
+            
+            document.getElementById('pagination').innerHTML = paginationHTML;
+        }
+        
+        // Ir a una página específica
+        function goToPage(page) {
+            currentPage = page;
+            loadTableData();
+        }
+        
+        // Mostrar formulario para nuevo registro
+        async function showNewForm() {
+            if (!currentTable) {
+                showMessage('Selecciona una tabla primero', 'warning');
+                return;
+            }
+            
+            currentRecordId = null;
+            document.getElementById('formTitle').textContent = `Nuevo Registro en ${currentTable}`;
+            document.getElementById('deleteBtn').classList.add('hidden');
+            
+            // Obtener columnas de la tabla
+            const columns = await getTableColumns(currentTable);
+            
+            // Generar campos del formulario
+            generateFormFields(columns);
+            
+            // Mostrar el formulario
+            document.getElementById('formSection').classList.remove('hidden');
+            document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Editar un registro
+        async function editRecord(id) {
+            if (!currentTable) return;
+            
+            currentRecordId = id;
+            document.getElementById('formTitle').textContent = `Editar Registro en ${currentTable}`;
+            document.getElementById('deleteBtn').classList.remove('hidden');
+            
+            // Obtener el registro específico
+            const { data, error } = await supabase
+                .from(currentTable)
+                .select('*')
+                .eq('id', id)
+                .single();
+            
+            if (error) {
+                showMessage(`Error al cargar registro: ${error.message}`, 'danger');
+                return;
+            }
+            
+            // Obtener columnas de la tabla
+            const columns = await getTableColumns(currentTable);
+            
+            // Generar campos del formulario con datos existentes
+            generateFormFields(columns, data);
+            
+            // Mostrar el formulario
+            document.getElementById('formSection').classList.remove('hidden');
+            document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Generar campos del formulario
+        function generateFormFields(columns, data = null) {
+            let formHTML = '';
+            
+            columns.forEach(col => {
+                // Omitir campos automáticos como id y timestamps
+                if (col.name === 'id' || col.name === 'creado_en' || col.name === 'actualizado_en') {
+                    return;
+                }
+                
+                const value = data ? data[col.name] : '';
+                let inputHTML = '';
+                
+                if (col.inputType === 'checkbox') {
+                    inputHTML = `
+                        <input type="checkbox" 
+                               id="${col.name}" 
+                               name="${col.name}"
+                               ${value ? 'checked' : ''}
+                               class="form-control">
+                    `;
+                } else if (col.inputType === 'textarea') {
+                    inputHTML = `
+                        <textarea id="${col.name}" 
+                                  name="${col.name}" 
+                                  class="form-control"
+                                  rows="3">${value || ''}</textarea>
+                    `;
+                } else if (col.inputType === 'datetime-local') {
+                    // Formatear fecha para input datetime-local
+                    let formattedValue = '';
+                    if (value) {
+                        const date = new Date(value);
+                        formattedValue = date.toISOString().slice(0, 16);
+                    }
+                    inputHTML = `
+                        <input type="${col.inputType}" 
+                               id="${col.name}" 
+                               name="${col.name}" 
+                               value="${formattedValue}"
+                               class="form-control">
+                    `;
+                } else if (col.inputType === 'date') {
+                    // Formatear fecha para input date
+                    let formattedValue = '';
+                    if (value) {
+                        const date = new Date(value);
+                        formattedValue = date.toISOString().slice(0, 10);
+                    }
+                    inputHTML = `
+                        <input type="${col.inputType}" 
+                               id="${col.name}" 
+                               name="${col.name}" 
+                               value="${formattedValue}"
+                               class="form-control">
+                    `;
+                } else {
+                    inputHTML = `
+                        <input type="${col.inputType}" 
+                               id="${col.name}" 
+                               name="${col.name}" 
+                               value="${value || ''}"
+                               class="form-control"
+                               ${col.required ? 'required' : ''}>
+                    `;
+                }
+                
+                formHTML += `
+                    <div class="form-group">
+                        <label for="${col.name}">${col.name}</label>
+                        ${inputHTML}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('formFields').innerHTML = formHTML;
+        }
+        
+        // Guardar registro (crear o actualizar)
+        async function saveRecord(event) {
+            event.preventDefault();
+            
+            if (!currentTable) return;
+            
+            // Obtener datos del formulario
+            const formData = new FormData(document.getElementById('dataForm'));
+            const recordData = {};
+            
+            // Obtener columnas para saber qué campos incluir
+            const columns = await getTableColumns(currentTable);
+            
+            columns.forEach(col => {
+                // Omitir campos automáticos
+                if (col.name === 'id' || col.name === 'creado_en' || col.name === 'actualizado_en') {
+                    return;
+                }
+                
+                const value = formData.get(col.name);
+                
+                if (col.inputType === 'checkbox') {
+                    recordData[col.name] = document.getElementById(col.name).checked;
+                } else if (col.type === 'integer' || col.type === 'decimal' || col.type === 'numeric') {
+                    recordData[col.name] = value ? parseFloat(value) : null;
+                } else if (value) {
+                    recordData[col.name] = value;
+                }
+            });
             
             try {
-                if (currentEditId) {
-                    // Update existing record
+                if (currentRecordId) {
+                    // Actualizar registro existente
                     const { error } = await supabase
                         .from(currentTable)
-                        .update(data)
-                        .eq('id', currentEditId);
+                        .update(recordData)
+                        .eq('id', currentRecordId);
                     
                     if (error) throw error;
                     
-                    showMessage(`${tableDef.name.slice(0, -1)} actualizado exitosamente.`, 'success');
+                    showMessage('Registro actualizado correctamente', 'success');
                 } else {
-                    // Insert new record
+                    // Crear nuevo registro
                     const { error } = await supabase
                         .from(currentTable)
-                        .insert([data]);
+                        .insert([recordData]);
                     
                     if (error) throw error;
                     
-                    showMessage(`${tableDef.name.slice(0, -1)} creado exitosamente.`, 'success');
+                    showMessage('Registro creado correctamente', 'success');
                 }
                 
-                // Reload data and hide form
-                loadTableData();
+                // Ocultar formulario y actualizar tabla
                 hideForm();
+                loadTableData();
+                loadStatistics();
+                
             } catch (error) {
-                console.error(`Error saving ${currentTable}:`, error);
-                showMessage(`Error al guardar: ${error.message}`, 'error');
+                console.error('Error al guardar registro:', error);
+                showMessage(`Error al guardar: ${error.message}`, 'danger');
             }
         }
         
-        async function viewItem(id) {
-            const item = currentData.find(d => d.id === id);
-            if (!item) return;
-            
-            // Create a detailed view modal
-            const tableDef = tableDefinitions[currentTable] || { name: currentTable, fields: [] };
-            
-            let html = `
-                <div style="background: white; padding: 30px; border-radius: 8px; max-width: 800px; margin: 0 auto;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                        <h3 style="color: #2c3e50;">Detalles de ${tableDef.name.slice(0, -1)}</h3>
-                        <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #7f8c8d;">
-                            &times;
-                        </button>
-                    </div>
-                    <div style="max-height: 70vh; overflow-y: auto;">
-            `;
-            
-            // Display all fields
-            Object.keys(item).forEach(key => {
-                let value = item[key];
-                
-                // Format values for display
-                if (value === null || value === undefined) {
-                    value = '(vacío)';
-                } else if (typeof value === 'boolean') {
-                    value = value ? 'Sí' : 'No';
-                } else if (key === 'creado_en' || key === 'actualizado_en' || key === 'fecha') {
-                    value = new Date(value).toLocaleString();
-                } else if (key === 'fecha_nacimiento' || key === 'fecha_vencimiento' || key === 'fecha_inicio' || key === 'fecha_fin') {
-                    value = new Date(value).toLocaleDateString();
-                } else if (typeof value === 'object') {
-                    value = JSON.stringify(value, null, 2);
-                }
-                
-                html += `
-                    <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
-                        <strong style="display: block; color: #2c3e50; margin-bottom: 5px;">${key}:</strong>
-                        <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; word-break: break-all;">
-                            ${value}
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += `
-                    </div>
-                    <div style="margin-top: 25px; text-align: right;">
-                        <button onclick="closeModal()" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> Cerrar
-                        </button>
-                        <button onclick="editItem('${id}'); closeModal();" class="btn btn-primary" style="margin-left: 10px;">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            // Create modal
-            const modal = document.createElement('div');
-            modal.id = 'detail-modal';
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.5);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 1000;
-                padding: 20px;
-            `;
-            modal.innerHTML = html;
-            document.body.appendChild(modal);
-        }
-        
-        async function editItem(id) {
-            const item = currentData.find(d => d.id === id);
-            if (!item) return;
-            
-            currentEditId = id;
-            const tableDef = tableDefinitions[currentTable] || { name: currentTable, fields: [] };
-            formTitle.textContent = `Editar ${tableDef.name.slice(0, -1)}`;
-            
-            // Generate form fields with item data
-            generateFormFields(item);
-            
-            // Show form
-            formContainer.classList.add('active');
-            
-            // Scroll to form
-            formContainer.scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        async function deleteItem(id) {
-            if (!confirm('¿Está seguro de que desea eliminar este registro? Esta acción no se puede deshacer.')) {
-                return;
+        // Confirmar eliminación de registro
+        function confirmDelete(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar este registro? Esta acción no se puede deshacer.')) {
+                deleteRecord(id);
             }
+        }
+        
+        // Eliminar registro
+        async function deleteRecord(id = null) {
+            if (!currentTable) return;
+            
+            const recordId = id || currentRecordId;
+            if (!recordId) return;
             
             try {
                 const { error } = await supabase
                     .from(currentTable)
                     .delete()
-                    .eq('id', id);
+                    .eq('id', recordId);
                 
                 if (error) throw error;
                 
-                showMessage('Registro eliminado exitosamente.', 'success');
+                showMessage('Registro eliminado correctamente', 'success');
+                
+                // Ocultar formulario y actualizar tabla
+                hideForm();
                 loadTableData();
+                loadStatistics();
+                
             } catch (error) {
-                console.error(`Error deleting from ${currentTable}:`, error);
-                showMessage(`Error al eliminar: ${error.message}`, 'error');
+                console.error('Error al eliminar registro:', error);
+                showMessage(`Error al eliminar: ${error.message}`, 'danger');
             }
         }
         
-        function handleSearch() {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            
-            if (!searchTerm) {
-                renderTable();
-                return;
-            }
-            
-            const filteredData = currentData.filter(item => {
-                // Search through all string values in the item
-                return Object.values(item).some(value => {
-                    if (typeof value === 'string') {
-                        return value.toLowerCase().includes(searchTerm);
-                    }
-                    return false;
-                });
-            });
-            
-            if (filteredData.length === 0) {
-                tableContent.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-search"></i>
-                        <h3>No se encontraron resultados</h3>
-                        <p>No hay registros que coincidan con "${searchTerm}".</p>
-                    </div>
-                `;
-            } else {
-                // Temporarily replace currentData with filtered data for rendering
-                const originalData = currentData;
-                currentData = filteredData;
-                renderTable();
-                currentData = originalData;
-            }
+        // Ocultar formulario
+        function hideForm() {
+            document.getElementById('formSection').classList.add('hidden');
+            document.getElementById('dataForm').reset();
+            currentRecordId = null;
         }
         
+        // Refrescar datos
+        function refreshData() {
+            if (currentTable) {
+                loadTableData();
+            }
+            loadStatistics();
+        }
+        
+        // Mostrar mensaje
         function showMessage(message, type) {
-            statusMessage.textContent = message;
-            statusMessage.className = `status-message ${type}`;
+            const alertDiv = document.getElementById('messageAlert');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.classList.remove('hidden');
             
-            // Auto-hide success messages after 5 seconds
-            if (type === 'success') {
-                setTimeout(() => {
-                    statusMessage.className = 'status-message';
-                }, 5000);
-            }
+            // Ocultar mensaje después de 5 segundos
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, 5000);
         }
         
-        function closeModal() {
-            const modal = document.getElementById('detail-modal');
-            if (modal) {
-                modal.remove();
-            }
+        // Cerrar sesión
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'login.html';
         }
-        
-        function handleLogout() {
-            if (confirm('¿Está seguro de que desea cerrar sesión?')) {
-                // In a real app, sign out from Supabase
-                // await supabase.auth.signOut();
-                
-                // Redirect to login page
-                // window.location.href = 'login.html';
-                
-                // For demo, just show a message
-                showMessage('Sesión cerrada exitosamente. Redirigiendo...', 'success');
-                
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 2000);
-            }
-        }
-        
-        // Make functions available globally for onclick handlers
-        window.viewItem = viewItem;
-        window.editItem = editItem;
-        window.deleteItem = deleteItem;
-        window.showAddForm = showAddForm;
-        window.closeModal = closeModal;
     </script>
 </body>
 </html>
