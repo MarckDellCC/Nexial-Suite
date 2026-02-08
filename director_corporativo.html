@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Director Corporativo - Gestión de Empresas</title>
+    <title>Panel de Director Corporativo</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -28,155 +28,123 @@
         header {
             background-color: #2c3e50;
             color: white;
-            padding: 1rem 0;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-radius: 5px;
         }
         
         .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 0 20px;
         }
         
         h1 {
-            font-size: 1.8rem;
-            font-weight: 600;
+            font-size: 24px;
         }
         
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        #userInfo {
+            font-size: 14px;
+            background-color: #34495e;
+            padding: 8px 15px;
+            border-radius: 4px;
         }
         
-        .logout-btn {
+        #logoutBtn {
             background-color: #e74c3c;
             color: white;
             border: none;
             padding: 8px 15px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 14px;
         }
         
-        .logout-btn:hover {
+        #logoutBtn:hover {
             background-color: #c0392b;
         }
         
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
-        .section {
-            background-color: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .section-title {
-            font-size: 1.4rem;
-            margin-bottom: 1.5rem;
-            color: #2c3e50;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #ecf0f1;
-        }
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
+        #addEmpresaBtn {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
             font-weight: 600;
-            color: #34495e;
         }
         
-        input, select, textarea {
-            width: 100%;
+        #addEmpresaBtn:hover {
+            background-color: #219653;
+        }
+        
+        .search-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        #searchInput {
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 1rem;
+            width: 300px;
+            font-size: 14px;
         }
         
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 1rem;
-        }
-        
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: background-color 0.3s;
-        }
-        
-        .btn-primary {
+        #searchBtn {
             background-color: #3498db;
             color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
         }
         
-        .btn-primary:hover {
+        #searchBtn:hover {
             background-color: #2980b9;
         }
         
-        .btn-secondary {
-            background-color: #95a5a6;
-            color: white;
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #7f8c8d;
         }
         
-        .btn-secondary:hover {
-            background-color: #7f8c8d;
-        }
-        
-        .btn-danger {
+        .error-message {
             background-color: #e74c3c;
             color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
         }
         
-        .btn-danger:hover {
-            background-color: #c0392b;
-        }
-        
-        .btn-success {
-            background-color: #2ecc71;
-            color: white;
-        }
-        
-        .btn-success:hover {
+        .success-message {
             background-color: #27ae60;
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
         }
         
         .table-container {
-            overflow-x: auto;
-            margin-top: 1rem;
+            background-color: white;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
         }
         
         table {
@@ -184,43 +152,47 @@
             border-collapse: collapse;
         }
         
+        thead {
+            background-color: #34495e;
+            color: white;
+        }
+        
         th, td {
             padding: 12px 15px;
             text-align: left;
-            border-bottom: 1px solid #ecf0f1;
+            border-bottom: 1px solid #eee;
         }
         
         th {
-            background-color: #f8f9fa;
             font-weight: 600;
-            color: #2c3e50;
         }
         
-        tr:hover {
-            background-color: #f8f9fa;
+        tbody tr:hover {
+            background-color: #f9f9f9;
         }
         
-        .status-active {
+        .active {
             color: #27ae60;
             font-weight: 600;
         }
         
-        .status-inactive {
+        .inactive {
             color: #e74c3c;
             font-weight: 600;
         }
         
-        .actions-cell {
+        .actions {
             display: flex;
             gap: 8px;
         }
         
-        .action-btn {
-            padding: 5px 10px;
+        .edit-btn, .delete-btn {
+            padding: 6px 12px;
             border: none;
-            border-radius: 4px;
+            border-radius: 3px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 13px;
+            font-weight: 600;
         }
         
         .edit-btn {
@@ -228,294 +200,436 @@
             color: white;
         }
         
+        .edit-btn:hover {
+            background-color: #2980b9;
+        }
+        
         .delete-btn {
             background-color: #e74c3c;
             color: white;
         }
         
-        .view-btn {
-            background-color: #2ecc71;
-            color: white;
+        .delete-btn:hover {
+            background-color: #c0392b;
         }
         
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
-            top: 0;
+            z-index: 1000;
             left: 0;
+            top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
         }
         
         .modal-content {
             background-color: white;
-            border-radius: 8px;
+            margin: 5% auto;
             width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
-            padding: 2rem;
-            position: relative;
+            max-width: 700px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            font-size: 20px;
         }
         
         .close-modal {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 1.5rem;
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
             cursor: pointer;
-            color: #7f8c8d;
+            background: none;
+            border: none;
         }
         
-        .alert {
-            padding: 12px 15px;
+        .close-modal:hover {
+            color: #ddd;
+        }
+        
+        .modal-body {
+            padding: 30px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
             border-radius: 4px;
-            margin-bottom: 1rem;
-            display: none;
+            font-size: 14px;
         }
         
-        .alert-success {
-            background-color: #d5edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
         }
         
-        .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #7f8c8d;
-        }
-        
-        .access-denied {
-            text-align: center;
-            padding: 50px 20px;
-        }
-        
-        .access-denied h2 {
-            color: #e74c3c;
-            margin-bottom: 1rem;
-        }
-        
-        .access-denied p {
-            margin-bottom: 2rem;
-            color: #7f8c8d;
-        }
-        
-        .filter-section {
+        .checkbox-group {
             display: flex;
+            align-items: center;
             gap: 10px;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
         }
         
-        .search-input {
-            flex-grow: 1;
-            max-width: 300px;
-        }
-        
-        .filter-select {
+        .checkbox-group input {
             width: auto;
-            min-width: 150px;
         }
         
+        .modal-footer {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 0 0 8px 8px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+        
+        .modal-footer button {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        #saveEmpresaBtn {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        #saveEmpresaBtn:hover {
+            background-color: #219653;
+        }
+        
+        #cancelBtn {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        #cancelBtn:hover {
+            background-color: #7f8c8d;
+        }
+        
+        /* Responsive */
         @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .search-container {
+                width: 100%;
+            }
+            
+            #searchInput {
+                width: 100%;
+            }
+            
             .form-grid {
                 grid-template-columns: 1fr;
             }
             
-            .filter-section {
-                flex-direction: column;
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
             }
-            
-            .search-input, .filter-select {
-                max-width: 100%;
-            }
+        }
+        
+        /* Estado activo/inactivo */
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-active {
+            background-color: #d5f4e6;
+            color: #27ae60;
+        }
+        
+        .status-inactive {
+            background-color: #fdeaea;
+            color: #e74c3c;
+        }
+        
+        /* Paginación */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+        
+        .pagination button {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            background-color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .pagination button.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        .pagination button:hover:not(.active) {
+            background-color: #f5f5f5;
+        }
+        
+        /* Sin acceso */
+        .no-access {
+            text-align: center;
+            padding: 60px 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+        }
+        
+        .no-access h2 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+        
+        .no-access p {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        
+        #loginBtn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        #loginBtn:hover {
+            background-color: #2980b9;
         }
     </style>
 </head>
 <body>
-    <div id="app">
-        <!-- Contenido principal (se mostrará solo si el usuario tiene rol Director Corporativo) -->
-        <div id="main-content" style="display: none;">
+    <div class="container">
+        <!-- Sección de acceso denegado (inicialmente visible) -->
+        <div id="noAccessSection" class="no-access">
+            <h2>Acceso Restringido</h2>
+            <p>Esta sección es exclusiva para usuarios con rol de Director Corporativo.</p>
+            <p>Por favor, inicie sesión con credenciales de Director Corporativo.</p>
+            <button id="loginBtn">Iniciar Sesión</button>
+        </div>
+        
+        <!-- Sección principal (inicialmente oculta) -->
+        <div id="mainSection" style="display: none;">
             <header>
-                <div class="container">
-                    <div class="header-content">
-                        <h1>Panel de Director Corporativo</h1>
-                        <div class="user-info">
-                            <span id="current-user">Usuario</span>
-                            <button class="logout-btn" id="logout-btn">Cerrar Sesión</button>
-                        </div>
+                <div class="header-content">
+                    <h1>Panel de Director Corporativo - Gestión de Empresas</h1>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div id="userInfo">Cargando...</div>
+                        <button id="logoutBtn">Cerrar Sesión</button>
                     </div>
                 </div>
             </header>
             
-            <div class="container">
-                <div class="main-content">
-                    <!-- Alertas -->
-                    <div id="alert-success" class="alert alert-success" style="display: none;"></div>
-                    <div id="alert-error" class="alert alert-error" style="display: none;"></div>
+            <!-- Mensajes de estado -->
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+            
+            <!-- Controles -->
+            <div class="controls">
+                <button id="addEmpresaBtn">+ Nueva Empresa</button>
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Buscar empresas por nombre, RFC o email...">
+                    <button id="searchBtn">Buscar</button>
+                </div>
+            </div>
+            
+            <!-- Tabla de empresas -->
+            <div class="table-container">
+                <div id="loading" class="loading">Cargando empresas...</div>
+                <div id="empresasTableContainer" style="display: none;">
+                    <table id="empresasTable">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>RFC</th>
+                                <th>Email</th>
+                                <th>Teléfono</th>
+                                <th>Moneda</th>
+                                <th>Tipo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="empresasTableBody">
+                            <!-- Las empresas se cargarán aquí -->
+                        </tbody>
+                    </table>
                     
-                    <!-- Sección para agregar/editar empresa -->
-                    <section class="section">
-                        <h2 class="section-title" id="form-title">Registrar Nueva Empresa</h2>
-                        <form id="empresa-form">
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="nombre">Nombre de la Empresa *</label>
-                                    <input type="text" id="nombre" name="nombre" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="rfc">RFC *</label>
-                                    <input type="text" id="rfc" name="rfc" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="tipo_empresa">Tipo de Empresa</label>
-                                    <select id="tipo_empresa" name="tipo_empresa">
-                                        <option value="">Seleccionar tipo</option>
-                                        <option value="SA">Sociedad Anónima</option>
-                                        <option value="SRL">Sociedad de Responsabilidad Limitada</option>
-                                        <option value="SC">Sociedad Cooperativa</option>
-                                        <option value="SOFOM">SOFOM</option>
-                                        <option value="Persona Física">Persona Física</option>
-                                        <option value="Otro">Otro</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="regimen_fiscal">Régimen Fiscal</label>
-                                    <select id="regimen_fiscal" name="regimen_fiscal">
-                                        <option value="">Seleccionar régimen</option>
-                                        <option value="General de Ley Personas Morales">General de Ley Personas Morales</option>
-                                        <option value="Personas Morales con Fines no Lucrativos">Personas Morales con Fines no Lucrativos</option>
-                                        <option value="Sueldos y Salarios">Sueldos y Salarios</option>
-                                        <option value="Arrendamiento">Arrendamiento</option>
-                                        <option value="Actividades Empresariales">Actividades Empresariales</option>
-                                        <option value="RIF">Régimen de Incorporación Fiscal</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group full-width">
-                                    <label for="direccion">Dirección</label>
-                                    <textarea id="direccion" name="direccion" rows="3"></textarea>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="telefono">Teléfono</label>
-                                    <input type="text" id="telefono" name="telefono">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="email">Email</label>
-                                    <input type="email" id="email" name="email">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="website">Sitio Web</label>
-                                    <input type="url" id="website" name="website">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="moneda_id">Moneda</label>
-                                    <select id="moneda_id" name="moneda_id">
-                                        <option value="">Seleccionar moneda</option>
-                                        <!-- Las opciones se cargarán dinámicamente desde la BD -->
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="logo_url">URL del Logo</label>
-                                    <input type="url" id="logo_url" name="logo_url">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="activo">Estado</label>
-                                    <select id="activo" name="activo">
-                                        <option value="true">Activa</option>
-                                        <option value="false">Inactiva</option>
-                                    </select>
-                                </div>
+                    <!-- Paginación -->
+                    <div class="pagination" id="pagination" style="display: none;">
+                        <!-- Los botones de paginación se generarán aquí -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal para agregar/editar empresa -->
+        <div id="empresaModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">Nueva Empresa</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="empresaForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="nombre">Nombre de la Empresa *</label>
+                                <input type="text" id="nombre" name="nombre" required>
                             </div>
                             
-                            <div class="form-actions">
-                                <input type="hidden" id="empresa-id" name="id" value="">
-                                <button type="button" class="btn btn-secondary" id="cancel-edit" style="display: none;">Cancelar</button>
-                                <button type="submit" class="btn btn-primary" id="submit-btn">Registrar Empresa</button>
+                            <div class="form-group">
+                                <label for="rfc">RFC *</label>
+                                <input type="text" id="rfc" name="rfc" required>
                             </div>
-                        </form>
-                    </section>
-                    
-                    <!-- Sección para listar empresas -->
-                    <section class="section">
-                        <h2 class="section-title">Empresas Registradas</h2>
-                        
-                        <div class="filter-section">
-                            <input type="text" id="search-input" class="search-input" placeholder="Buscar por nombre o RFC...">
-                            <select id="filter-status" class="filter-select">
-                                <option value="">Todas las empresas</option>
-                                <option value="true">Solo activas</option>
-                                <option value="false">Solo inactivas</option>
-                            </select>
-                            <button class="btn btn-secondary" id="reset-filters">Limpiar filtros</button>
+                            
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="telefono">Teléfono</label>
+                                <input type="text" id="telefono" name="telefono">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="website">Sitio Web</label>
+                                <input type="text" id="website" name="website">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="moneda_id">Moneda</label>
+                                <select id="moneda_id" name="moneda_id">
+                                    <option value="">Seleccionar moneda...</option>
+                                    <!-- Las monedas se cargarán dinámicamente -->
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="tipo_empresa">Tipo de Empresa</label>
+                                <select id="tipo_empresa" name="tipo_empresa">
+                                    <option value="">Seleccionar tipo...</option>
+                                    <option value="SA">Sociedad Anónima (SA)</option>
+                                    <option value="SRL">Sociedad de Responsabilidad Limitada (SRL)</option>
+                                    <option value="SC">Sociedad Cooperativa (SC)</option>
+                                    <option value="SAPI">Sociedad Anónima Promotora de Inversión (SAPI)</option>
+                                    <option value="Persona Física">Persona Física</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="regimen_fiscal">Régimen Fiscal</label>
+                                <input type="text" id="regimen_fiscal" name="regimen_fiscal">
+                            </div>
+                            
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label for="direccion">Dirección</label>
+                                <textarea id="direccion" name="direccion" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label for="logo_url">URL del Logo</label>
+                                <input type="text" id="logo_url" name="logo_url" placeholder="https://ejemplo.com/logo.png">
+                            </div>
+                            
+                            <div class="form-group checkbox-group">
+                                <input type="checkbox" id="activo" name="activo" checked>
+                                <label for="activo">Empresa Activa</label>
+                            </div>
                         </div>
                         
-                        <div class="table-container">
-                            <table id="empresas-table">
-                                <thead>
-                                    <tr>
-                                        <th>Nombre</th>
-                                        <th>RFC</th>
-                                        <th>Tipo</th>
-                                        <th>Teléfono</th>
-                                        <th>Email</th>
-                                        <th>Estado</th>
-                                        <th>Registro</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="empresas-table-body">
-                                    <!-- Las filas se llenarán dinámicamente -->
-                                    <tr id="loading-row">
-                                        <td colspan="8" class="loading">Cargando empresas...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
+                        <input type="hidden" id="empresaId" name="id">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button id="cancelBtn">Cancelar</button>
+                    <button id="saveEmpresaBtn">Guardar Empresa</button>
                 </div>
             </div>
         </div>
         
-        <!-- Modal de confirmación para eliminar -->
-        <div id="delete-modal" class="modal">
+        <!-- Modal de login -->
+        <div id="loginModal" class="modal">
             <div class="modal-content">
-                <span class="close-modal" id="close-delete-modal">&times;</span>
-                <h2>Confirmar Eliminación</h2>
-                <p id="delete-message">¿Está seguro de que desea eliminar esta empresa? Esta acción no se puede deshacer.</p>
-                <div class="form-actions">
-                    <button class="btn btn-secondary" id="cancel-delete">Cancelar</button>
-                    <button class="btn btn-danger" id="confirm-delete">Eliminar</button>
+                <div class="modal-header">
+                    <h2>Iniciar Sesión - Director Corporativo</h2>
+                    <button class="close-modal">&times;</button>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Mensaje de acceso denegado -->
-        <div id="access-denied" class="access-denied" style="display: none;">
-            <div class="container">
-                <h2>Acceso Denegado</h2>
-                <p>No tiene permisos para acceder a esta sección. Solo los usuarios con rol "Director Corporativo" pueden acceder.</p>
-                <button class="btn btn-primary" id="go-back-btn">Volver al Inicio</button>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="loginUsuario">Usuario o Email *</label>
+                            <input type="text" id="loginUsuario" name="loginUsuario" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="loginPassword">Contraseña *</label>
+                            <input type="password" id="loginPassword" name="loginPassword" required>
+                        </div>
+                        
+                        <div id="loginError" class="error-message" style="margin-top: 15px; display: none;"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button id="cancelLoginBtn">Cancelar</button>
+                    <button id="submitLoginBtn">Iniciar Sesión</button>
+                </div>
             </div>
         </div>
     </div>
@@ -525,482 +639,574 @@
         const SUPABASE_URL = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
         
-        // SOLUCIÓN: Usar una variable diferente o asignar directamente al objeto window
-        // Inicializar Supabase y asignarlo a una variable con nombre diferente
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Inicializar Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // Estado de la aplicación
         let currentUser = null;
         let empresas = [];
         let monedas = [];
-        let empresaToDelete = null;
+        let currentPage = 1;
+        const itemsPerPage = 10;
         let isEditing = false;
+        let currentEmpresaId = null;
         
         // Elementos DOM
-        const mainContent = document.getElementById('main-content');
-        const accessDenied = document.getElementById('access-denied');
-        const currentUserElement = document.getElementById('current-user');
-        const logoutBtn = document.getElementById('logout-btn');
-        const goBackBtn = document.getElementById('go-back-btn');
-        const empresaForm = document.getElementById('empresa-form');
-        const empresasTableBody = document.getElementById('empresas-table-body');
-        const formTitle = document.getElementById('form-title');
-        const submitBtn = document.getElementById('submit-btn');
-        const cancelEditBtn = document.getElementById('cancel-edit');
-        const empresaIdInput = document.getElementById('empresa-id');
-        const deleteModal = document.getElementById('delete-modal');
-        const closeDeleteModal = document.getElementById('close-delete-modal');
-        const cancelDeleteBtn = document.getElementById('cancel-delete');
-        const confirmDeleteBtn = document.getElementById('confirm-delete');
-        const deleteMessage = document.getElementById('delete-message');
-        const searchInput = document.getElementById('search-input');
-        const filterStatus = document.getElementById('filter-status');
-        const resetFiltersBtn = document.getElementById('reset-filters');
+        const noAccessSection = document.getElementById('noAccessSection');
+        const mainSection = document.getElementById('mainSection');
+        const userInfo = document.getElementById('userInfo');
+        const empresasTableBody = document.getElementById('empresasTableBody');
+        const empresasTableContainer = document.getElementById('empresasTableContainer');
+        const loadingElement = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const addEmpresaBtn = document.getElementById('addEmpresaBtn');
+        const empresaModal = document.getElementById('empresaModal');
+        const loginModal = document.getElementById('loginModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const empresaForm = document.getElementById('empresaForm');
+        const empresaIdInput = document.getElementById('empresaId');
         const monedaSelect = document.getElementById('moneda_id');
-        const alertSuccess = document.getElementById('alert-success');
-        const alertError = document.getElementById('alert-error');
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
         
-        // Inicializar la aplicación
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Verificar sesión y rol
-            await checkSession();
+        // Verificar si hay una sesión activa al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            checkCurrentSession();
             
-            // Cargar monedas para el select
-            await loadMonedas();
+            // Event listeners
+            loginBtn.addEventListener('click', showLoginModal);
+            logoutBtn.addEventListener('click', logout);
+            addEmpresaBtn.addEventListener('click', showAddEmpresaModal);
+            searchBtn.addEventListener('click', searchEmpresas);
+            searchInput.addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    searchEmpresas();
+                }
+            });
             
-            // Cargar empresas
-            await loadEmpresas();
+            // Event listeners para modales
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    empresaModal.style.display = 'none';
+                    loginModal.style.display = 'none';
+                });
+            });
             
-            // Configurar eventos
-            setupEventListeners();
+            document.getElementById('cancelBtn').addEventListener('click', function() {
+                empresaModal.style.display = 'none';
+            });
+            
+            document.getElementById('cancelLoginBtn').addEventListener('click', function() {
+                loginModal.style.display = 'none';
+            });
+            
+            document.getElementById('submitLoginBtn').addEventListener('click', login);
+            
+            document.getElementById('saveEmpresaBtn').addEventListener('click', saveEmpresa);
+            
+            // Cerrar modales al hacer clic fuera de ellos
+            window.addEventListener('click', function(event) {
+                if (event.target === empresaModal) {
+                    empresaModal.style.display = 'none';
+                }
+                if (event.target === loginModal) {
+                    loginModal.style.display = 'none';
+                }
+            });
         });
         
-        // Verificar sesión y rol del usuario
-        async function checkSession() {
-            try {
-                // Obtener sesión actual - usar supabaseClient en lugar de supabase
-                const { data: { session }, error } = await supabaseClient.auth.getSession();
+        // Verificar si hay una sesión activa
+        async function checkCurrentSession() {
+            const userId = localStorage.getItem('director_user_id');
+            const userRole = localStorage.getItem('director_user_role');
+            const userName = localStorage.getItem('director_user_name');
+            
+            if (userId && userRole === 'Director Corporativo') {
+                currentUser = {
+                    id: userId,
+                    rol: userRole,
+                    nombre: userName
+                };
                 
-                if (error) {
-                    console.error('Error al verificar sesión:', error);
-                    showAccessDenied();
-                    return;
-                }
-                
-                if (!session) {
-                    showAccessDenied();
-                    return;
-                }
-                
-                // Obtener información del usuario desde la tabla usuarios
-                const { data: usuario, error: userError } = await supabaseClient
-                    .from('usuarios')
-                    .select('*')
-                    .eq('email', session.user.email)
-                    .single();
-                
-                if (userError || !usuario) {
-                    console.error('Error al obtener usuario:', userError);
-                    showAccessDenied();
-                    return;
-                }
-                
-                // Verificar si el usuario tiene rol de Director Corporativo
-                if (usuario.rol !== 'Director Corporativo') {
-                    showAccessDenied();
-                    return;
-                }
-                
-                // Usuario autorizado
-                currentUser = usuario;
-                currentUserElement.textContent = `${usuario.nombres} ${usuario.apellido_paterno}`;
-                mainContent.style.display = 'block';
-                
-            } catch (error) {
-                console.error('Error en checkSession:', error);
-                showAccessDenied();
+                showMainSection();
+                loadMonedas();
+                loadEmpresas();
+            } else {
+                showNoAccessSection();
             }
         }
         
-        // Mostrar mensaje de acceso denegado
-        function showAccessDenied() {
-            mainContent.style.display = 'none';
-            accessDenied.style.display = 'block';
+        // Mostrar sección de acceso denegado
+        function showNoAccessSection() {
+            noAccessSection.style.display = 'block';
+            mainSection.style.display = 'none';
         }
         
-        // Cargar monedas desde la BD
-        async function loadMonedas() {
+        // Mostrar sección principal
+        function showMainSection() {
+            noAccessSection.style.display = 'none';
+            mainSection.style.display = 'block';
+            userInfo.textContent = `Director: ${currentUser.nombre}`;
+        }
+        
+        // Mostrar modal de login
+        function showLoginModal() {
+            loginModal.style.display = 'block';
+            loginForm.reset();
+            loginError.style.display = 'none';
+        }
+        
+        // Función de login
+        async function login() {
+            const usuario = document.getElementById('loginUsuario').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            
+            if (!usuario || !password) {
+                showError('Por favor, complete todos los campos.');
+                return;
+            }
+            
             try {
-                const { data, error } = await supabaseClient
-                    .from('monedas')
-                    .select('id, codigo, nombre')
+                // Buscar usuario en la tabla usuarios
+                const { data: usuarios, error } = await supabase
+                    .from('usuarios')
+                    .select('*')
+                    .or(`usuario.eq.${usuario},email.eq.${usuario}`)
                     .eq('activo', true)
-                    .order('nombre');
+                    .limit(1);
                 
-                if (error) {
-                    console.error('Error al cargar monedas:', error);
-                    showError('Error al cargar las monedas');
+                if (error) throw error;
+                
+                if (usuarios.length === 0) {
+                    showLoginError('Usuario no encontrado o inactivo.');
                     return;
                 }
                 
-                monedas = data || [];
+                const usuarioData = usuarios[0];
                 
-                // Limpiar y llenar el select de monedas
-                monedaSelect.innerHTML = '<option value="">Seleccionar moneda</option>';
+                // Verificar si es Director Corporativo
+                if (usuarioData.rol !== 'Director Corporativo') {
+                    showLoginError('Acceso denegado. Solo los Directores Corporativos pueden acceder.');
+                    return;
+                }
+                
+                // Verificar contraseña (en texto plano según el esquema SQL)
+                if (usuarioData.contrasena_plano !== password) {
+                    showLoginError('Contraseña incorrecta.');
+                    return;
+                }
+                
+                // Guardar sesión
+                localStorage.setItem('director_user_id', usuarioData.id);
+                localStorage.setItem('director_user_role', usuarioData.rol);
+                localStorage.setItem('director_user_name', `${usuarioData.nombres} ${usuarioData.apellido_paterno}`);
+                
+                currentUser = {
+                    id: usuarioData.id,
+                    rol: usuarioData.rol,
+                    nombre: `${usuarioData.nombres} ${usuarioData.apellido_paterno}`
+                };
+                
+                // Cerrar modal y mostrar sección principal
+                loginModal.style.display = 'none';
+                showMainSection();
+                loadMonedas();
+                loadEmpresas();
+                showSuccess('Sesión iniciada correctamente.');
+                
+            } catch (error) {
+                console.error('Error en login:', error);
+                showLoginError('Error al iniciar sesión. Intente nuevamente.');
+            }
+        }
+        
+        // Mostrar error en el modal de login
+        function showLoginError(message) {
+            loginError.textContent = message;
+            loginError.style.display = 'block';
+        }
+        
+        // Función de logout
+        function logout() {
+            localStorage.removeItem('director_user_id');
+            localStorage.removeItem('director_user_role');
+            localStorage.removeItem('director_user_name');
+            currentUser = null;
+            showNoAccessSection();
+            showSuccess('Sesión cerrada correctamente.');
+        }
+        
+        // Cargar monedas para el select
+        async function loadMonedas() {
+            try {
+                const { data, error } = await supabase
+                    .from('monedas')
+                    .select('id, codigo, nombre')
+                    .eq('activo', true)
+                    .order('codigo');
+                
+                if (error) throw error;
+                
+                monedas = data;
+                monedaSelect.innerHTML = '<option value="">Seleccionar moneda...</option>';
+                
                 monedas.forEach(moneda => {
                     const option = document.createElement('option');
                     option.value = moneda.id;
-                    option.textContent = `${moneda.nombre} (${moneda.codigo})`;
+                    option.textContent = `${moneda.codigo} - ${moneda.nombre}`;
                     monedaSelect.appendChild(option);
                 });
                 
             } catch (error) {
-                console.error('Error en loadMonedas:', error);
-                showError('Error al cargar las monedas');
+                console.error('Error cargando monedas:', error);
+                showError('Error al cargar las monedas.');
             }
         }
         
-        // Cargar empresas desde la BD
+        // Cargar empresas
         async function loadEmpresas() {
+            loadingElement.style.display = 'block';
+            empresasTableContainer.style.display = 'none';
+            
             try {
-                // Ocultar fila de carga si existe
-                const loadingRow = document.getElementById('loading-row');
-                if (loadingRow) loadingRow.style.display = 'none';
-                
-                // Mostrar fila de carga temporal
-                empresasTableBody.innerHTML = '<tr><td colspan="8" class="loading">Cargando empresas...</td></tr>';
-                
-                const { data, error } = await supabaseClient
+                const { data, error } = await supabase
                     .from('empresas')
-                    .select('*, monedas(codigo, nombre)')
-                    .order('creado_en', { ascending: false });
+                    .select(`
+                        *,
+                        monedas (codigo, nombre)
+                    `)
+                    .order('nombre');
                 
-                if (error) {
-                    console.error('Error al cargar empresas:', error);
-                    showError('Error al cargar las empresas');
-                    empresasTableBody.innerHTML = '<tr><td colspan="8">Error al cargar los datos</td></tr>';
-                    return;
-                }
+                if (error) throw error;
                 
-                empresas = data || [];
-                renderEmpresasTable();
+                empresas = data;
+                displayEmpresas();
                 
             } catch (error) {
-                console.error('Error en loadEmpresas:', error);
-                showError('Error al cargar las empresas');
-                empresasTableBody.innerHTML = '<tr><td colspan="8">Error al cargar los datos</td></tr>';
+                console.error('Error cargando empresas:', error);
+                showError('Error al cargar las empresas.');
+            } finally {
+                loadingElement.style.display = 'none';
             }
         }
         
-        // Renderizar tabla de empresas
-        function renderEmpresasTable() {
-            if (!empresas || empresas.length === 0) {
-                empresasTableBody.innerHTML = '<tr><td colspan="8">No hay empresas registradas</td></tr>';
+        // Mostrar empresas en la tabla
+        function displayEmpresas(filteredEmpresas = null) {
+            const empresasToDisplay = filteredEmpresas || empresas;
+            empresasTableBody.innerHTML = '';
+            
+            if (empresasToDisplay.length === 0) {
+                empresasTableContainer.style.display = 'none';
+                loadingElement.textContent = 'No se encontraron empresas.';
+                loadingElement.style.display = 'block';
                 return;
             }
             
-            // Aplicar filtros
-            let filteredEmpresas = [...empresas];
+            // Calcular paginación
+            const totalPages = Math.ceil(empresasToDisplay.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, empresasToDisplay.length);
+            const paginatedEmpresas = empresasToDisplay.slice(startIndex, endIndex);
             
-            // Filtro por búsqueda
-            const searchTerm = searchInput.value.toLowerCase();
-            if (searchTerm) {
-                filteredEmpresas = filteredEmpresas.filter(empresa => 
-                    empresa.nombre.toLowerCase().includes(searchTerm) || 
-                    empresa.rfc.toLowerCase().includes(searchTerm)
-                );
-            }
-            
-            // Filtro por estado
-            const statusFilter = filterStatus.value;
-            if (statusFilter !== '') {
-                filteredEmpresas = filteredEmpresas.filter(empresa => 
-                    String(empresa.activo) === statusFilter
-                );
-            }
-            
-            // Generar filas de la tabla
-            empresasTableBody.innerHTML = '';
-            
-            filteredEmpresas.forEach(empresa => {
+            // Mostrar empresas
+            paginatedEmpresas.forEach(empresa => {
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${escapeHtml(empresa.nombre)}</td>
-                    <td>${escapeHtml(empresa.rfc)}</td>
-                    <td>${escapeHtml(empresa.tipo_empresa || 'No especificado')}</td>
-                    <td>${escapeHtml(empresa.telefono || 'No especificado')}</td>
-                    <td>${escapeHtml(empresa.email || 'No especificado')}</td>
-                    <td>
-                        <span class="${empresa.activo ? 'status-active' : 'status-inactive'}">
-                            ${empresa.activo ? 'Activa' : 'Inactiva'}
-                        </span>
-                    </td>
-                    <td>${formatDate(empresa.creado_en)}</td>
-                    <td>
-                        <div class="actions-cell">
-                            <button class="action-btn edit-btn" data-id="${empresa.id}">Editar</button>
-                            <button class="action-btn delete-btn" data-id="${empresa.id}">Eliminar</button>
-                        </div>
-                    </td>
-                `;
+                
+                // Nombre
+                const nombreCell = document.createElement('td');
+                nombreCell.textContent = empresa.nombre;
+                row.appendChild(nombreCell);
+                
+                // RFC
+                const rfcCell = document.createElement('td');
+                rfcCell.textContent = empresa.rfc;
+                row.appendChild(rfcCell);
+                
+                // Email
+                const emailCell = document.createElement('td');
+                emailCell.textContent = empresa.email || '-';
+                row.appendChild(emailCell);
+                
+                // Teléfono
+                const telefonoCell = document.createElement('td');
+                telefonoCell.textContent = empresa.telefono || '-';
+                row.appendChild(telefonoCell);
+                
+                // Moneda
+                const monedaCell = document.createElement('td');
+                monedaCell.textContent = empresa.monedas ? `${empresa.monedas.codigo}` : '-';
+                row.appendChild(monedaCell);
+                
+                // Tipo de empresa
+                const tipoCell = document.createElement('td');
+                tipoCell.textContent = empresa.tipo_empresa || '-';
+                row.appendChild(tipoCell);
+                
+                // Estado
+                const estadoCell = document.createElement('td');
+                const estadoBadge = document.createElement('span');
+                estadoBadge.className = `status-badge ${empresa.activo ? 'status-active' : 'status-inactive'}`;
+                estadoBadge.textContent = empresa.activo ? 'Activa' : 'Inactiva';
+                estadoCell.appendChild(estadoBadge);
+                row.appendChild(estadoCell);
+                
+                // Acciones
+                const accionesCell = document.createElement('td');
+                const accionesDiv = document.createElement('div');
+                accionesDiv.className = 'actions';
+                
+                const editBtn = document.createElement('button');
+                editBtn.className = 'edit-btn';
+                editBtn.textContent = 'Editar';
+                editBtn.addEventListener('click', () => editEmpresa(empresa.id));
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = 'Eliminar';
+                deleteBtn.addEventListener('click', () => deleteEmpresa(empresa.id, empresa.nombre));
+                
+                accionesDiv.appendChild(editBtn);
+                accionesDiv.appendChild(deleteBtn);
+                accionesCell.appendChild(accionesDiv);
+                row.appendChild(accionesCell);
+                
                 empresasTableBody.appendChild(row);
             });
             
-            // Agregar eventos a los botones de acción
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', () => editEmpresa(btn.dataset.id));
-            });
+            empresasTableContainer.style.display = 'block';
             
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', () => showDeleteModal(btn.dataset.id));
-            });
+            // Mostrar paginación si hay más de una página
+            if (totalPages > 1) {
+                displayPagination(totalPages);
+            } else {
+                document.getElementById('pagination').style.display = 'none';
+            }
         }
         
-        // Configurar event listeners
-        function setupEventListeners() {
-            // Cerrar sesión
-            logoutBtn.addEventListener('click', async () => {
-                const { error } = await supabaseClient.auth.signOut();
-                if (!error) {
-                    window.location.href = 'index.html';
-                } else {
-                    showError('Error al cerrar sesión');
+        // Mostrar paginación
+        function displayPagination(totalPages) {
+            const paginationDiv = document.getElementById('pagination');
+            paginationDiv.innerHTML = '';
+            paginationDiv.style.display = 'flex';
+            
+            // Botón anterior
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = '←';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayEmpresas();
                 }
             });
+            paginationDiv.appendChild(prevBtn);
             
-            // Volver al inicio
-            goBackBtn.addEventListener('click', () => {
-                window.location.href = 'index.html';
-            });
+            // Botones de página
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i;
+                pageBtn.className = currentPage === i ? 'active' : '';
+                pageBtn.addEventListener('click', () => {
+                    currentPage = i;
+                    displayEmpresas();
+                });
+                paginationDiv.appendChild(pageBtn);
+            }
             
-            // Enviar formulario
-            empresaForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await saveEmpresa();
-            });
-            
-            // Cancelar edición
-            cancelEditBtn.addEventListener('click', cancelEdit);
-            
-            // Modal de eliminación
-            closeDeleteModal.addEventListener('click', () => {
-                deleteModal.style.display = 'none';
-            });
-            
-            cancelDeleteBtn.addEventListener('click', () => {
-                deleteModal.style.display = 'none';
-            });
-            
-            confirmDeleteBtn.addEventListener('click', async () => {
-                if (empresaToDelete) {
-                    await deleteEmpresa(empresaToDelete);
-                    deleteModal.style.display = 'none';
-                    empresaToDelete = null;
+            // Botón siguiente
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = '→';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayEmpresas();
                 }
             });
+            paginationDiv.appendChild(nextBtn);
+        }
+        
+        // Buscar empresas
+        function searchEmpresas() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
             
-            // Filtros
-            searchInput.addEventListener('input', renderEmpresasTable);
-            filterStatus.addEventListener('change', renderEmpresasTable);
-            resetFiltersBtn.addEventListener('click', () => {
-                searchInput.value = '';
-                filterStatus.value = '';
-                renderEmpresasTable();
-            });
+            if (!searchTerm) {
+                currentPage = 1;
+                displayEmpresas();
+                return;
+            }
+            
+            const filteredEmpresas = empresas.filter(empresa => 
+                empresa.nombre.toLowerCase().includes(searchTerm) ||
+                empresa.rfc.toLowerCase().includes(searchTerm) ||
+                (empresa.email && empresa.email.toLowerCase().includes(searchTerm)) ||
+                (empresa.telefono && empresa.telefono.includes(searchTerm))
+            );
+            
+            currentPage = 1;
+            displayEmpresas(filteredEmpresas);
+        }
+        
+        // Mostrar modal para agregar empresa
+        function showAddEmpresaModal() {
+            isEditing = false;
+            modalTitle.textContent = 'Nueva Empresa';
+            empresaForm.reset();
+            empresaIdInput.value = '';
+            empresaModal.style.display = 'block';
+        }
+        
+        // Mostrar modal para editar empresa
+        async function editEmpresa(id) {
+            isEditing = true;
+            currentEmpresaId = id;
+            modalTitle.textContent = 'Editar Empresa';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('empresas')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                
+                if (error) throw error;
+                
+                // Rellenar el formulario con los datos de la empresa
+                document.getElementById('nombre').value = data.nombre || '';
+                document.getElementById('rfc').value = data.rfc || '';
+                document.getElementById('email').value = data.email || '';
+                document.getElementById('telefono').value = data.telefono || '';
+                document.getElementById('website').value = data.website || '';
+                document.getElementById('moneda_id').value = data.moneda_id || '';
+                document.getElementById('tipo_empresa').value = data.tipo_empresa || '';
+                document.getElementById('regimen_fiscal').value = data.regimen_fiscal || '';
+                document.getElementById('direccion').value = data.direccion || '';
+                document.getElementById('logo_url').value = data.logo_url || '';
+                document.getElementById('activo').checked = data.activo;
+                empresaIdInput.value = data.id;
+                
+                empresaModal.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error cargando empresa:', error);
+                showError('Error al cargar los datos de la empresa.');
+            }
         }
         
         // Guardar empresa (crear o actualizar)
         async function saveEmpresa() {
-            try {
-                // Obtener datos del formulario
-                const formData = new FormData(empresaForm);
-                const empresaData = Object.fromEntries(formData.entries());
-                
-                // Convertir tipos de datos
-                empresaData.activo = empresaData.activo === 'true';
-                
-                // Validaciones básicas
-                if (!empresaData.nombre || !empresaData.rfc) {
-                    showError('Nombre y RFC son campos obligatorios');
-                    return;
-                }
-                
-                // Si estamos editando
-                if (isEditing && empresaData.id) {
-                    // Actualizar empresa existente
-                    empresaData.actualizado_en = new Date().toISOString();
-                    
-                    const { error } = await supabaseClient
-                        .from('empresas')
-                        .update(empresaData)
-                        .eq('id', empresaData.id);
-                    
-                    if (error) {
-                        console.error('Error al actualizar empresa:', error);
-                        showError(`Error al actualizar empresa: ${error.message}`);
-                        return;
-                    }
-                    
-                    showSuccess('Empresa actualizada correctamente');
-                    
-                } else {
-                    // Crear nueva empresa
-                    delete empresaData.id; // Eliminar id si existe (para nuevo registro)
-                    
-                    const { error } = await supabaseClient
-                        .from('empresas')
-                        .insert([empresaData]);
-                    
-                    if (error) {
-                        console.error('Error al crear empresa:', error);
-                        showError(`Error al crear empresa: ${error.message}`);
-                        return;
-                    }
-                    
-                    showSuccess('Empresa registrada correctamente');
-                }
-                
-                // Recargar empresas y resetear formulario
-                await loadEmpresas();
-                resetForm();
-                
-            } catch (error) {
-                console.error('Error en saveEmpresa:', error);
-                showError('Error al guardar la empresa');
-            }
-        }
-        
-        // Editar empresa
-        async function editEmpresa(id) {
-            try {
-                const empresa = empresas.find(e => e.id === id);
-                
-                if (!empresa) {
-                    showError('Empresa no encontrada');
-                    return;
-                }
-                
-                // Llenar formulario con datos de la empresa
-                document.getElementById('nombre').value = empresa.nombre || '';
-                document.getElementById('rfc').value = empresa.rfc || '';
-                document.getElementById('tipo_empresa').value = empresa.tipo_empresa || '';
-                document.getElementById('regimen_fiscal').value = empresa.regimen_fiscal || '';
-                document.getElementById('direccion').value = empresa.direccion || '';
-                document.getElementById('telefono').value = empresa.telefono || '';
-                document.getElementById('email').value = empresa.email || '';
-                document.getElementById('website').value = empresa.website || '';
-                document.getElementById('moneda_id').value = empresa.moneda_id || '';
-                document.getElementById('logo_url').value = empresa.logo_url || '';
-                document.getElementById('activo').value = empresa.activo ? 'true' : 'false';
-                empresaIdInput.value = empresa.id;
-                
-                // Cambiar modo a edición
-                isEditing = true;
-                formTitle.textContent = 'Editar Empresa';
-                submitBtn.textContent = 'Actualizar Empresa';
-                cancelEditBtn.style.display = 'inline-block';
-                
-                // Hacer scroll al formulario
-                document.getElementById('empresa-form').scrollIntoView({ behavior: 'smooth' });
-                
-            } catch (error) {
-                console.error('Error en editEmpresa:', error);
-                showError('Error al cargar empresa para editar');
-            }
-        }
-        
-        // Cancelar edición
-        function cancelEdit() {
-            resetForm();
-        }
-        
-        // Resetear formulario
-        function resetForm() {
-            empresaForm.reset();
-            empresaIdInput.value = '';
-            isEditing = false;
-            formTitle.textContent = 'Registrar Nueva Empresa';
-            submitBtn.textContent = 'Registrar Empresa';
-            cancelEditBtn.style.display = 'none';
-        }
-        
-        // Mostrar modal de confirmación para eliminar
-        function showDeleteModal(id) {
-            const empresa = empresas.find(e => e.id === id);
+            // Validar campos requeridos
+            const nombre = document.getElementById('nombre').value.trim();
+            const rfc = document.getElementById('rfc').value.trim();
             
-            if (!empresa) {
-                showError('Empresa no encontrada');
+            if (!nombre || !rfc) {
+                showError('Los campos Nombre y RFC son obligatorios.');
                 return;
             }
             
-            empresaToDelete = id;
-            deleteMessage.textContent = `¿Está seguro de que desea eliminar la empresa "${empresa.nombre}" (RFC: ${empresa.rfc})? Esta acción no se puede deshacer.`;
-            deleteModal.style.display = 'flex';
-        }
-        
-        // Eliminar empresa
-        async function deleteEmpresa(id) {
+            // Preparar datos
+            const empresaData = {
+                nombre: nombre,
+                rfc: rfc,
+                email: document.getElementById('email').value.trim(),
+                telefono: document.getElementById('telefono').value.trim(),
+                website: document.getElementById('website').value.trim(),
+                moneda_id: document.getElementById('moneda_id').value || null,
+                tipo_empresa: document.getElementById('tipo_empresa').value,
+                regimen_fiscal: document.getElementById('regimen_fiscal').value.trim(),
+                direccion: document.getElementById('direccion').value.trim(),
+                logo_url: document.getElementById('logo_url').value.trim(),
+                activo: document.getElementById('activo').checked,
+                actualizado_en: new Date().toISOString()
+            };
+            
             try {
-                const { error } = await supabaseClient
-                    .from('empresas')
-                    .delete()
-                    .eq('id', id);
-                
-                if (error) {
-                    console.error('Error al eliminar empresa:', error);
-                    showError(`Error al eliminar empresa: ${error.message}`);
-                    return;
+                if (isEditing) {
+                    // Actualizar empresa existente
+                    const { data, error } = await supabase
+                        .from('empresas')
+                        .update(empresaData)
+                        .eq('id', empresaIdInput.value);
+                    
+                    if (error) throw error;
+                    
+                    showSuccess('Empresa actualizada correctamente.');
+                } else {
+                    // Crear nueva empresa
+                    const { data, error } = await supabase
+                        .from('empresas')
+                        .insert([empresaData]);
+                    
+                    if (error) throw error;
+                    
+                    showSuccess('Empresa creada correctamente.');
                 }
                 
-                showSuccess('Empresa eliminada correctamente');
-                await loadEmpresas();
+                // Cerrar modal y recargar empresas
+                empresaModal.style.display = 'none';
+                loadEmpresas();
                 
             } catch (error) {
-                console.error('Error en deleteEmpresa:', error);
-                showError('Error al eliminar la empresa');
+                console.error('Error guardando empresa:', error);
+                
+                // Manejar errores específicos
+                if (error.message.includes('duplicate key') || error.message.includes('empresas_rfc_key')) {
+                    showError('El RFC ya existe. Por favor, use un RFC único.');
+                } else {
+                    showError('Error al guardar la empresa. Verifique los datos e intente nuevamente.');
+                }
             }
         }
         
-        // Mostrar mensaje de éxito
-        function showSuccess(message) {
-            alertSuccess.textContent = message;
-            alertSuccess.style.display = 'block';
-            alertError.style.display = 'none';
+        // Eliminar empresa
+        async function deleteEmpresa(id, nombre) {
+            if (!confirm(`¿Está seguro de eliminar la empresa "${nombre}"? Esta acción no se puede deshacer.`)) {
+                return;
+            }
             
-            // Ocultar después de 5 segundos
-            setTimeout(() => {
-                alertSuccess.style.display = 'none';
-            }, 5000);
+            try {
+                // En una implementación real, podrías cambiar el estado a inactivo en lugar de eliminar
+                const { data, error } = await supabase
+                    .from('empresas')
+                    .update({ activo: false, actualizado_en: new Date().toISOString() })
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                showSuccess('Empresa desactivada correctamente.');
+                loadEmpresas();
+                
+            } catch (error) {
+                console.error('Error eliminando empresa:', error);
+                showError('Error al eliminar la empresa.');
+            }
         }
         
         // Mostrar mensaje de error
         function showError(message) {
-            alertError.textContent = message;
-            alertError.style.display = 'block';
-            alertSuccess.style.display = 'none';
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
             
-            // Ocultar después de 5 segundos
             setTimeout(() => {
-                alertError.style.display = 'none';
+                errorMessage.style.display = 'none';
             }, 5000);
         }
         
-        // Funciones de utilidad
-        function formatDate(dateString) {
-            if (!dateString) return 'No especificado';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('es-MX', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-        }
-        
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        // Mostrar mensaje de éxito
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 5000);
         }
     </script>
 </body>
