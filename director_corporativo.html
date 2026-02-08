@@ -3,714 +3,1422 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel del Director Corporativo</title>
+    <title>Director Corporativo - Panel de Gestión</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-        .header { background: #2c3e50; color: white; padding: 20px; margin-bottom: 20px; border-radius: 5px; }
-        .role-warning { background: #e74c3c; color: white; padding: 20px; margin: 20px 0; border-radius: 5px; display: none; }
-        .logout-btn { float: right; background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 3px; cursor: pointer; }
-        .tabs { display: flex; flex-wrap: wrap; margin-bottom: 20px; border-bottom: 2px solid #2c3e50; }
-        .tab { padding: 10px 20px; cursor: pointer; background: #ecf0f1; margin-right: 5px; border-radius: 5px 5px 0 0; }
-        .tab.active { background: #2c3e50; color: white; }
-        .tab-content { display: none; background: white; padding: 20px; border-radius: 0 5px 5px 5px; }
-        .tab-content.active { display: block; }
-        .controls { margin-bottom: 20px; }
-        .btn { padding: 8px 15px; margin-right: 10px; border: none; border-radius: 3px; cursor: pointer; }
-        .btn-primary { background: #3498db; color: white; }
-        .btn-success { background: #27ae60; color: white; }
-        .btn-danger { background: #e74c3c; color: white; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #2c3e50; color: white; }
-        tr:nth-child(even) { background: #f2f2f2; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 5% auto; padding: 20px; width: 80%; max-width: 800px; border-radius: 5px; max-height: 80vh; overflow-y: auto; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; }
-        .form-row { display: flex; gap: 15px; }
-        .form-row > div { flex: 1; }
-        .close { float: right; font-size: 24px; cursor: pointer; }
-        .loading { text-align: center; padding: 20px; }
-        .error { color: #e74c3c; padding: 10px; background: #ffeaea; border-radius: 3px; margin: 10px 0; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+            overflow-y: auto;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+        
+        .logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #34495e;
+            margin-bottom: 20px;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo h1 i {
+            color: #3498db;
+        }
+        
+        .user-info {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #34495e;
+            margin-bottom: 20px;
+        }
+        
+        .user-info p {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .user-info .role {
+            background-color: #3498db;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        
+        .menu {
+            padding: 0 20px;
+        }
+        
+        .menu h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            color: #7f8c8d;
+        }
+        
+        .menu-item {
+            padding: 12px 15px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .menu-item:hover {
+            background-color: #34495e;
+        }
+        
+        .menu-item.active {
+            background-color: #3498db;
+        }
+        
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .header h2 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        
+        /* Table Container */
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-header h3 {
+            font-size: 1.3rem;
+            color: #2c3e50;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background-color: #f8f9fa;
+        }
+        
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            border-radius: 3px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        
+        .edit-btn {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .edit-btn:hover {
+            background-color: #d68910;
+        }
+        
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .view-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .view-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        /* Form Container */
+        .form-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .form-container.active {
+            display: block;
+        }
+        
+        .form-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .form-header h3 {
+            font-size: 1.4rem;
+            color: #2c3e50;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-group input {
+            width: auto;
+        }
+        
+        .form-actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+        
+        /* Status Messages */
+        .status-message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .status-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .status-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .status-message.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            display: block;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #7f8c8d;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #bdc3c7;
+        }
+        
+        /* Logout */
+        .logout-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background-color: #34495e;
+            color: white;
+            padding: 12px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .logout-btn:hover {
+            background-color: #2c3e50;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 240px;
+            }
+            
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+                padding: 20px 0;
+            }
+            
+            .sidebar .menu-text, 
+            .sidebar .logo h1 span, 
+            .sidebar .user-info,
+            .sidebar .menu h3 {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+            
+            .menu-item {
+                justify-content: center;
+                padding: 15px;
+            }
+            
+            .menu-item i {
+                font-size: 1.2rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Panel del Director Corporativo</h1>
-        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-        <p>Usuario: <span id="currentUser">Cargando...</span></p>
-    </div>
-
-    <div class="role-warning" id="roleWarning">
-        <h2>Acceso Denegado</h2>
-        <p>Esta sección es exclusiva para usuarios con rol "Director Corporativo".</p>
-        <button onclick="window.location.href='index.html'">Volver al Inicio</button>
-    </div>
-
-    <div id="mainContent" style="display: none;">
-        <div class="tabs" id="tabsContainer"></div>
-        
-        <div class="tab-contents">
-            <!-- El contenido de cada pestaña se generará dinámicamente -->
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <h1><i class="fas fa-crown"></i> <span>Director Corporativo</span></h1>
+            </div>
+            
+            <div class="user-info">
+                <p id="user-name">Cargando...</p>
+                <p id="user-email">Cargando...</p>
+                <span class="role" id="user-role">Director Corporativo</span>
+            </div>
+            
+            <div class="menu">
+                <h3>Tablas Principales</h3>
+                <div class="menu-item active" data-table="empresas">
+                    <i class="fas fa-building"></i>
+                    <span class="menu-text">Empresas</span>
+                </div>
+                <div class="menu-item" data-table="usuarios">
+                    <i class="fas fa-users"></i>
+                    <span class="menu-text">Usuarios</span>
+                </div>
+                <div class="menu-item" data-table="empleados">
+                    <i class="fas fa-user-tie"></i>
+                    <span class="menu-text">Empleados</span>
+                </div>
+                <div class="menu-item" data-table="clientes">
+                    <i class="fas fa-users"></i>
+                    <span class="menu-text">Clientes</span>
+                </div>
+                <div class="menu-item" data-table="productos">
+                    <i class="fas fa-box"></i>
+                    <span class="menu-text">Productos</span>
+                </div>
+                
+                <h3>Tablas Secundarias</h3>
+                <div class="menu-item" data-table="monedas">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span class="menu-text">Monedas</span>
+                </div>
+                <div class="menu-item" data-table="categoria_negocios">
+                    <i class="fas fa-tags"></i>
+                    <span class="menu-text">Categorías Negocios</span>
+                </div>
+                <div class="menu-item" data-table="departamentos">
+                    <i class="fas fa-sitemap"></i>
+                    <span class="menu-text">Departamentos</span>
+                </div>
+                <div class="menu-item" data-table="categoria_productos">
+                    <i class="fas fa-th-large"></i>
+                    <span class="menu-text">Categorías Productos</span>
+                </div>
+                <div class="menu-item" data-table="almacenes">
+                    <i class="fas fa-warehouse"></i>
+                    <span class="menu-text">Almacenes</span>
+                </div>
+                <div class="menu-item" data-table="inventario">
+                    <i class="fas fa-boxes"></i>
+                    <span class="menu-text">Inventario</span>
+                </div>
+                <div class="menu-item" data-table="ventas">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="menu-text">Ventas</span>
+                </div>
+                
+                <button class="logout-btn" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="menu-text">Cerrar Sesión</span>
+                </button>
+            </div>
         </div>
-    </div>
-
-    <div class="modal" id="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2 id="modalTitle">Formulario</h2>
-            <div id="modalForm"></div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h2 id="table-title">Gestión de Empresas</h2>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="refresh-btn">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                    <button class="btn btn-success" id="add-btn">
+                        <i class="fas fa-plus"></i> Agregar Nuevo
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Status Message -->
+            <div id="status-message" class="status-message"></div>
+            
+            <!-- Form Container -->
+            <div class="form-container" id="form-container">
+                <div class="form-header">
+                    <h3 id="form-title">Agregar Nueva Empresa</h3>
+                    <button class="btn btn-secondary" id="cancel-btn">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+                <form id="data-form">
+                    <!-- Form fields will be dynamically generated here -->
+                    <div id="form-fields"></div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancel-form-btn">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="submit-btn">Guardar</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Table Container -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 id="table-subtitle">Lista de Registros</h3>
+                    <div class="table-actions">
+                        <input type="text" id="search-input" class="form-control" placeholder="Buscar..." style="width: 250px;">
+                        <button class="btn btn-secondary" id="clear-search-btn">
+                            <i class="fas fa-times"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+                <div id="table-content">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando datos...
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Configuración de Supabase
+        // Supabase configuration
         const SUPABASE_URL = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
         
-        // Inicializar Supabase solo una vez
-        let supabaseClient;
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Variables globales
-        let currentTable = '';
-        let currentRecordId = null;
-        let monedas = [];
-        let empresas = [];
-        let categoriasProductos = [];
-        let categoriaNegocios = [];
-        let empleados = [];
+        // Current user and state
+        let currentUser = null;
+        let currentTable = 'empresas';
+        let currentData = [];
+        let currentEditId = null;
+        let currentFormFields = {};
         
-        // Tablas disponibles con sus columnas y tipos
-        const tables = {
-            'monedas': {
+        // Table definitions with their fields and types
+        const tableDefinitions = {
+            empresas: {
+                name: 'Empresas',
                 fields: [
-                    { name: 'codigo', label: 'Código', type: 'text', required: true, maxlength: 3 },
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true, maxlength: 100 },
-                    { name: 'simbolo', label: 'Símbolo', type: 'text', maxlength: 10 },
-                    { name: 'pais', label: 'País', type: 'text', maxlength: 100 },
-                    { name: 'tasa_cambio', label: 'Tasa de Cambio', type: 'number', step: '0.000001' },
-                    { name: 'activo', label: 'Activo', type: 'checkbox' }
-                ]
-            },
-            'empresas': {
-                fields: [
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true, maxlength: 255 },
-                    { name: 'rfc', label: 'RFC', type: 'text', required: true, maxlength: 50 },
+                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
+                    { name: 'rfc', label: 'RFC', type: 'text', required: true },
                     { name: 'direccion', label: 'Dirección', type: 'textarea' },
-                    { name: 'telefono', label: 'Teléfono', type: 'text', maxlength: 50 },
-                    { name: 'email', label: 'Email', type: 'email', maxlength: 255 },
-                    { name: 'website', label: 'Sitio Web', type: 'url', maxlength: 255 },
-                    { name: 'moneda_id', label: 'Moneda', type: 'select', options: [] },
+                    { name: 'telefono', label: 'Teléfono', type: 'text' },
+                    { name: 'email', label: 'Email', type: 'email' },
+                    { name: 'website', label: 'Sitio Web', type: 'text' },
+                    { name: 'moneda_id', label: 'ID Moneda', type: 'text' },
                     { name: 'logo_url', label: 'URL del Logo', type: 'text' },
-                    { name: 'tipo_empresa', label: 'Tipo de Empresa', type: 'text', maxlength: 50 },
-                    { name: 'regimen_fiscal', label: 'Régimen Fiscal', type: 'text', maxlength: 100 },
-                    { name: 'activo', label: 'Activo', type: 'checkbox' }
+                    { name: 'tipo_empresa', label: 'Tipo de Empresa', type: 'text' },
+                    { name: 'regimen_fiscal', label: 'Régimen Fiscal', type: 'text' },
+                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
                 ]
             },
-            'usuarios': {
+            usuarios: {
+                name: 'Usuarios',
                 fields: [
-                    { name: 'empresa_id', label: 'Empresa', type: 'select', options: [], required: true },
-                    { name: 'empleado_id', label: 'Empleado', type: 'select', options: [] },
-                    { name: 'nombres', label: 'Nombres', type: 'text', required: true, maxlength: 100 },
-                    { name: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', required: true, maxlength: 100 },
-                    { name: 'apellido_materno', label: 'Apellido Materno', type: 'text', maxlength: 100 },
-                    { name: 'email', label: 'Email', type: 'email', required: true, maxlength: 255 },
-                    { name: 'usuario', label: 'Usuario', type: 'text', required: true, maxlength: 50 },
+                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
+                    { name: 'empleado_id', label: 'ID Empleado', type: 'text' },
+                    { name: 'nombres', label: 'Nombres', type: 'text', required: true },
+                    { name: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', required: true },
+                    { name: 'apellido_materno', label: 'Apellido Materno', type: 'text' },
+                    { name: 'email', label: 'Email', type: 'email', required: true },
+                    { name: 'usuario', label: 'Usuario', type: 'text', required: true },
                     { name: 'contrasena_plano', label: 'Contraseña', type: 'password', required: true },
-                    { name: 'rol', label: 'Rol', type: 'select', options: [
-                        'Director Corporativo', 'Administrador', 'Gerente', 'Supervisor', 'Ejecutivo Comercial', 'Empleado'
-                    ], required: true },
+                    { name: 'rol', label: 'Rol', type: 'text', required: true },
                     { name: 'foto_url', label: 'URL de Foto', type: 'text' },
-                    { name: 'activo', label: 'Activo', type: 'checkbox' }
+                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
                 ]
             },
-            'empleados': {
+            empleados: {
+                name: 'Empleados',
                 fields: [
-                    { name: 'empresa_id', label: 'Empresa', type: 'select', options: [], required: true },
-                    { name: 'nombres', label: 'Nombres', type: 'text', required: true, maxlength: 100 },
-                    { name: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', required: true, maxlength: 100 },
-                    { name: 'apellido_materno', label: 'Apellido Materno', type: 'text', maxlength: 100 },
-                    { name: 'documento_identidad', label: 'Documento Identidad', type: 'text', maxlength: 50 },
-                    { name: 'tipo_documento', label: 'Tipo Documento', type: 'text', maxlength: 20 },
+                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
+                    { name: 'nombres', label: 'Nombres', type: 'text', required: true },
+                    { name: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', required: true },
+                    { name: 'apellido_materno', label: 'Apellido Materno', type: 'text' },
+                    { name: 'documento_identidad', label: 'Documento Identidad', type: 'text' },
+                    { name: 'tipo_documento', label: 'Tipo Documento', type: 'text' },
                     { name: 'direccion', label: 'Dirección', type: 'textarea' },
-                    { name: 'telefono', label: 'Teléfono', type: 'text', maxlength: 20 },
-                    { name: 'email', label: 'Email', type: 'email', maxlength: 255 },
+                    { name: 'telefono', label: 'Teléfono', type: 'text' },
+                    { name: 'email', label: 'Email', type: 'email' },
                     { name: 'fecha_nacimiento', label: 'Fecha Nacimiento', type: 'date' },
-                    { name: 'genero', label: 'Género', type: 'select', options: ['Masculino', 'Femenino', 'Otro'] },
-                    { name: 'foto_url', label: 'URL Foto', type: 'text' },
+                    { name: 'genero', label: 'Género', type: 'text' },
+                    { name: 'foto_url', label: 'URL de Foto', type: 'text' },
                     { name: 'fecha_contratacion', label: 'Fecha Contratación', type: 'date' },
-                    { name: 'salario_base', label: 'Salario Base', type: 'number', step: '0.01' },
-                    { name: 'moneda_id', label: 'Moneda', type: 'select', options: [] },
-                    { name: 'tipo_contrato', label: 'Tipo Contrato', type: 'text', maxlength: 50 },
-                    { name: 'activo', label: 'Activo', type: 'checkbox' }
+                    { name: 'salario_base', label: 'Salario Base', type: 'number' },
+                    { name: 'moneda_id', label: 'ID Moneda', type: 'text' },
+                    { name: 'tipo_contrato', label: 'Tipo Contrato', type: 'text' },
+                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
                 ]
             },
-            'clientes': {
+            clientes: {
+                name: 'Clientes',
                 fields: [
-                    { name: 'empresa_id', label: 'Empresa', type: 'select', options: [], required: true },
-                    { name: 'categoria_negocio_id', label: 'Categoría Negocio', type: 'select', options: [] },
-                    { name: 'nombres', label: 'Nombres', type: 'text', required: true, maxlength: 100 },
-                    { name: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', required: true, maxlength: 100 },
-                    { name: 'apellido_materno', label: 'Apellido Materno', type: 'text', maxlength: 100 },
-                    { name: 'documento_identidad', label: 'Documento Identidad', type: 'text', maxlength: 50 },
-                    { name: 'tipo_documento', label: 'Tipo Documento', type: 'text', maxlength: 20 },
-                    { name: 'ciudad', label: 'Ciudad', type: 'text', maxlength: 100 },
-                    { name: 'estado', label: 'Estado', type: 'text', maxlength: 100 },
-                    { name: 'pais', label: 'País', type: 'text', maxlength: 100 },
-                    { name: 'codigo_postal', label: 'Código Postal', type: 'text', maxlength: 20 },
-                    { name: 'telefono', label: 'Teléfono', type: 'text', maxlength: 20 },
-                    { name: 'email', label: 'Email', type: 'email', maxlength: 255 },
+                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
+                    { name: 'categoria_negocio_id', label: 'ID Categoría Negocio', type: 'text' },
+                    { name: 'nombres', label: 'Nombres', type: 'text', required: true },
+                    { name: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', required: true },
+                    { name: 'apellido_materno', label: 'Apellido Materno', type: 'text' },
+                    { name: 'documento_identidad', label: 'Documento Identidad', type: 'text' },
+                    { name: 'tipo_documento', label: 'Tipo Documento', type: 'text' },
+                    { name: 'ciudad', label: 'Ciudad', type: 'text' },
+                    { name: 'estado', label: 'Estado', type: 'text' },
+                    { name: 'pais', label: 'País', type: 'text' },
+                    { name: 'codigo_postal', label: 'Código Postal', type: 'text' },
+                    { name: 'telefono', label: 'Teléfono', type: 'text' },
+                    { name: 'email', label: 'Email', type: 'email' },
                     { name: 'fecha_nacimiento', label: 'Fecha Nacimiento', type: 'date' },
-                    { name: 'genero', label: 'Género', type: 'select', options: ['Masculino', 'Femenino', 'Otro'] },
-                    { name: 'foto_url', label: 'URL Foto', type: 'text' },
-                    { name: 'tipo_cliente', label: 'Tipo Cliente', type: 'text', maxlength: 50 },
-                    { name: 'limite_credito', label: 'Límite Crédito', type: 'number', step: '0.01' },
+                    { name: 'genero', label: 'Género', type: 'text' },
+                    { name: 'foto_url', label: 'URL de Foto', type: 'text' },
+                    { name: 'direcciones', label: 'Direcciones (JSON)', type: 'textarea' },
+                    { name: 'horarios_apertura', label: 'Horarios Apertura (JSON)', type: 'textarea' },
+                    { name: 'tipo_cliente', label: 'Tipo Cliente', type: 'text' },
+                    { name: 'limite_credito', label: 'Límite Crédito', type: 'number' },
                     { name: 'dias_credito', label: 'Días Crédito', type: 'number' },
-                    { name: 'activo', label: 'Activo', type: 'checkbox' }
+                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
                 ]
             },
-            'productos': {
+            productos: {
+                name: 'Productos',
                 fields: [
-                    { name: 'empresa_id', label: 'Empresa', type: 'select', options: [], required: true },
-                    { name: 'codigo', label: 'Código', type: 'text', required: true, maxlength: 50 },
-                    { name: 'nombre', label: 'Nombre', type: 'text', required: true, maxlength: 255 },
+                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
+                    { name: 'codigo', label: 'Código', type: 'text', required: true },
+                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
                     { name: 'descripcion', label: 'Descripción', type: 'textarea' },
-                    { name: 'categoria_id', label: 'Categoría', type: 'select', options: [] },
-                    { name: 'precio_compra', label: 'Precio Compra', type: 'number', step: '0.01' },
-                    { name: 'precio_venta', label: 'Precio Venta', type: 'number', step: '0.01', required: true },
-                    { name: 'moneda_id', label: 'Moneda', type: 'select', options: [], required: true },
+                    { name: 'categoria_id', label: 'ID Categoría', type: 'text' },
+                    { name: 'precio_compra', label: 'Precio Compra', type: 'number' },
+                    { name: 'precio_venta', label: 'Precio Venta', type: 'number', required: true },
+                    { name: 'moneda_id', label: 'ID Moneda', type: 'text', required: true },
                     { name: 'imagen_url', label: 'URL Imagen', type: 'text' },
-                    { name: 'peso', label: 'Peso', type: 'number', step: '0.01' },
-                    { name: 'dimensiones', label: 'Dimensiones', type: 'text', maxlength: 50 },
-                    { name: 'unidad_medida', label: 'Unidad Medida', type: 'text', maxlength: 20 },
-                    { name: 'es_producto_clave', label: 'Producto Clave', type: 'checkbox' },
-                    { name: 'compra_minima_cantidad', label: 'Compra Mínima Cantidad', type: 'number', step: '1' },
-                    { name: 'compra_minima_monto', label: 'Compra Mínima Monto', type: 'number', step: '0.01' },
-                    { name: 'compra_minima_peso', label: 'Compra Mínima Peso', type: 'number', step: '0.01' },
-                    { name: 'codigo_barras', label: 'Código Barras', type: 'text', maxlength: 100 },
-                    { name: 'ubicacion_almacen', label: 'Ubicación Almacén', type: 'text', maxlength: 100 },
-                    { name: 'activo', label: 'Activo', type: 'checkbox' }
+                    { name: 'peso', label: 'Peso', type: 'number' },
+                    { name: 'dimensiones', label: 'Dimensiones', type: 'text' },
+                    { name: 'unidad_medida', label: 'Unidad Medida', type: 'text' },
+                    { name: 'es_producto_clave', label: 'Es Producto Clave', type: 'checkbox' },
+                    { name: 'compra_minima_cantidad', label: 'Compra Mínima Cantidad', type: 'number' },
+                    { name: 'compra_minima_monto', label: 'Compra Mínima Monto', type: 'number' },
+                    { name: 'compra_minima_peso', label: 'Compra Mínima Peso', type: 'number' },
+                    { name: 'codigo_barras', label: 'Código Barras', type: 'text' },
+                    { name: 'ubicacion_almacen', label: 'Ubicación Almacén', type: 'text' },
+                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
                 ]
             },
-            'ventas': {
+            monedas: {
+                name: 'Monedas',
                 fields: [
-                    { name: 'empresa_id', label: 'Empresa', type: 'select', options: [], required: true },
-                    { name: 'cliente_id', label: 'Cliente', type: 'select', options: [], required: true },
-                    { name: 'empleado_id', label: 'Empleado', type: 'select', options: [] },
-                    { name: 'almacen_id', label: 'Almacén', type: 'select', options: [] },
-                    { name: 'numero_venta', label: 'Número Venta', type: 'text', required: true, maxlength: 50 },
+                    { name: 'codigo', label: 'Código', type: 'text', required: true },
+                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
+                    { name: 'simbolo', label: 'Símbolo', type: 'text' },
+                    { name: 'pais', label: 'País', type: 'text' },
+                    { name: 'tasa_cambio', label: 'Tasa Cambio', type: 'number' },
+                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
+                ]
+            },
+            categoria_negocios: {
+                name: 'Categorías de Negocios',
+                fields: [
+                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
+                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
+                    { name: 'descripcion', label: 'Descripción', type: 'textarea' },
+                    { name: 'tipo_negocio', label: 'Tipo Negocio', type: 'text', required: true },
+                    { name: 'nivel', label: 'Nivel', type: 'text' },
+                    { name: 'monto_minimo_compra', label: 'Monto Mínimo Compra', type: 'number' },
+                    { name: 'caracteristicas', label: 'Características (JSON)', type: 'textarea' }
+                ]
+            },
+            departamentos: {
+                name: 'Departamentos',
+                fields: [
+                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
+                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
+                    { name: 'descripcion', label: 'Descripción', type: 'textarea' },
+                    { name: 'jefe_departamento', label: 'ID Jefe Departamento', type: 'text' },
+                    { name: 'presupuesto', label: 'Presupuesto', type: 'number' },
+                    { name: 'moneda_id', label: 'ID Moneda', type: 'text' }
+                ]
+            },
+            categoria_productos: {
+                name: 'Categorías de Productos',
+                fields: [
+                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
+                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
+                    { name: 'descripcion', label: 'Descripción', type: 'textarea' },
+                    { name: 'categoria_padre', label: 'ID Categoría Padre', type: 'text' },
+                    { name: 'impuesto_porcentaje', label: 'Impuesto Porcentaje', type: 'number' }
+                ]
+            },
+            almacenes: {
+                name: 'Almacenes',
+                fields: [
+                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
+                    { name: 'nombre', label: 'Nombre', type: 'text', required: true },
+                    { name: 'direccion', label: 'Dirección', type: 'textarea' },
+                    { name: 'ciudad', label: 'Ciudad', type: 'text' },
+                    { name: 'estado', label: 'Estado', type: 'text' },
+                    { name: 'pais', label: 'País', type: 'text' },
+                    { name: 'codigo_postal', label: 'Código Postal', type: 'text' },
+                    { name: 'telefono', label: 'Teléfono', type: 'text' },
+                    { name: 'encargado', label: 'ID Encargado', type: 'text' },
+                    { name: 'capacidad', label: 'Capacidad', type: 'number' },
+                    { name: 'tipo_almacen', label: 'Tipo Almacén', type: 'text' },
+                    { name: 'activo', label: 'Activo', type: 'checkbox', default: true }
+                ]
+            },
+            inventario: {
+                name: 'Inventario',
+                fields: [
+                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
+                    { name: 'producto_id', label: 'ID Producto', type: 'text', required: true },
+                    { name: 'almacen_id', label: 'ID Almacén', type: 'text', required: true },
+                    { name: 'lote', label: 'Lote', type: 'text' },
+                    { name: 'fecha_vencimiento', label: 'Fecha Vencimiento', type: 'date' },
+                    { name: 'cantidad', label: 'Cantidad', type: 'number', required: true, default: 0 },
+                    { name: 'cantidad_minima', label: 'Cantidad Mínima', type: 'number', default: 10 },
+                    { name: 'cantidad_maxima', label: 'Cantidad Máxima', type: 'number' },
+                    { name: 'ubicacion', label: 'Ubicación', type: 'text' },
+                    { name: 'estado_stock', label: 'Estado Stock', type: 'text' }
+                ]
+            },
+            ventas: {
+                name: 'Ventas',
+                fields: [
+                    { name: 'empresa_id', label: 'ID Empresa', type: 'text', required: true },
+                    { name: 'cliente_id', label: 'ID Cliente', type: 'text', required: true },
+                    { name: 'empleado_id', label: 'ID Empleado', type: 'text' },
+                    { name: 'almacen_id', label: 'ID Almacén', type: 'text' },
+                    { name: 'numero_venta', label: 'Número Venta', type: 'text', required: true },
                     { name: 'fecha', label: 'Fecha', type: 'datetime-local' },
-                    { name: 'subtotal', label: 'Subtotal', type: 'number', step: '0.01', required: true },
-                    { name: 'impuesto', label: 'Impuesto', type: 'number', step: '0.01', required: true },
-                    { name: 'total', label: 'Total', type: 'number', step: '0.01', required: true },
-                    { name: 'moneda_id', label: 'Moneda', type: 'select', options: [], required: true },
-                    { name: 'estado', label: 'Estado', type: 'select', options: ['pendiente', 'completada', 'cancelada'], required: true },
-                    { name: 'metodo_pago', label: 'Método Pago', type: 'text', maxlength: 50 },
-                    { name: 'tipo_venta', label: 'Tipo Venta', type: 'text', maxlength: 50 },
+                    { name: 'subtotal', label: 'Subtotal', type: 'number', required: true },
+                    { name: 'impuesto', label: 'Impuesto', type: 'number', required: true },
+                    { name: 'total', label: 'Total', type: 'number', required: true },
+                    { name: 'moneda_id', label: 'ID Moneda', type: 'text', required: true },
+                    { name: 'estado', label: 'Estado', type: 'text', default: 'pendiente' },
+                    { name: 'metodo_pago', label: 'Método Pago', type: 'text' },
+                    { name: 'tipo_venta', label: 'Tipo Venta', type: 'text' },
                     { name: 'observaciones', label: 'Observaciones', type: 'textarea' }
                 ]
             }
         };
         
-        // Inicialización
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                // Inicializar Supabase
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                
-                // Verificar sesión y rol
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                
-                if (!session) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-                
-                document.getElementById('currentUser').textContent = session.user.email;
-                
-                // Obtener el rol del usuario
-                const { data: userData, error } = await supabaseClient
-                    .from('usuarios')
-                    .select('rol')
-                    .eq('email', session.user.email)
-                    .single();
-                
-                if (error) {
-                    console.error('Error obteniendo datos de usuario:', error);
-                    throw error;
-                }
-                
-                if (userData.rol !== 'Director Corporativo') {
-                    document.getElementById('roleWarning').style.display = 'block';
-                    document.getElementById('mainContent').style.display = 'none';
-                } else {
-                    document.getElementById('mainContent').style.display = 'block';
-                    await loadReferenceData();
-                    createTabs();
-                    loadTableData('monedas');
-                }
-            } catch (error) {
-                console.error('Error inicializando:', error);
-                document.getElementById('roleWarning').style.display = 'block';
-            }
+        // DOM elements
+        const tableTitle = document.getElementById('table-title');
+        const tableSubtitle = document.getElementById('table-subtitle');
+        const tableContent = document.getElementById('table-content');
+        const formContainer = document.getElementById('form-container');
+        const formTitle = document.getElementById('form-title');
+        const formFields = document.getElementById('form-fields');
+        const dataForm = document.getElementById('data-form');
+        const statusMessage = document.getElementById('status-message');
+        const searchInput = document.getElementById('search-input');
+        const clearSearchBtn = document.getElementById('clear-search-btn');
+        
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is Director Corporativo
+            checkUserRole();
+            
+            // Load initial data
+            loadTableData();
+            
+            // Setup event listeners
+            setupEventListeners();
         });
         
-        // Cerrar sesión
-        async function logout() {
+        // Check user role and authentication
+        async function checkUserRole() {
             try {
-                await supabaseClient.auth.signOut();
-                window.location.href = 'login.html';
+                // In a real app, you would check the actual user session
+                // For this demo, we'll simulate a Director Corporativo user
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error || !user) {
+                    // No user session, redirect to login
+                    showMessage('Por favor, inicie sesión como Director Corporativo para acceder a esta página.', 'error');
+                    
+                    // In a real app, redirect to login page
+                    // window.location.href = 'login.html';
+                    
+                    // For demo purposes, we'll continue with a simulated user
+                    simulateDirectorUser();
+                } else {
+                    // Check if user has Director Corporativo role
+                    const { data: usuario, error: usuarioError } = await supabase
+                        .from('usuarios')
+                        .select('rol, nombres, apellido_paterno, email')
+                        .eq('email', user.email)
+                        .single();
+                    
+                    if (usuarioError || !usuario || usuario.rol !== 'Director Corporativo') {
+                        showMessage('Acceso denegado. Solo los Directores Corporativos pueden acceder a esta página.', 'error');
+                        
+                        // In a real app, redirect to unauthorized page
+                        // window.location.href = 'unauthorized.html';
+                        
+                        // For demo, simulate director user
+                        simulateDirectorUser();
+                    } else {
+                        currentUser = {
+                            id: user.id,
+                            email: user.email,
+                            name: `${usuario.nombres} ${usuario.apellido_paterno}`,
+                            role: usuario.rol
+                        };
+                        
+                        updateUserInfo();
+                    }
+                }
             } catch (error) {
-                console.error('Error cerrando sesión:', error);
+                console.error('Error checking user role:', error);
+                simulateDirectorUser();
             }
         }
         
-        // Cargar datos de referencia
-        async function loadReferenceData() {
-            try {
-                // Cargar monedas
-                const { data: monedasData, error: monedasError } = await supabaseClient
-                    .from('monedas')
-                    .select('*')
-                    .order('codigo');
-                
-                if (!monedasError) {
-                    monedas = monedasData;
-                    tables.empresas.fields.find(f => f.name === 'moneda_id').options = 
-                        monedas.map(m => ({ value: m.id, label: `${m.codigo} - ${m.nombre}` }));
-                    tables.productos.fields.find(f => f.name === 'moneda_id').options = 
-                        monedas.map(m => ({ value: m.id, label: `${m.codigo} - ${m.nombre}` }));
-                    tables.ventas.fields.find(f => f.name === 'moneda_id').options = 
-                        monedas.map(m => ({ value: m.id, label: `${m.codigo} - ${m.nombre}` }));
-                    tables.empleados.fields.find(f => f.name === 'moneda_id').options = 
-                        monedas.map(m => ({ value: m.id, label: `${m.codigo} - ${m.nombre}` }));
-                }
-                
-                // Cargar empresas
-                const { data: empresasData, error: empresasError } = await supabaseClient
-                    .from('empresas')
-                    .select('*')
-                    .order('nombre');
-                
-                if (!empresasError) {
-                    empresas = empresasData;
-                    const empresaOptions = empresas.map(e => ({ value: e.id, label: e.nombre }));
-                    
-                    tables.usuarios.fields.find(f => f.name === 'empresa_id').options = empresaOptions;
-                    tables.clientes.fields.find(f => f.name === 'empresa_id').options = empresaOptions;
-                    tables.productos.fields.find(f => f.name === 'empresa_id').options = empresaOptions;
-                    tables.ventas.fields.find(f => f.name === 'empresa_id').options = empresaOptions;
-                    tables.empleados.fields.find(f => f.name === 'empresa_id').options = empresaOptions;
-                }
-                
-                // Cargar categorías de productos
-                const { data: categoriasData, error: categoriasError } = await supabaseClient
-                    .from('categoria_productos')
-                    .select('*')
-                    .order('nombre');
-                
-                if (!categoriasError) {
-                    categoriasProductos = categoriasData;
-                    tables.productos.fields.find(f => f.name === 'categoria_id').options = 
-                        categoriasProductos.map(c => ({ value: c.id, label: c.nombre }));
-                }
-                
-                // Cargar categorías de negocios
-                const { data: categoriasNegociosData, error: categoriasNegociosError } = await supabaseClient
-                    .from('categoria_negocios')
-                    .select('*')
-                    .order('nombre');
-                
-                if (!categoriasNegociosError) {
-                    categoriaNegocios = categoriasNegociosData;
-                    tables.clientes.fields.find(f => f.name === 'categoria_negocio_id').options = 
-                        categoriaNegocios.map(c => ({ value: c.id, label: c.nombre }));
-                }
-                
-                // Cargar empleados
-                const { data: empleadosData, error: empleadosError } = await supabaseClient
-                    .from('empleados')
-                    .select('*')
-                    .order('nombres');
-                
-                if (!empleadosError) {
-                    empleados = empleadosData;
-                    const empleadoOptions = empleados.map(e => ({ 
-                        value: e.id, 
-                        label: `${e.nombres} ${e.apellido_paterno}` 
-                    }));
-                    
-                    tables.usuarios.fields.find(f => f.name === 'empleado_id').options = empleadoOptions;
-                    tables.ventas.fields.find(f => f.name === 'empleado_id').options = empleadoOptions;
-                }
-                
-                // Cargar clientes para ventas
-                const { data: clientesData, error: clientesError } = await supabaseClient
-                    .from('clientes')
-                    .select('*')
-                    .order('nombres');
-                
-                if (!clientesError) {
-                    tables.ventas.fields.find(f => f.name === 'cliente_id').options = 
-                        clientesData.map(c => ({ 
-                            value: c.id, 
-                            label: `${c.nombres} ${c.apellido_paterno}` 
-                        }));
-                }
-                
-            } catch (error) {
-                console.error('Error cargando datos de referencia:', error);
-                showError('Error cargando datos de referencia');
-            }
+        function simulateDirectorUser() {
+            // For demo purposes, simulate a Director Corporativo user
+            currentUser = {
+                id: 'demo-director-id',
+                email: 'director@empresa.com',
+                name: 'Juan Pérez',
+                role: 'Director Corporativo'
+            };
+            
+            updateUserInfo();
+            showMessage('Modo demostración: Usuario Director Corporativo simulado.', 'warning');
         }
         
-        // Crear pestañas
-        function createTabs() {
-            const tabsContainer = document.getElementById('tabsContainer');
-            Object.keys(tables).forEach((tableName, index) => {
-                const tab = document.createElement('div');
-                tab.className = `tab ${index === 0 ? 'active' : ''}`;
-                tab.textContent = tableName.charAt(0).toUpperCase() + tableName.slice(1);
-                tab.onclick = () => switchTab(tableName);
-                tabsContainer.appendChild(tab);
-                
-                const content = document.createElement('div');
-                content.id = `tab-${tableName}`;
-                content.className = `tab-content ${index === 0 ? 'active' : ''}`;
-                content.innerHTML = `
-                    <div class="controls">
-                        <button class="btn btn-primary" onclick="openCreateModal('${tableName}')">
-                            Nuevo Registro
-                        </button>
-                    </div>
-                    <div id="table-${tableName}">
-                        <div class="loading">Cargando datos...</div>
-                    </div>
-                `;
-                document.querySelector('.tab-contents').appendChild(content);
+        function updateUserInfo() {
+            document.getElementById('user-name').textContent = currentUser.name;
+            document.getElementById('user-email').textContent = currentUser.email;
+            document.getElementById('user-role').textContent = currentUser.role;
+        }
+        
+        function setupEventListeners() {
+            // Menu items
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const table = item.getAttribute('data-table');
+                    switchTable(table);
+                    
+                    // Update active menu item
+                    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                });
             });
+            
+            // Buttons
+            document.getElementById('refresh-btn').addEventListener('click', loadTableData);
+            document.getElementById('add-btn').addEventListener('click', showAddForm);
+            document.getElementById('cancel-btn').addEventListener('click', hideForm);
+            document.getElementById('cancel-form-btn').addEventListener('click', hideForm);
+            
+            // Form submission
+            dataForm.addEventListener('submit', handleFormSubmit);
+            
+            // Search
+            searchInput.addEventListener('input', handleSearch);
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                loadTableData();
+            });
+            
+            // Logout
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
         }
         
-        // Cambiar pestaña
-        function switchTab(tableName) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        function switchTable(table) {
+            currentTable = table;
+            currentEditId = null;
             
-            event.target.classList.add('active');
-            document.getElementById(`tab-${tableName}`).classList.add('active');
+            // Update titles
+            const tableDef = tableDefinitions[table] || { name: table };
+            tableTitle.textContent = `Gestión de ${tableDef.name}`;
+            tableSubtitle.textContent = `Lista de ${tableDef.name}`;
             
-            loadTableData(tableName);
+            // Update add button text
+            document.getElementById('add-btn').innerHTML = `<i class="fas fa-plus"></i> Agregar ${tableDef.name.slice(0, -1)}`;
+            
+            // Load data for the new table
+            loadTableData();
+            hideForm();
         }
         
-        // Cargar datos de tabla
-        async function loadTableData(tableName) {
-            currentTable = tableName;
-            const tableContainer = document.getElementById(`table-${tableName}`);
+        async function loadTableData() {
+            showLoading();
             
             try {
-                const { data, error } = await supabaseClient
-                    .from(tableName)
+                const { data, error } = await supabase
+                    .from(currentTable)
                     .select('*')
                     .order('creado_en', { ascending: false });
                 
-                if (error) throw error;
-                
-                if (data.length === 0) {
-                    tableContainer.innerHTML = '<p>No hay registros disponibles.</p>';
-                    return;
+                if (error) {
+                    throw error;
                 }
                 
-                let html = '<table>';
+                currentData = data || [];
+                renderTable();
                 
-                // Encabezados
-                html += '<thead><tr>';
-                Object.keys(data[0]).forEach(key => {
-                    if (key !== 'contrasena_plano') {
-                        html += `<th>${formatColumnName(key)}</th>`;
-                    }
-                });
-                html += '<th>Acciones</th></tr></thead>';
-                
-                // Filas
-                html += '<tbody>';
-                data.forEach(row => {
-                    html += '<tr>';
-                    Object.entries(row).forEach(([key, value]) => {
-                        if (key !== 'contrasena_plano') {
-                            html += `<td>${formatCellValue(key, value)}</td>`;
-                        }
-                    });
-                    
-                    html += `
-                        <td>
-                            <button class="btn btn-success" onclick="openEditModal('${tableName}', '${row.id}')">Editar</button>
-                            <button class="btn btn-danger" onclick="deleteRecord('${tableName}', '${row.id}')">Eliminar</button>
+                if (currentData.length === 0) {
+                    showEmptyState();
+                }
+            } catch (error) {
+                console.error(`Error loading ${currentTable}:`, error);
+                showMessage(`Error al cargar datos: ${error.message}`, 'error');
+                showEmptyState();
+            }
+        }
+        
+        function renderTable() {
+            if (currentData.length === 0) {
+                showEmptyState();
+                return;
+            }
+            
+            // Get table definition
+            const tableDef = tableDefinitions[currentTable] || { name: currentTable, fields: [] };
+            
+            // Get first few fields to display in table
+            const displayFields = tableDef.fields.slice(0, 4);
+            const hasIdField = tableDef.fields.some(f => f.name === 'id');
+            
+            // Create table
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            ${hasIdField ? '<th>ID</th>' : ''}
+                            ${displayFields.map(field => `<th>${field.label}</th>`).join('')}
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            // Add rows
+            currentData.forEach(item => {
+                html += `
+                    <tr>
+                        ${hasIdField ? `<td title="${item.id}">${item.id.substring(0, 8)}...</td>` : ''}
+                        ${displayFields.map(field => {
+                            let value = item[field.name];
+                            
+                            // Format values for display
+                            if (value === null || value === undefined) {
+                                value = '';
+                            } else if (typeof value === 'boolean') {
+                                value = value ? 'Sí' : 'No';
+                            } else if (field.type === 'textarea' && value.length > 50) {
+                                value = value.substring(0, 50) + '...';
+                            } else if (field.name === 'creado_en' || field.name === 'actualizado_en') {
+                                value = new Date(value).toLocaleString();
+                            }
+                            
+                            return `<td title="${item[field.name]}">${value}</td>`;
+                        }).join('')}
+                        <td class="actions-cell">
+                            <button class="action-btn view-btn" onclick="viewItem('${item.id}')">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button class="action-btn edit-btn" onclick="editItem('${item.id}')">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="action-btn delete-btn" onclick="deleteItem('${item.id}')">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
                         </td>
-                    </tr>`;
-                });
-                html += '</tbody></table>';
-                
-                tableContainer.innerHTML = html;
-                
-            } catch (error) {
-                console.error(`Error cargando ${tableName}:`, error);
-                tableContainer.innerHTML = `<div class="error">Error cargando datos: ${error.message}</div>`;
-            }
-        }
-        
-        // Formatear nombre de columna
-        function formatColumnName(key) {
-            return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        }
-        
-        // Formatear valor de celda
-        function formatCellValue(key, value) {
-            if (value === null || value === undefined) return '';
-            
-            if (typeof value === 'boolean') {
-                return value ? 'Sí' : 'No';
-            }
-            
-            if (typeof value === 'object') {
-                return JSON.stringify(value).substring(0, 50) + '...';
-            }
-            
-            if (key.includes('fecha') || key.includes('_en')) {
-                return new Date(value).toLocaleString();
-            }
-            
-            if (key.includes('precio') || key.includes('monto') || key.includes('salario') || key.includes('total')) {
-                return parseFloat(value).toFixed(2);
-            }
-            
-            if ((key === 'moneda_id' || key === 'empresa_id' || key === 'categoria_id' || 
-                 key === 'cliente_id' || key === 'empleado_id') && value) {
-                return value.substring(0, 8) + '...';
-            }
-            
-            return String(value);
-        }
-        
-        // Abrir modal para crear
-        function openCreateModal(tableName) {
-            currentRecordId = null;
-            document.getElementById('modalTitle').textContent = `Nuevo ${tableName.slice(0, -1)}`;
-            
-            const form = generateForm(tableName);
-            document.getElementById('modalForm').innerHTML = form;
-            document.getElementById('modal').style.display = 'block';
-        }
-        
-        // Abrir modal para editar
-        async function openEditModal(tableName, recordId) {
-            currentRecordId = recordId;
-            
-            try {
-                const { data, error } = await supabaseClient
-                    .from(tableName)
-                    .select('*')
-                    .eq('id', recordId)
-                    .single();
-                
-                if (error) throw error;
-                
-                document.getElementById('modalTitle').textContent = `Editar ${tableName.slice(0, -1)}`;
-                const form = generateForm(tableName, data);
-                document.getElementById('modalForm').innerHTML = form;
-                document.getElementById('modal').style.display = 'block';
-                
-            } catch (error) {
-                console.error('Error cargando registro:', error);
-                showError('Error cargando registro: ' + error.message);
-            }
-        }
-        
-        // Generar formulario
-        function generateForm(tableName, recordData = null) {
-            const fields = tables[tableName].fields;
-            let formHTML = `<form id="recordForm" onsubmit="saveRecord(event)">`;
-            
-            fields.forEach(field => {
-                const value = recordData ? recordData[field.name] : '';
-                
-                formHTML += '<div class="form-group">';
-                formHTML += `<label for="${field.name}">${field.label}${field.required ? ' *' : ''}</label>`;
-                
-                switch (field.type) {
-                    case 'select':
-                        formHTML += `<select id="${field.name}" name="${field.name}" ${field.required ? 'required' : ''}>`;
-                        formHTML += `<option value="">Seleccionar...</option>`;
-                        
-                        if (Array.isArray(field.options)) {
-                            field.options.forEach(option => {
-                                if (typeof option === 'object') {
-                                    const selected = (value === option.value || 
-                                                     (recordData && recordData[field.name] === option.value)) ? 'selected' : '';
-                                    formHTML += `<option value="${option.value}" ${selected}>${option.label}</option>`;
-                                } else {
-                                    const selected = value === option ? 'selected' : '';
-                                    formHTML += `<option value="${option}" ${selected}>${option}</option>`;
-                                }
-                            });
-                        }
-                        
-                        formHTML += '</select>';
-                        break;
-                    
-                    case 'checkbox':
-                        const checked = value ? 'checked' : '';
-                        formHTML += `<input type="checkbox" id="${field.name}" name="${field.name}" ${checked}>`;
-                        break;
-                    
-                    case 'textarea':
-                        formHTML += `<textarea id="${field.name}" name="${field.name}" 
-                            ${field.required ? 'required' : ''} 
-                            ${field.maxlength ? `maxlength="${field.maxlength}"` : ''}>${value || ''}</textarea>`;
-                        break;
-                    
-                    case 'datetime-local':
-                        let dateValue = value;
-                        if (value && typeof value === 'string') {
-                            const date = new Date(value);
-                            dateValue = date.toISOString().slice(0, 16);
-                        }
-                        formHTML += `<input type="datetime-local" id="${field.name}" name="${field.name}" 
-                            value="${dateValue || ''}" 
-                            ${field.required ? 'required' : ''}>`;
-                        break;
-                    
-                    case 'date':
-                        let dateOnlyValue = value;
-                        if (value && typeof value === 'string') {
-                            dateOnlyValue = value.split('T')[0];
-                        }
-                        formHTML += `<input type="date" id="${field.name}" name="${field.name}" 
-                            value="${dateOnlyValue || ''}" 
-                            ${field.required ? 'required' : ''}>`;
-                        break;
-                    
-                    default:
-                        const inputValue = field.type === 'password' ? '' : value || '';
-                        formHTML += `<input type="${field.type}" id="${field.name}" name="${field.name}" 
-                            value="${inputValue}" 
-                            ${field.required ? 'required' : ''}
-                            ${field.maxlength ? `maxlength="${field.maxlength}"` : ''}
-                            ${field.step ? `step="${field.step}"` : ''}
-                            ${field.type === 'number' ? 'style="width: 100%"' : ''}>`;
-                        break;
-                }
-                
-                formHTML += '</div>';
+                    </tr>
+                `;
             });
             
-            formHTML += `
-                <div style="text-align: right; margin-top: 20px;">
-                    <button type="button" class="btn" onclick="closeModal()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+            html += `
+                    </tbody>
+                </table>
+                <div style="padding: 15px; text-align: right; color: #7f8c8d; font-size: 0.9rem;">
+                    Mostrando ${currentData.length} registros
                 </div>
-            </form>`;
+            `;
             
-            return formHTML;
+            tableContent.innerHTML = html;
         }
         
-        // Cerrar modal
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-            document.getElementById('modalForm').innerHTML = '';
+        function showLoading() {
+            tableContent.innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Cargando datos de ${tableDefinitions[currentTable]?.name || currentTable}...
+                </div>
+            `;
         }
         
-        // Guardar registro
-        async function saveRecord(event) {
-            event.preventDefault();
+        function showEmptyState() {
+            tableContent.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-database"></i>
+                    <h3>No hay datos disponibles</h3>
+                    <p>No se encontraron registros en la tabla ${tableDefinitions[currentTable]?.name || currentTable}.</p>
+                    <button class="btn btn-primary" onclick="showAddForm()" style="margin-top: 15px;">
+                        <i class="fas fa-plus"></i> Agregar primer registro
+                    </button>
+                </div>
+            `;
+        }
+        
+        function showAddForm() {
+            currentEditId = null;
+            const tableDef = tableDefinitions[currentTable] || { name: currentTable, fields: [] };
+            formTitle.textContent = `Agregar ${tableDef.name.slice(0, -1)}`;
             
-            const form = document.getElementById('recordForm');
-            const formData = new FormData(form);
+            // Generate form fields
+            generateFormFields();
+            
+            // Show form
+            formContainer.classList.add('active');
+            
+            // Scroll to form
+            formContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function generateFormFields(item = null) {
+            const tableDef = tableDefinitions[currentTable];
+            if (!tableDef) {
+                formFields.innerHTML = '<p>No hay definición de campos para esta tabla.</p>';
+                return;
+            }
+            
+            let html = '<div class="form-grid">';
+            
+            tableDef.fields.forEach(field => {
+                const value = item ? item[field.name] : (field.default !== undefined ? field.default : '');
+                
+                html += `
+                    <div class="form-group">
+                        <label for="${field.name}">${field.label}${field.required ? ' *' : ''}</label>
+                `;
+                
+                if (field.type === 'textarea') {
+                    html += `
+                        <textarea id="${field.name}" name="${field.name}" class="form-control" 
+                            ${field.required ? 'required' : ''}>${value || ''}</textarea>
+                    `;
+                } else if (field.type === 'checkbox') {
+                    html += `
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="${field.name}" name="${field.name}" 
+                                ${value ? 'checked' : ''}>
+                            <label for="${field.name}" style="font-weight: normal;">${field.label}</label>
+                        </div>
+                    `;
+                } else {
+                    const inputType = field.type === 'password' ? 'password' : 
+                                     field.type === 'email' ? 'email' : 
+                                     field.type === 'number' ? 'number' : 
+                                     field.type === 'date' ? 'date' : 
+                                     field.type === 'datetime-local' ? 'datetime-local' : 'text';
+                    
+                    html += `
+                        <input type="${inputType}" id="${field.name}" name="${field.name}" 
+                            class="form-control" value="${value || ''}" 
+                            ${field.required ? 'required' : ''}>
+                    `;
+                }
+                
+                html += `</div>`;
+            });
+            
+            html += '</div>';
+            formFields.innerHTML = html;
+        }
+        
+        function hideForm() {
+            formContainer.classList.remove('active');
+            dataForm.reset();
+            currentEditId = null;
+        }
+        
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const tableDef = tableDefinitions[currentTable];
+            if (!tableDef) return;
+            
+            // Get form data
+            const formData = new FormData(dataForm);
             const data = {};
             
-            tables[currentTable].fields.forEach(field => {
+            tableDef.fields.forEach(field => {
                 if (field.type === 'checkbox') {
                     data[field.name] = document.getElementById(field.name).checked;
                 } else {
                     const value = formData.get(field.name);
-                    if (value !== '' && value !== null) {
-                        if (field.type === 'number') {
-                            data[field.name] = parseFloat(value);
-                        } else {
-                            data[field.name] = value;
-                        }
-                    } else if (field.name.includes('_id')) {
+                    
+                    // Convert empty strings to null for non-required fields
+                    if (!field.required && (value === '' || value === null)) {
                         data[field.name] = null;
+                    } else if (field.type === 'number' && value !== '') {
+                        data[field.name] = parseFloat(value);
+                    } else {
+                        data[field.name] = value;
                     }
                 }
             });
             
+            // Add UUID if needed (for new records)
+            if (!currentEditId && !data.id) {
+                // In a real app, generate UUID
+                // For demo, we'll let Supabase handle it with DEFAULT uuid_generate_v4()
+            }
+            
             try {
-                let result;
-                
-                if (currentRecordId) {
-                    // Actualizar
-                    result = await supabaseClient
+                if (currentEditId) {
+                    // Update existing record
+                    const { error } = await supabase
                         .from(currentTable)
                         .update(data)
-                        .eq('id', currentRecordId);
+                        .eq('id', currentEditId);
+                    
+                    if (error) throw error;
+                    
+                    showMessage(`${tableDef.name.slice(0, -1)} actualizado exitosamente.`, 'success');
                 } else {
-                    // Crear
-                    result = await supabaseClient
+                    // Insert new record
+                    const { error } = await supabase
                         .from(currentTable)
                         .insert([data]);
+                    
+                    if (error) throw error;
+                    
+                    showMessage(`${tableDef.name.slice(0, -1)} creado exitosamente.`, 'success');
                 }
                 
-                if (result.error) throw result.error;
-                
-                alert('Registro guardado exitosamente');
-                closeModal();
-                loadTableData(currentTable);
-                
+                // Reload data and hide form
+                loadTableData();
+                hideForm();
             } catch (error) {
-                console.error('Error guardando registro:', error);
-                showError('Error guardando registro: ' + error.message);
+                console.error(`Error saving ${currentTable}:`, error);
+                showMessage(`Error al guardar: ${error.message}`, 'error');
             }
         }
         
-        // Eliminar registro
-        async function deleteRecord(tableName, recordId) {
-            if (!confirm('¿Está seguro de eliminar este registro? Esta acción no se puede deshacer.')) {
+        async function viewItem(id) {
+            const item = currentData.find(d => d.id === id);
+            if (!item) return;
+            
+            // Create a detailed view modal
+            const tableDef = tableDefinitions[currentTable] || { name: currentTable, fields: [] };
+            
+            let html = `
+                <div style="background: white; padding: 30px; border-radius: 8px; max-width: 800px; margin: 0 auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                        <h3 style="color: #2c3e50;">Detalles de ${tableDef.name.slice(0, -1)}</h3>
+                        <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #7f8c8d;">
+                            &times;
+                        </button>
+                    </div>
+                    <div style="max-height: 70vh; overflow-y: auto;">
+            `;
+            
+            // Display all fields
+            Object.keys(item).forEach(key => {
+                let value = item[key];
+                
+                // Format values for display
+                if (value === null || value === undefined) {
+                    value = '(vacío)';
+                } else if (typeof value === 'boolean') {
+                    value = value ? 'Sí' : 'No';
+                } else if (key === 'creado_en' || key === 'actualizado_en' || key === 'fecha') {
+                    value = new Date(value).toLocaleString();
+                } else if (key === 'fecha_nacimiento' || key === 'fecha_vencimiento' || key === 'fecha_inicio' || key === 'fecha_fin') {
+                    value = new Date(value).toLocaleDateString();
+                } else if (typeof value === 'object') {
+                    value = JSON.stringify(value, null, 2);
+                }
+                
+                html += `
+                    <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+                        <strong style="display: block; color: #2c3e50; margin-bottom: 5px;">${key}:</strong>
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; word-break: break-all;">
+                            ${value}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    <div style="margin-top: 25px; text-align: right;">
+                        <button onclick="closeModal()" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cerrar
+                        </button>
+                        <button onclick="editItem('${id}'); closeModal();" class="btn btn-primary" style="margin-left: 10px;">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Create modal
+            const modal = document.createElement('div');
+            modal.id = 'detail-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                padding: 20px;
+            `;
+            modal.innerHTML = html;
+            document.body.appendChild(modal);
+        }
+        
+        async function editItem(id) {
+            const item = currentData.find(d => d.id === id);
+            if (!item) return;
+            
+            currentEditId = id;
+            const tableDef = tableDefinitions[currentTable] || { name: currentTable, fields: [] };
+            formTitle.textContent = `Editar ${tableDef.name.slice(0, -1)}`;
+            
+            // Generate form fields with item data
+            generateFormFields(item);
+            
+            // Show form
+            formContainer.classList.add('active');
+            
+            // Scroll to form
+            formContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        async function deleteItem(id) {
+            if (!confirm('¿Está seguro de que desea eliminar este registro? Esta acción no se puede deshacer.')) {
                 return;
             }
             
             try {
-                const { error } = await supabaseClient
-                    .from(tableName)
+                const { error } = await supabase
+                    .from(currentTable)
                     .delete()
-                    .eq('id', recordId);
+                    .eq('id', id);
                 
                 if (error) throw error;
                 
-                alert('Registro eliminado exitosamente');
-                loadTableData(tableName);
-                
+                showMessage('Registro eliminado exitosamente.', 'success');
+                loadTableData();
             } catch (error) {
-                console.error('Error eliminando registro:', error);
-                showError('Error eliminando registro: ' + error.message);
+                console.error(`Error deleting from ${currentTable}:`, error);
+                showMessage(`Error al eliminar: ${error.message}`, 'error');
             }
         }
         
-        // Mostrar error
-        function showError(message) {
-            alert(message);
+        function handleSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                renderTable();
+                return;
+            }
+            
+            const filteredData = currentData.filter(item => {
+                // Search through all string values in the item
+                return Object.values(item).some(value => {
+                    if (typeof value === 'string') {
+                        return value.toLowerCase().includes(searchTerm);
+                    }
+                    return false;
+                });
+            });
+            
+            if (filteredData.length === 0) {
+                tableContent.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <h3>No se encontraron resultados</h3>
+                        <p>No hay registros que coincidan con "${searchTerm}".</p>
+                    </div>
+                `;
+            } else {
+                // Temporarily replace currentData with filtered data for rendering
+                const originalData = currentData;
+                currentData = filteredData;
+                renderTable();
+                currentData = originalData;
+            }
         }
         
-        // Cerrar modal al hacer clic fuera
-        window.onclick = function(event) {
-            const modal = document.getElementById('modal');
-            if (event.target === modal) {
-                closeModal();
+        function showMessage(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusMessage.className = 'status-message';
+                }, 5000);
             }
-        };
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById('detail-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        function handleLogout() {
+            if (confirm('¿Está seguro de que desea cerrar sesión?')) {
+                // In a real app, sign out from Supabase
+                // await supabase.auth.signOut();
+                
+                // Redirect to login page
+                // window.location.href = 'login.html';
+                
+                // For demo, just show a message
+                showMessage('Sesión cerrada exitosamente. Redirigiendo...', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            }
+        }
+        
+        // Make functions available globally for onclick handlers
+        window.viewItem = viewItem;
+        window.editItem = editItem;
+        window.deleteItem = deleteItem;
+        window.showAddForm = showAddForm;
+        window.closeModal = closeModal;
     </script>
 </body>
 </html>
