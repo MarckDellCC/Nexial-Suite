@@ -525,8 +525,8 @@
         const SUPABASE_URL = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
         
-        // Inicializar Supabase (solo una vez)
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Inicializar Supabase con un nombre diferente para evitar conflictos
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // Estado de la aplicación
         let currentUser = null;
@@ -578,7 +578,7 @@
         async function checkSession() {
             try {
                 // Obtener sesión actual
-                const { data: { session }, error } = await supabase.auth.getSession();
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
                 
                 if (error) {
                     console.error('Error al verificar sesión:', error);
@@ -592,7 +592,7 @@
                 }
                 
                 // Obtener información del usuario desde la tabla usuarios
-                const { data: usuario, error: userError } = await supabase
+                const { data: usuario, error: userError } = await supabaseClient
                     .from('usuarios')
                     .select('*')
                     .eq('email', session.user.email)
@@ -630,7 +630,7 @@
         // Cargar monedas desde la BD
         async function loadMonedas() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('monedas')
                     .select('id, codigo, nombre')
                     .eq('activo', true)
@@ -669,7 +669,7 @@
                 // Mostrar fila de carga temporal
                 empresasTableBody.innerHTML = '<tr><td colspan="8" class="loading">Cargando empresas...</td></tr>';
                 
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('empresas')
                     .select('*, monedas(codigo, nombre)')
                     .order('creado_en', { ascending: false });
@@ -759,7 +759,7 @@
         function setupEventListeners() {
             // Cerrar sesión
             logoutBtn.addEventListener('click', async () => {
-                const { error } = await supabase.auth.signOut();
+                const { error } = await supabaseClient.auth.signOut();
                 if (!error) {
                     window.location.href = 'index.html';
                 } else {
@@ -829,7 +829,7 @@
                     // Actualizar empresa existente
                     empresaData.actualizado_en = new Date().toISOString();
                     
-                    const { error } = await supabase
+                    const { error } = await supabaseClient
                         .from('empresas')
                         .update(empresaData)
                         .eq('id', empresaData.id);
@@ -846,7 +846,7 @@
                     // Crear nueva empresa
                     delete empresaData.id; // Eliminar id si existe (para nuevo registro)
                     
-                    const { error } = await supabase
+                    const { error } = await supabaseClient
                         .from('empresas')
                         .insert([empresaData]);
                     
@@ -940,7 +940,7 @@
         // Eliminar empresa
         async function deleteEmpresa(id) {
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('empresas')
                     .delete()
                     .eq('id', id);
