@@ -9,11 +9,36 @@
         // Configuración de Supabase
         const supabaseUrl = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
         const supabaseKey = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        let supabaseClient;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar el cliente de Supabase
+            supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+            
+            // Cargar empresas al iniciar
+            cargarEmpresas();
+            
+            // Configurar botón de logout
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            
+            // Configurar otros botones
+            document.getElementById('verEmpresasBtn').addEventListener('click', function() {
+                alert('Funcionalidad en desarrollo');
+            });
+            
+            document.getElementById('crearEmpresaBtn').addEventListener('click', function() {
+                alert('Funcionalidad en desarrollo');
+            });
+            
+            document.getElementById('reportesBtn').addEventListener('click', function() {
+                alert('Funcionalidad en desarrollo');
+            });
+        });
         
         async function cargarEmpresas() {
             try {
-                const { data: empresas, error } = await supabase
+                const { data: empresas, error } = await supabaseClient
                     .from('empresas')
                     .select('id, nombre, rfc, activo')
                     .order('creado_en', { ascending: false });
@@ -26,12 +51,16 @@
                 if (empresas && empresas.length > 0) {
                     empresas.forEach(empresa => {
                         const div = document.createElement('div');
+                        div.style.border = '1px solid #ddd';
+                        div.style.padding = '10px';
+                        div.style.margin = '5px';
+                        div.style.borderRadius = '4px';
                         div.innerHTML = `
-                            <div style="border:1px solid #ddd; padding:10px; margin:5px;">
-                                <strong>${empresa.nombre}</strong><br>
-                                RFC: ${empresa.rfc}<br>
-                                Estado: ${empresa.activo ? 'Activa' : 'Inactiva'}
-                            </div>
+                            <strong>${empresa.nombre}</strong><br>
+                            RFC: ${empresa.rfc}<br>
+                            Estado: <span style="color: ${empresa.activo ? 'green' : 'red'}">
+                                ${empresa.activo ? 'Activa' : 'Inactiva'}
+                            </span>
                         `;
                         lista.appendChild(div);
                     });
@@ -40,7 +69,8 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error al cargar empresas');
+                document.getElementById('lista-empresas').innerHTML = 
+                    '<p style="color: red;">Error al cargar empresas</p>';
             }
         }
         
@@ -49,24 +79,56 @@
                 window.location.href = 'login.html';
             }
         }
-        
-        // Cargar datos al iniciar
-        document.addEventListener('DOMContentLoaded', cargarEmpresas);
     </script>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .header { background: #f8f9fa; padding: 15px; border-bottom: 2px solid #007bff; }
-        .content { margin: 20px 0; }
-        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
-        .logout { background: #dc3545; color: white; border: none; }
-        .logout:hover { background: #c82333; }
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .header { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-bottom: 2px solid #007bff; 
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .content { 
+            margin: 20px 0; 
+        }
+        button { 
+            padding: 10px 20px; 
+            margin: 5px; 
+            cursor: pointer; 
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .logout { 
+            background: #dc3545; 
+            color: white; 
+        }
+        .logout:hover { 
+            background: #c82333; 
+        }
+        .action-btn {
+            background: #28a745;
+            color: white;
+        }
+        .action-btn:hover {
+            background: #218838;
+        }
+        h2, h3 {
+            color: #333;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h2>Panel del Director Corporativo</h2>
         <p>Acceso total multi-empresa</p>
-        <button class="logout" onclick="logout()">Cerrar Sesión</button>
+        <button class="logout" id="logoutBtn">Cerrar Sesión</button>
     </div>
     
     <div class="content">
@@ -77,9 +139,9 @@
         
         <h3>Acciones Rápidas</h3>
         <div>
-            <button onclick="alert('Funcionalidad en desarrollo')">Ver Todas las Empresas</button>
-            <button onclick="alert('Funcionalidad en desarrollo')">Crear Nueva Empresa</button>
-            <button onclick="alert('Funcionalidad en desarrollo')">Reportes Generales</button>
+            <button class="action-btn" id="verEmpresasBtn">Ver Todas las Empresas</button>
+            <button class="action-btn" id="crearEmpresaBtn">Crear Nueva Empresa</button>
+            <button class="action-btn" id="reportesBtn">Reportes Generales</button>
         </div>
     </div>
     
@@ -92,5 +154,14 @@
             <li>Gestión de accesos</li>
         </ul>
     </div>
+    
+    <!-- Eliminar los onclick del HTML -->
+    <script>
+        // Eliminar todos los atributos onclick para evitar errores
+        document.getElementById('logoutBtn').removeAttribute('onclick');
+        document.getElementById('verEmpresasBtn').removeAttribute('onclick');
+        document.getElementById('crearEmpresaBtn').removeAttribute('onclick');
+        document.getElementById('reportesBtn').removeAttribute('onclick');
+    </script>
 </body>
 </html>
