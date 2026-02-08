@@ -3,351 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Director Corporativo - Panel de Control</title>
+    <title>Director Corporativo</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuración de Supabase
+        const supabaseUrl = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
+        const supabaseKey = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        async function cargarEmpresas() {
+            try {
+                const { data: empresas, error } = await supabase
+                    .from('empresas')
+                    .select('id, nombre, rfc, activo')
+                    .order('creado_en', { ascending: false });
+                
+                if (error) throw error;
+                
+                const lista = document.getElementById('lista-empresas');
+                lista.innerHTML = '';
+                
+                if (empresas && empresas.length > 0) {
+                    empresas.forEach(empresa => {
+                        const div = document.createElement('div');
+                        div.innerHTML = `
+                            <div style="border:1px solid #ddd; padding:10px; margin:5px;">
+                                <strong>${empresa.nombre}</strong><br>
+                                RFC: ${empresa.rfc}<br>
+                                Estado: ${empresa.activo ? 'Activa' : 'Inactiva'}
+                            </div>
+                        `;
+                        lista.appendChild(div);
+                    });
+                } else {
+                    lista.innerHTML = '<p>No hay empresas registradas</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al cargar empresas');
+            }
+        }
+        
+        function logout() {
+            if (confirm('¿Cerrar sesión?')) {
+                window.location.href = 'login.html';
+            }
+        }
+        
+        // Cargar datos al iniciar
+        document.addEventListener('DOMContentLoaded', cargarEmpresas);
+    </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: #f5f7fa;
-            color: #333;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #2c3e50 0%, #1a2530 100%);
-            color: white;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
-        }
-        
-        .logout-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background 0.3s;
-        }
-        
-        .logout-btn:hover {
-            background: #c0392b;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        
-        .welcome-section {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-            border-left: 6px solid #667eea;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-        
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
-        }
-        
-        .stat-icon {
-            font-size: 36px;
-            margin-bottom: 15px;
-        }
-        
-        .stat-value {
-            font-size: 32px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            color: #7f8c8d;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .access-level {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            display: inline-block;
-            margin-top: 10px;
-        }
-        
-        .quick-actions {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-        }
-        
-        .quick-actions h2 {
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-        
-        .action-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .action-btn {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            padding: 15px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            flex: 1;
-            min-width: 200px;
-            text-align: left;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-        
-        .action-btn:hover {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-            transform: translateY(-2px);
-        }
-        
-        .session-info {
-            background: #e8f7ee;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 25px;
-            font-size: 14px;
-            color: #155724;
-            border-left: 4px solid #28a745;
-        }
-        
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px;
-            text-align: center;
-            border-left: 4px solid #c33;
-        }
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .header { background: #f8f9fa; padding: 15px; border-bottom: 2px solid #007bff; }
+        .content { margin: 20px 0; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .logout { background: #dc3545; color: white; border: none; }
+        .logout:hover { background: #c82333; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🏢 Panel de Control - Director Corporativo</h1>
-        <div class="user-info">
-            <div id="userAvatar" class="user-avatar">DC</div>
-            <div>
-                <div id="userName">Cargando...</div>
-                <div id="userEmail">-</div>
-            </div>
-            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        <h2>Panel del Director Corporativo</h2>
+        <p>Acceso total multi-empresa</p>
+        <button class="logout" onclick="logout()">Cerrar Sesión</button>
+    </div>
+    
+    <div class="content">
+        <h3>Empresas Registradas</h3>
+        <div id="lista-empresas">
+            <p>Cargando empresas...</p>
+        </div>
+        
+        <h3>Acciones Rápidas</h3>
+        <div>
+            <button onclick="alert('Funcionalidad en desarrollo')">Ver Todas las Empresas</button>
+            <button onclick="alert('Funcionalidad en desarrollo')">Crear Nueva Empresa</button>
+            <button onclick="alert('Funcionalidad en desarrollo')">Reportes Generales</button>
         </div>
     </div>
     
-    <div class="container">
-        <div class="welcome-section">
-            <h2>Bienvenido, <span id="welcomeName">Director Corporativo</span></h2>
-            <p>Usted tiene acceso completo a todas las empresas y funcionalidades del sistema.</p>
-            <div class="access-level">Nivel de acceso: MÁXIMO</div>
-        </div>
-        
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">🏢</div>
-                <div class="stat-value" id="empresasCount">0</div>
-                <div class="stat-label">Empresas Activas</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">👥</div>
-                <div class="stat-value" id="usuariosCount">0</div>
-                <div class="stat-label">Usuarios Totales</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">📊</div>
-                <div class="stat-value" id="ventasCount">0</div>
-                <div class="stat-label">Ventas Hoy</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">💰</div>
-                <div class="stat-value" id="ingresosCount">$0</div>
-                <div class="stat-label">Ingresos Totales</div>
-            </div>
-        </div>
-        
-        <div class="quick-actions">
-            <h2>⚡ Acciones Rápidas</h2>
-            <div class="action-buttons">
-                <button class="action-btn" onclick="showAlert('Gestión de empresas')">📋 Gestionar Empresas</button>
-                <button class="action-btn" onclick="showAlert('Ver reportes financieros')">📊 Ver Reportes Financieros</button>
-                <button class="action-btn" onclick="showAlert('Administrar usuarios')">👥 Administrar Usuarios</button>
-                <button class="action-btn" onclick="showAlert('Configurar sistema')">⚙️ Configurar Sistema</button>
-                <button class="action-btn" onclick="showAlert('Auditoría del sistema')">🔍 Auditoría del Sistema</button>
-                <button class="action-btn" onclick="showAlert('Monitoreo en tiempo real')">📈 Monitoreo en Tiempo Real</button>
-            </div>
-        </div>
-        
-        <div class="session-info">
-            <strong>Información de sesión:</strong> 
-            <span id="sessionInfo">Cargando información de la sesión...</span>
-        </div>
+    <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+        <p><strong>Funciones del Director Corporativo:</strong></p>
+        <ul>
+            <li>Vista global de todas las empresas</li>
+            <li>Configuración de permisos multi-empresa</li>
+            <li>Reportes consolidados</li>
+            <li>Gestión de accesos</li>
+        </ul>
     </div>
-
-    <script>
-        // Configuración de Supabase
-        const SUPABASE_URL = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // Verificar sesión al cargar la página
-        document.addEventListener('DOMContentLoaded', async () => {
-            const userData = sessionStorage.getItem('user');
-            
-            if (!userData) {
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            const user = JSON.parse(userData);
-            
-            // Verificar que el usuario sea Director Corporativo
-            if (user.rol !== 'Director Corporativo') {
-                showError('Acceso denegado. Esta página es solo para Directores Corporativos.');
-                return;
-            }
-            
-            // Mostrar información del usuario
-            document.getElementById('userName').textContent = `${user.nombres} ${user.apellido_paterno}`;
-            document.getElementById('userEmail').textContent = user.email;
-            document.getElementById('welcomeName').textContent = user.nombres;
-            document.getElementById('userAvatar').textContent = user.nombres.charAt(0) + user.apellido_paterno.charAt(0);
-            document.getElementById('sessionInfo').textContent = 
-                `Conectado como ${user.rol} desde ${new Date(user.ultimo_acceso).toLocaleString()}`;
-            
-            // Cargar estadísticas
-            await loadStats();
-        });
-        
-        async function loadStats() {
-            try {
-                // Contar empresas activas
-                const { count: empresasCount } = await supabase
-                    .from('empresas')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('activo', true);
-                
-                // Contar usuarios activos
-                const { count: usuariosCount } = await supabase
-                    .from('usuarios')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('activo', true);
-                
-                // Ventas de hoy
-                const today = new Date().toISOString().split('T')[0];
-                const { count: ventasCount } = await supabase
-                    .from('ventas')
-                    .select('*', { count: 'exact', head: true })
-                    .gte('fecha', `${today}T00:00:00`)
-                    .lte('fecha', `${today}T23:59:59`);
-                
-                // Ingresos totales (suma de ventas completadas)
-                const { data: ventasData } = await supabase
-                    .from('ventas')
-                    .select('total')
-                    .eq('estado', 'completada');
-                
-                const ingresosTotal = ventasData?.reduce((sum, venta) => sum + (venta.total || 0), 0) || 0;
-                
-                // Actualizar UI
-                document.getElementById('empresasCount').textContent = empresasCount || 0;
-                document.getElementById('usuariosCount').textContent = usuariosCount || 0;
-                document.getElementById('ventasCount').textContent = ventasCount || 0;
-                document.getElementById('ingresosCount').textContent = `$${ingresosTotal.toLocaleString()}`;
-                
-            } catch (error) {
-                console.error('Error cargando estadísticas:', error);
-            }
-        }
-        
-        function showAlert(action) {
-            alert(`Función: ${action}\n\nEsta funcionalidad se implementará en la siguiente fase del desarrollo.`);
-        }
-        
-        function showError(message) {
-            const container = document.querySelector('.container');
-            container.innerHTML = `
-                <div class="error-message">
-                    <h3>❌ Error de Acceso</h3>
-                    <p>${message}</p>
-                    <p>Será redirigido a la página de login en 5 segundos...</p>
-                </div>
-            `;
-            
-            setTimeout(() => {
-                logout();
-            }, 5000);
-        }
-        
-        function logout() {
-            sessionStorage.removeItem('user');
-            window.location.href = 'login.html';
-        }
-    </script>
 </body>
 </html>
