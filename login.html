@@ -3,87 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Sistema Nexial</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <title>Inicio de Sesión - Nexial Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .logo p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+            font-size: 14px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 10px 0;
+            color: #667eea;
+        }
+    </style>
 </head>
 <body>
-    <h1>Login Sistema Nexial</h1>
-    
-    <div id="login-form">
-        <input type="email" id="email" placeholder="Correo electrónico" required>
-        <input type="password" id="password" placeholder="Contraseña" required>
-        <button onclick="login()">Iniciar Sesión</button>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🔐 Nexial Suite</h1>
+            <p>Iniciar sesión en el sistema</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" required placeholder="usuario@empresa.com">
+            </div>
+            
+            <div class="input-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" required placeholder="••••••••">
+            </div>
+            
+            <div class="loading" id="loading">Verificando credenciales...</div>
+            <div class="error-message" id="errorMessage"></div>
+            
+            <button type="submit" class="btn-login">Iniciar Sesión</button>
+        </form>
     </div>
 
-    <div id="message" style="color: red; margin-top: 10px;"></div>
-
+    <!-- Incluir Supabase SDK -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
         // Configuración de Supabase
-        const supabaseUrl = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
-        const supabaseAnonKey = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-
-        async function login() {
+        const SUPABASE_URL = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const messageDiv = document.getElementById('message');
-
-            if (!email || !password) {
-                messageDiv.textContent = 'Por favor, completa todos los campos.';
-                return;
-            }
-
-            messageDiv.textContent = 'Verificando credenciales...';
-
+            const errorMessage = document.getElementById('errorMessage');
+            const loading = document.getElementById('loading');
+            
+            // Mostrar loading
+            errorMessage.style.display = 'none';
+            loading.style.display = 'block';
+            
             try {
-                // 1. Autenticación con Supabase Auth
-                const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
-                if (authError) {
-                    throw new Error(authError.message);
-                }
-
-                const userId = authData.user.id;
-
-                // 2. Obtener información del usuario desde nuestra tabla 'usuarios'
-                const { data: userData, error: userError } = await supabase
+                // Consultar la tabla de usuarios
+                const { data: usuarios, error } = await supabase
                     .from('usuarios')
                     .select('*')
                     .eq('email', email)
+                    .eq('activo', true)
                     .single();
-
-                if (userError) {
-                    throw new Error('Usuario no encontrado en el sistema.');
+                
+                if (error) {
+                    throw new Error('Usuario no encontrado o inactivo');
                 }
-
-                // 3. Redirigir según el rol
-                const userRole = userData.rol;
-                messageDiv.textContent = `Bienvenido ${userData.nombres}, Rol: ${userRole}`;
-
-                // Redirección basada en rol
-                if (userRole.toLowerCase().includes('director corporativo')) {
-                    window.location.href = 'director_corporativo.html';
-                } else if (userRole.toLowerCase().includes('director general')) {
-                    window.location.href = 'director_general.html';
-                } else if (userRole.toLowerCase().includes('director financiero')) {
-                    window.location.href = 'director_financiero.html';
-                } else {
-                    messageDiv.textContent += ' - No tienes una página específica asignada.';
+                
+                // Verificar contraseña (en texto plano según tu esquema)
+                if (usuarios.contrasena_plano !== password) {
+                    throw new Error('Contraseña incorrecta');
                 }
-
+                
+                // Guardar sesión en localStorage
+                localStorage.setItem('usuario', JSON.stringify({
+                    id: usuarios.id,
+                    email: usuarios.email,
+                    nombres: usuarios.nombres,
+                    apellido_paterno: usuarios.apellido_paterno,
+                    rol: usuarios.rol,
+                    empresa_id: usuarios.empresa_id
+                }));
+                
+                loading.textContent = '¡Inicio exitoso! Redirigiendo...';
+                
+                // Redirigir según el rol
+                setTimeout(() => {
+                    if (usuarios.rol === 'Director Corporativo') {
+                        window.location.href = 'director_corporativo.html';
+                    } else {
+                        // Por ahora redirige a director_corporativo.html
+                        // Más adelante puedes agregar otras páginas
+                        window.location.href = 'director_corporativo.html';
+                    }
+                }, 1000);
+                
             } catch (error) {
-                messageDiv.textContent = 'Error: ' + error.message;
-                console.error(error);
+                errorMessage.textContent = error.message;
+                errorMessage.style.display = 'block';
+                loading.style.display = 'none';
             }
-        }
-
-        // Permitir login con Enter
-        document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                login();
+        });
+        
+        // Verificar si ya hay sesión activa
+        window.addEventListener('DOMContentLoaded', () => {
+            const usuario = localStorage.getItem('usuario');
+            if (usuario) {
+                const userData = JSON.parse(usuario);
+                if (userData.rol === 'Director Corporativo') {
+                    window.location.href = 'director_corporativo.html';
+                }
             }
         });
     </script>
