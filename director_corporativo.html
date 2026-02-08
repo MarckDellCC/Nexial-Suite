@@ -171,16 +171,6 @@
             background-color: #f9f9f9;
         }
         
-        .active {
-            color: #27ae60;
-            font-weight: 600;
-        }
-        
-        .inactive {
-            color: #e74c3c;
-            font-weight: 600;
-        }
-        
         .actions {
             display: flex;
             gap: 8px;
@@ -635,15 +625,18 @@
     </div>
 
     <script>
-        // SOLUCIÓN AL ERROR: Verificar si Supabase ya está inicializado
+        // SOLUCIÓN: Inicializar Supabase solo si no existe
         if (typeof supabase === 'undefined') {
             // Configuración de Supabase
             const SUPABASE_URL = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
             const SUPABASE_ANON_KEY = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
             
             // Inicializar Supabase solo si no existe
-            var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
+        
+        // Usar window.supabaseClient para evitar conflictos
+        const supabaseClient = window.supabaseClient || supabase;
         
         // Estado de la aplicación
         let currentUser = null;
@@ -676,6 +669,9 @@
         const logoutBtn = document.getElementById('logoutBtn');
         const loginForm = document.getElementById('loginForm');
         const loginError = document.getElementById('loginError');
+        const submitLoginBtn = document.getElementById('submitLoginBtn');
+        const cancelLoginBtn = document.getElementById('cancelLoginBtn');
+        const closeModalButtons = document.querySelectorAll('.close-modal');
         
         // Verificar si hay una sesión activa al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
@@ -693,7 +689,7 @@
             });
             
             // Event listeners para modales
-            document.querySelectorAll('.close-modal').forEach(btn => {
+            closeModalButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
                     empresaModal.style.display = 'none';
                     loginModal.style.display = 'none';
@@ -704,11 +700,11 @@
                 empresaModal.style.display = 'none';
             });
             
-            document.getElementById('cancelLoginBtn').addEventListener('click', function() {
+            cancelLoginBtn.addEventListener('click', function() {
                 loginModal.style.display = 'none';
             });
             
-            document.getElementById('submitLoginBtn').addEventListener('click', login);
+            submitLoginBtn.addEventListener('click', login);
             
             document.getElementById('saveEmpresaBtn').addEventListener('click', saveEmpresa);
             
@@ -764,33 +760,41 @@
             loginError.style.display = 'none';
         }
         
-        // Función de login
+        // Función de login DIRECTAMENTE contra la tabla usuarios
         async function login() {
             const usuario = document.getElementById('loginUsuario').value.trim();
             const password = document.getElementById('loginPassword').value.trim();
             
             if (!usuario || !password) {
-                showError('Por favor, complete todos los campos.');
+                showLoginError('Por favor, complete todos los campos.');
                 return;
             }
             
             try {
+                console.log('Intentando login con:', usuario);
+                
                 // Buscar usuario en la tabla usuarios
-                const { data: usuarios, error } = await supabase
+                const { data: usuarios, error } = await supabaseClient
                     .from('usuarios')
                     .select('*')
-                    .or(`usuario.eq.${usuario},email.eq.${usuario}`)
+                    .or(`usuario.ilike.%${usuario}%,email.ilike.%${usuario}%`)
                     .eq('activo', true)
                     .limit(1);
                 
-                if (error) throw error;
+                if (error) {
+                    console.error('Error en consulta:', error);
+                    throw error;
+                }
                 
-                if (usuarios.length === 0) {
+                console.log('Usuarios encontrados:', usuarios);
+                
+                if (!usuarios || usuarios.length === 0) {
                     showLoginError('Usuario no encontrado o inactivo.');
                     return;
                 }
                 
                 const usuarioData = usuarios[0];
+                console.log('Usuario encontrado:', usuarioData);
                 
                 // Verificar si es Director Corporativo
                 if (usuarioData.rol !== 'Director Corporativo') {
@@ -847,7 +851,7 @@
         // Cargar monedas para el select
         async function loadMonedas() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('monedas')
                     .select('id, codigo, nombre')
                     .eq('activo', true)
@@ -877,7 +881,7 @@
             empresasTableContainer.style.display = 'none';
             
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('empresas')
                     .select(`
                         *,
@@ -1071,7 +1075,7 @@
             modalTitle.textContent = 'Editar Empresa';
             
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('empresas')
                     .select('*')
                     .eq('id', id)
@@ -1131,7 +1135,7 @@
             try {
                 if (isEditing) {
                     // Actualizar empresa existente
-                    const { data, error } = await supabase
+                    const { data, error } = await supabaseClient
                         .from('empresas')
                         .update(empresaData)
                         .eq('id', empresaIdInput.value);
@@ -1141,7 +1145,7 @@
                     showSuccess('Empresa actualizada correctamente.');
                 } else {
                     // Crear nueva empresa
-                    const { data, error } = await supabase
+                    const { data, error } = await supabaseClient
                         .from('empresas')
                         .insert([empresaData]);
                     
@@ -1168,13 +1172,12 @@
         
         // Eliminar empresa
         async function deleteEmpresa(id, nombre) {
-            if (!confirm(`¿Está seguro de eliminar la empresa "${nombre}"? Esta acción no se puede deshacer.`)) {
+            if (!confirm(`¿Está seguro de desactivar la empresa "${nombre}"? La empresa no se eliminará, solo se marcará como inactiva.`)) {
                 return;
             }
             
             try {
-                // En una implementación real, podrías cambiar el estado a inactivo en lugar de eliminar
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('empresas')
                     .update({ activo: false, actualizado_en: new Date().toISOString() })
                     .eq('id', id);
@@ -1185,8 +1188,8 @@
                 loadEmpresas();
                 
             } catch (error) {
-                console.error('Error eliminando empresa:', error);
-                showError('Error al eliminar la empresa.');
+                console.error('Error desactivando empresa:', error);
+                showError('Error al desactivar la empresa.');
             }
         }
         
