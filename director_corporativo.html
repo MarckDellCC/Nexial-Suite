@@ -3,277 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Director Corporativo - Panel</title>
+    <title>Director Corporativo - Nexial</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        
-        body {
-            background: #f5f5f5;
-            min-height: 100vh;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header h1 {
-            font-size: 24px;
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .logout-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        
-        .logout-btn:hover {
-            background: #c0392b;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .card h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-size: 18px;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
-        
-        .card p {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .stat-item {
-            text-align: center;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        
-        .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #3498db;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .alert {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-            font-size: 14px;
-            border-top: 1px solid #eee;
-            margin-top: 40px;
-        }
-    </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Panel del Director Corporativo</h1>
-        <div class="user-info">
-            <span id="userName">Cargando...</span>
-            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-        </div>
-    </div>
-    
-    <div class="container">
-        <div class="alert">
-            <strong>¡Bienvenido Director Corporativo!</strong> Esta es una vista preliminar. Las funcionalidades completas se implementarán posteriormente.
-        </div>
-        
-        <div class="dashboard">
-            <div class="card">
-                <h3>Empresas Registradas</h3>
-                <p>Gestión completa de todas las empresas en el sistema.</p>
-                <div class="stats">
-                    <div class="stat-item">
-                        <div class="stat-number" id="empresasCount">0</div>
-                        <div class="stat-label">Empresas Activas</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number" id="usuariosCount">0</div>
-                        <div class="stat-label">Usuarios Totales</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <h3>Accesos Multi-Empresa</h3>
-                <p>Acceso total a todas las empresas del sistema.</p>
-                <ul style="color: #666; padding-left: 20px; margin-top: 10px;">
-                    <li>Visualizar todas las empresas</li>
-                    <li>Gestionar usuarios globales</li>
-                    <li>Monitoreo corporativo</li>
-                    <li>Reportes consolidados</li>
-                </ul>
-            </div>
-            
-            <div class="card">
-                <h3>Información de Sesión</h3>
-                <p>Datos de la sesión actual:</p>
-                <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                    <p><strong>Usuario:</strong> <span id="userEmail">Cargando...</span></p>
-                    <p><strong>Rol:</strong> <span id="userRole">Cargando...</span></p>
-                    <p><strong>Empresa:</strong> <span id="userEmpresa">Cargando...</span></p>
-                    <p><strong>Hora de inicio:</strong> <span id="sessionTime">Cargando...</span></p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="footer">
-        Sistema Corporativo - Panel de Director Corporativo
-    </div>
+    <h1>Panel del Director Corporativo</h1>
+    <div id="user-info"></div>
+    <div id="empresas-list"></div>
+    <button onclick="logout()">Cerrar Sesión</button>
 
     <script>
         // Configuración de Supabase
         const supabaseUrl = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
-        const supabaseKey = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-        
-        // Verificar sesión al cargar
+        const supabaseAnonKey = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+        // Verificar sesión al cargar la página
         document.addEventListener('DOMContentLoaded', async function() {
-            const userData = localStorage.getItem('userData');
-            
-            if (!userData) {
-                // No hay sesión, redirigir al login
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            const data = JSON.parse(userData);
-            
-            // Verificar si el usuario es Director Corporativo
-            if (data.rol !== 'Director Corporativo') {
-                alert('Acceso denegado. Esta página es solo para Directores Corporativos.');
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            // Mostrar información del usuario
-            document.getElementById('userName').textContent = data.nombres + ' ' + data.apellidos;
-            document.getElementById('userEmail').textContent = data.email;
-            document.getElementById('userRole').textContent = data.rol;
-            document.getElementById('userEmpresa').textContent = data.empresa;
-            
-            // Formatear hora de inicio
-            const sessionDate = new Date(data.sessionTime);
-            document.getElementById('sessionTime').textContent = 
-                sessionDate.toLocaleDateString('es-ES') + ' ' + 
-                sessionDate.toLocaleTimeString('es-ES');
-            
-            // Cargar estadísticas
-            await loadStats();
+            await checkSession();
+            await loadEmpresas();
         });
-        
-        async function loadStats() {
-            try {
-                // Contar empresas activas
-                const { count: empresasCount } = await supabase
-                    .from('empresas')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('activo', true);
-                
-                // Contar usuarios activos
-                const { count: usuariosCount } = await supabase
+
+        async function checkSession() {
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+            
+            if (sessionError || !sessionData.session) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Obtener información del usuario
+            const { data: userData } = await supabase.auth.getUser();
+            
+            if (userData.user) {
+                const { data: dbUser } = await supabase
                     .from('usuarios')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('activo', true);
-                
-                // Actualizar UI
-                document.getElementById('empresasCount').textContent = empresasCount || 0;
-                document.getElementById('usuariosCount').textContent = usuariosCount || 0;
-                
-            } catch (error) {
-                console.error('Error cargando estadísticas:', error);
-            }
-        }
-        
-        function logout() {
-            // Confirmar cierre de sesión
-            if (confirm('¿Está seguro que desea cerrar sesión?')) {
-                localStorage.removeItem('userData');
+                    .select('*')
+                    .eq('email', userData.user.email)
+                    .single();
+
+                if (dbUser && dbUser.rol.toLowerCase().includes('director corporativo')) {
+                    document.getElementById('user-info').innerHTML = `
+                        <p>Bienvenido: ${dbUser.nombres} ${dbUser.apellido_paterno}</p>
+                        <p>Rol: ${dbUser.rol}</p>
+                        <p>Email: ${dbUser.email}</p>
+                    `;
+                } else {
+                    alert('No tienes permisos para acceder a esta página.');
+                    window.location.href = 'login.html';
+                }
+            } else {
                 window.location.href = 'login.html';
             }
         }
-        
-        // Proteger contra navegación sin sesión
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'userData' && !e.newValue) {
-                window.location.href = 'login.html';
+
+        async function loadEmpresas() {
+            const { data: empresas, error } = await supabase
+                .from('empresas')
+                .select('*')
+                .order('creado_en', { ascending: false });
+
+            if (error) {
+                console.error('Error cargando empresas:', error);
+                return;
             }
-        });
+
+            const empresasDiv = document.getElementById('empresas-list');
+            if (empresas && empresas.length > 0) {
+                empresasDiv.innerHTML = '<h3>Empresas en el sistema:</h3>';
+                empresas.forEach(empresa => {
+                    empresasDiv.innerHTML += `
+                        <div style="border: 1px solid #ccc; padding: 10px; margin: 5px;">
+                            <strong>${empresa.nombre}</strong><br>
+                            RFC: ${empresa.rfc}<br>
+                            Estado: ${empresa.activo ? 'Activa' : 'Inactiva'}
+                        </div>
+                    `;
+                });
+            } else {
+                empresasDiv.innerHTML = '<p>No hay empresas registradas.</p>';
+            }
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'login.html';
+        }
     </script>
 </body>
 </html>
