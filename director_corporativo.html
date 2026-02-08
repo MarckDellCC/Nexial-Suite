@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel del Director Corporativo</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
@@ -34,6 +35,7 @@
         .form-row > div { flex: 1; }
         .close { float: right; font-size: 24px; cursor: pointer; }
         .loading { text-align: center; padding: 20px; }
+        .error { color: #e74c3c; padding: 10px; background: #ffeaea; border-radius: 3px; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -70,13 +72,17 @@
         const SUPABASE_URL = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Inicializar Supabase solo una vez
+        let supabaseClient;
         
         // Variables globales
         let currentTable = '';
         let currentRecordId = null;
         let monedas = [];
         let empresas = [];
+        let categoriasProductos = [];
+        let categoriaNegocios = [];
+        let empleados = [];
         
         // Tablas disponibles con sus columnas y tipos
         const tables = {
@@ -116,9 +122,30 @@
                     { name: 'usuario', label: 'Usuario', type: 'text', required: true, maxlength: 50 },
                     { name: 'contrasena_plano', label: 'Contraseña', type: 'password', required: true },
                     { name: 'rol', label: 'Rol', type: 'select', options: [
-                        'Director Corporativo', 'Administrador', 'Gerente', 'Supervisor', 'Ejecutivo'
+                        'Director Corporativo', 'Administrador', 'Gerente', 'Supervisor', 'Ejecutivo Comercial', 'Empleado'
                     ], required: true },
                     { name: 'foto_url', label: 'URL de Foto', type: 'text' },
+                    { name: 'activo', label: 'Activo', type: 'checkbox' }
+                ]
+            },
+            'empleados': {
+                fields: [
+                    { name: 'empresa_id', label: 'Empresa', type: 'select', options: [], required: true },
+                    { name: 'nombres', label: 'Nombres', type: 'text', required: true, maxlength: 100 },
+                    { name: 'apellido_paterno', label: 'Apellido Paterno', type: 'text', required: true, maxlength: 100 },
+                    { name: 'apellido_materno', label: 'Apellido Materno', type: 'text', maxlength: 100 },
+                    { name: 'documento_identidad', label: 'Documento Identidad', type: 'text', maxlength: 50 },
+                    { name: 'tipo_documento', label: 'Tipo Documento', type: 'text', maxlength: 20 },
+                    { name: 'direccion', label: 'Dirección', type: 'textarea' },
+                    { name: 'telefono', label: 'Teléfono', type: 'text', maxlength: 20 },
+                    { name: 'email', label: 'Email', type: 'email', maxlength: 255 },
+                    { name: 'fecha_nacimiento', label: 'Fecha Nacimiento', type: 'date' },
+                    { name: 'genero', label: 'Género', type: 'select', options: ['Masculino', 'Femenino', 'Otro'] },
+                    { name: 'foto_url', label: 'URL Foto', type: 'text' },
+                    { name: 'fecha_contratacion', label: 'Fecha Contratación', type: 'date' },
+                    { name: 'salario_base', label: 'Salario Base', type: 'number', step: '0.01' },
+                    { name: 'moneda_id', label: 'Moneda', type: 'select', options: [] },
+                    { name: 'tipo_contrato', label: 'Tipo Contrato', type: 'text', maxlength: 50 },
                     { name: 'activo', label: 'Activo', type: 'checkbox' }
                 ]
             },
@@ -161,28 +188,42 @@
                     { name: 'dimensiones', label: 'Dimensiones', type: 'text', maxlength: 50 },
                     { name: 'unidad_medida', label: 'Unidad Medida', type: 'text', maxlength: 20 },
                     { name: 'es_producto_clave', label: 'Producto Clave', type: 'checkbox' },
+                    { name: 'compra_minima_cantidad', label: 'Compra Mínima Cantidad', type: 'number', step: '1' },
+                    { name: 'compra_minima_monto', label: 'Compra Mínima Monto', type: 'number', step: '0.01' },
+                    { name: 'compra_minima_peso', label: 'Compra Mínima Peso', type: 'number', step: '0.01' },
                     { name: 'codigo_barras', label: 'Código Barras', type: 'text', maxlength: 100 },
                     { name: 'ubicacion_almacen', label: 'Ubicación Almacén', type: 'text', maxlength: 100 },
                     { name: 'activo', label: 'Activo', type: 'checkbox' }
                 ]
+            },
+            'ventas': {
+                fields: [
+                    { name: 'empresa_id', label: 'Empresa', type: 'select', options: [], required: true },
+                    { name: 'cliente_id', label: 'Cliente', type: 'select', options: [], required: true },
+                    { name: 'empleado_id', label: 'Empleado', type: 'select', options: [] },
+                    { name: 'almacen_id', label: 'Almacén', type: 'select', options: [] },
+                    { name: 'numero_venta', label: 'Número Venta', type: 'text', required: true, maxlength: 50 },
+                    { name: 'fecha', label: 'Fecha', type: 'datetime-local' },
+                    { name: 'subtotal', label: 'Subtotal', type: 'number', step: '0.01', required: true },
+                    { name: 'impuesto', label: 'Impuesto', type: 'number', step: '0.01', required: true },
+                    { name: 'total', label: 'Total', type: 'number', step: '0.01', required: true },
+                    { name: 'moneda_id', label: 'Moneda', type: 'select', options: [], required: true },
+                    { name: 'estado', label: 'Estado', type: 'select', options: ['pendiente', 'completada', 'cancelada'], required: true },
+                    { name: 'metodo_pago', label: 'Método Pago', type: 'text', maxlength: 50 },
+                    { name: 'tipo_venta', label: 'Tipo Venta', type: 'text', maxlength: 50 },
+                    { name: 'observaciones', label: 'Observaciones', type: 'textarea' }
+                ]
             }
-            // Se pueden añadir más tablas aquí...
         };
         
         // Inicialización
         document.addEventListener('DOMContentLoaded', async () => {
-            await checkUserRole();
-            if (document.getElementById('mainContent').style.display === 'block') {
-                await loadReferenceData();
-                createTabs();
-                loadTableData('monedas');
-            }
-        });
-        
-        // Verificar rol del usuario
-        async function checkUserRole() {
             try {
-                const { data: { session } } = await supabase.auth.getSession();
+                // Inicializar Supabase
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                // Verificar sesión y rol
+                const { data: { session } } = await supabaseClient.auth.getSession();
                 
                 if (!session) {
                     window.location.href = 'login.html';
@@ -191,40 +232,51 @@
                 
                 document.getElementById('currentUser').textContent = session.user.email;
                 
-                // Obtener el rol del usuario desde la tabla usuarios
-                const { data: userData, error } = await supabase
+                // Obtener el rol del usuario
+                const { data: userData, error } = await supabaseClient
                     .from('usuarios')
                     .select('rol')
                     .eq('email', session.user.email)
                     .single();
                 
-                if (error) throw error;
+                if (error) {
+                    console.error('Error obteniendo datos de usuario:', error);
+                    throw error;
+                }
                 
                 if (userData.rol !== 'Director Corporativo') {
                     document.getElementById('roleWarning').style.display = 'block';
                     document.getElementById('mainContent').style.display = 'none';
                 } else {
                     document.getElementById('mainContent').style.display = 'block';
+                    await loadReferenceData();
+                    createTabs();
+                    loadTableData('monedas');
                 }
             } catch (error) {
-                console.error('Error verificando rol:', error);
+                console.error('Error inicializando:', error);
                 document.getElementById('roleWarning').style.display = 'block';
             }
-        }
+        });
         
         // Cerrar sesión
         async function logout() {
-            await supabase.auth.signOut();
-            window.location.href = 'login.html';
+            try {
+                await supabaseClient.auth.signOut();
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Error cerrando sesión:', error);
+            }
         }
         
-        // Cargar datos de referencia (monedas, empresas, etc.)
+        // Cargar datos de referencia
         async function loadReferenceData() {
             try {
                 // Cargar monedas
-                const { data: monedasData, error: monedasError } = await supabase
+                const { data: monedasData, error: monedasError } = await supabaseClient
                     .from('monedas')
-                    .select('*');
+                    .select('*')
+                    .order('codigo');
                 
                 if (!monedasError) {
                     monedas = monedasData;
@@ -232,39 +284,91 @@
                         monedas.map(m => ({ value: m.id, label: `${m.codigo} - ${m.nombre}` }));
                     tables.productos.fields.find(f => f.name === 'moneda_id').options = 
                         monedas.map(m => ({ value: m.id, label: `${m.codigo} - ${m.nombre}` }));
+                    tables.ventas.fields.find(f => f.name === 'moneda_id').options = 
+                        monedas.map(m => ({ value: m.id, label: `${m.codigo} - ${m.nombre}` }));
+                    tables.empleados.fields.find(f => f.name === 'moneda_id').options = 
+                        monedas.map(m => ({ value: m.id, label: `${m.codigo} - ${m.nombre}` }));
                 }
                 
                 // Cargar empresas
-                const { data: empresasData, error: empresasError } = await supabase
+                const { data: empresasData, error: empresasError } = await supabaseClient
                     .from('empresas')
-                    .select('*');
+                    .select('*')
+                    .order('nombre');
                 
                 if (!empresasError) {
                     empresas = empresasData;
-                    tables.usuarios.fields.find(f => f.name === 'empresa_id').options = 
-                        empresas.map(e => ({ value: e.id, label: e.nombre }));
-                    tables.clientes.fields.find(f => f.name === 'empresa_id').options = 
-                        empresas.map(e => ({ value: e.id, label: e.nombre }));
-                    tables.productos.fields.find(f => f.name === 'empresa_id').options = 
-                        empresas.map(e => ({ value: e.id, label: e.nombre }));
+                    const empresaOptions = empresas.map(e => ({ value: e.id, label: e.nombre }));
+                    
+                    tables.usuarios.fields.find(f => f.name === 'empresa_id').options = empresaOptions;
+                    tables.clientes.fields.find(f => f.name === 'empresa_id').options = empresaOptions;
+                    tables.productos.fields.find(f => f.name === 'empresa_id').options = empresaOptions;
+                    tables.ventas.fields.find(f => f.name === 'empresa_id').options = empresaOptions;
+                    tables.empleados.fields.find(f => f.name === 'empresa_id').options = empresaOptions;
                 }
                 
                 // Cargar categorías de productos
-                const { data: categoriasData, error: categoriasError } = await supabase
+                const { data: categoriasData, error: categoriasError } = await supabaseClient
                     .from('categoria_productos')
-                    .select('*');
+                    .select('*')
+                    .order('nombre');
                 
                 if (!categoriasError) {
+                    categoriasProductos = categoriasData;
                     tables.productos.fields.find(f => f.name === 'categoria_id').options = 
-                        categoriasData.map(c => ({ value: c.id, label: c.nombre }));
+                        categoriasProductos.map(c => ({ value: c.id, label: c.nombre }));
+                }
+                
+                // Cargar categorías de negocios
+                const { data: categoriasNegociosData, error: categoriasNegociosError } = await supabaseClient
+                    .from('categoria_negocios')
+                    .select('*')
+                    .order('nombre');
+                
+                if (!categoriasNegociosError) {
+                    categoriaNegocios = categoriasNegociosData;
+                    tables.clientes.fields.find(f => f.name === 'categoria_negocio_id').options = 
+                        categoriaNegocios.map(c => ({ value: c.id, label: c.nombre }));
+                }
+                
+                // Cargar empleados
+                const { data: empleadosData, error: empleadosError } = await supabaseClient
+                    .from('empleados')
+                    .select('*')
+                    .order('nombres');
+                
+                if (!empleadosError) {
+                    empleados = empleadosData;
+                    const empleadoOptions = empleados.map(e => ({ 
+                        value: e.id, 
+                        label: `${e.nombres} ${e.apellido_paterno}` 
+                    }));
+                    
+                    tables.usuarios.fields.find(f => f.name === 'empleado_id').options = empleadoOptions;
+                    tables.ventas.fields.find(f => f.name === 'empleado_id').options = empleadoOptions;
+                }
+                
+                // Cargar clientes para ventas
+                const { data: clientesData, error: clientesError } = await supabaseClient
+                    .from('clientes')
+                    .select('*')
+                    .order('nombres');
+                
+                if (!clientesError) {
+                    tables.ventas.fields.find(f => f.name === 'cliente_id').options = 
+                        clientesData.map(c => ({ 
+                            value: c.id, 
+                            label: `${c.nombres} ${c.apellido_paterno}` 
+                        }));
                 }
                 
             } catch (error) {
                 console.error('Error cargando datos de referencia:', error);
+                showError('Error cargando datos de referencia');
             }
         }
         
-        // Crear pestañas dinámicamente
+        // Crear pestañas
         function createTabs() {
             const tabsContainer = document.getElementById('tabsContainer');
             Object.keys(tables).forEach((tableName, index) => {
@@ -291,7 +395,7 @@
             });
         }
         
-        // Cambiar entre pestañas
+        // Cambiar pestaña
         function switchTab(tableName) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -302,13 +406,13 @@
             loadTableData(tableName);
         }
         
-        // Cargar datos de una tabla específica
+        // Cargar datos de tabla
         async function loadTableData(tableName) {
             currentTable = tableName;
             const tableContainer = document.getElementById(`table-${tableName}`);
             
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from(tableName)
                     .select('*')
                     .order('creado_en', { ascending: false });
@@ -320,14 +424,13 @@
                     return;
                 }
                 
-                // Crear tabla
                 let html = '<table>';
                 
                 // Encabezados
                 html += '<thead><tr>';
                 Object.keys(data[0]).forEach(key => {
-                    if (key !== 'contrasena_plano') { // No mostrar contraseñas
-                        html += `<th>${key}</th>`;
+                    if (key !== 'contrasena_plano') {
+                        html += `<th>${formatColumnName(key)}</th>`;
                     }
                 });
                 html += '<th>Acciones</th></tr></thead>';
@@ -338,22 +441,7 @@
                     html += '<tr>';
                     Object.entries(row).forEach(([key, value]) => {
                         if (key !== 'contrasena_plano') {
-                            let displayValue = value;
-                            
-                            if (typeof value === 'boolean') {
-                                displayValue = value ? 'Sí' : 'No';
-                            } else if (value === null || value === undefined) {
-                                displayValue = '';
-                            } else if (typeof value === 'object') {
-                                displayValue = JSON.stringify(value).substring(0, 50) + '...';
-                            } else if (key === 'moneda_id' || key === 'empresa_id') {
-                                // Intentar mostrar nombre en lugar de UUID
-                                const refData = key === 'moneda_id' ? monedas : empresas;
-                                const refItem = refData.find(item => item.id === value);
-                                displayValue = refItem ? `${refItem.nombre} (${value.substring(0, 8)}...)` : value;
-                            }
-                            
-                            html += `<td title="${value}">${displayValue}</td>`;
+                            html += `<td>${formatCellValue(key, value)}</td>`;
                         }
                     });
                     
@@ -370,11 +458,44 @@
                 
             } catch (error) {
                 console.error(`Error cargando ${tableName}:`, error);
-                tableContainer.innerHTML = `<p class="error">Error cargando datos: ${error.message}</p>`;
+                tableContainer.innerHTML = `<div class="error">Error cargando datos: ${error.message}</div>`;
             }
         }
         
-        // Abrir modal para crear nuevo registro
+        // Formatear nombre de columna
+        function formatColumnName(key) {
+            return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+        
+        // Formatear valor de celda
+        function formatCellValue(key, value) {
+            if (value === null || value === undefined) return '';
+            
+            if (typeof value === 'boolean') {
+                return value ? 'Sí' : 'No';
+            }
+            
+            if (typeof value === 'object') {
+                return JSON.stringify(value).substring(0, 50) + '...';
+            }
+            
+            if (key.includes('fecha') || key.includes('_en')) {
+                return new Date(value).toLocaleString();
+            }
+            
+            if (key.includes('precio') || key.includes('monto') || key.includes('salario') || key.includes('total')) {
+                return parseFloat(value).toFixed(2);
+            }
+            
+            if ((key === 'moneda_id' || key === 'empresa_id' || key === 'categoria_id' || 
+                 key === 'cliente_id' || key === 'empleado_id') && value) {
+                return value.substring(0, 8) + '...';
+            }
+            
+            return String(value);
+        }
+        
+        // Abrir modal para crear
         function openCreateModal(tableName) {
             currentRecordId = null;
             document.getElementById('modalTitle').textContent = `Nuevo ${tableName.slice(0, -1)}`;
@@ -384,12 +505,12 @@
             document.getElementById('modal').style.display = 'block';
         }
         
-        // Abrir modal para editar registro
+        // Abrir modal para editar
         async function openEditModal(tableName, recordId) {
             currentRecordId = recordId;
             
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from(tableName)
                     .select('*')
                     .eq('id', recordId)
@@ -404,20 +525,20 @@
                 
             } catch (error) {
                 console.error('Error cargando registro:', error);
-                alert('Error cargando registro: ' + error.message);
+                showError('Error cargando registro: ' + error.message);
             }
         }
         
-        // Generar formulario dinámicamente
+        // Generar formulario
         function generateForm(tableName, recordData = null) {
             const fields = tables[tableName].fields;
             let formHTML = `<form id="recordForm" onsubmit="saveRecord(event)">`;
             
             fields.forEach(field => {
+                const value = recordData ? recordData[field.name] : '';
+                
                 formHTML += '<div class="form-group">';
                 formHTML += `<label for="${field.name}">${field.label}${field.required ? ' *' : ''}</label>`;
-                
-                const value = recordData ? recordData[field.name] : '';
                 
                 switch (field.type) {
                     case 'select':
@@ -427,7 +548,8 @@
                         if (Array.isArray(field.options)) {
                             field.options.forEach(option => {
                                 if (typeof option === 'object') {
-                                    const selected = value === option.value ? 'selected' : '';
+                                    const selected = (value === option.value || 
+                                                     (recordData && recordData[field.name] === option.value)) ? 'selected' : '';
                                     formHTML += `<option value="${option.value}" ${selected}>${option.label}</option>`;
                                 } else {
                                     const selected = value === option ? 'selected' : '';
@@ -445,23 +567,40 @@
                         break;
                     
                     case 'textarea':
-                        formHTML += `<textarea id="${field.name}" name="${field.name}" ${field.required ? 'required' : ''} ${field.maxlength ? `maxlength="${field.maxlength}"` : ''}>${value || ''}</textarea>`;
+                        formHTML += `<textarea id="${field.name}" name="${field.name}" 
+                            ${field.required ? 'required' : ''} 
+                            ${field.maxlength ? `maxlength="${field.maxlength}"` : ''}>${value || ''}</textarea>`;
+                        break;
+                    
+                    case 'datetime-local':
+                        let dateValue = value;
+                        if (value && typeof value === 'string') {
+                            const date = new Date(value);
+                            dateValue = date.toISOString().slice(0, 16);
+                        }
+                        formHTML += `<input type="datetime-local" id="${field.name}" name="${field.name}" 
+                            value="${dateValue || ''}" 
+                            ${field.required ? 'required' : ''}>`;
+                        break;
+                    
+                    case 'date':
+                        let dateOnlyValue = value;
+                        if (value && typeof value === 'string') {
+                            dateOnlyValue = value.split('T')[0];
+                        }
+                        formHTML += `<input type="date" id="${field.name}" name="${field.name}" 
+                            value="${dateOnlyValue || ''}" 
+                            ${field.required ? 'required' : ''}>`;
                         break;
                     
                     default:
-                        const inputType = field.type === 'number' ? 'number' : 
-                                         field.type === 'email' ? 'email' : 
-                                         field.type === 'url' ? 'url' : 
-                                         field.type === 'date' ? 'date' : 'text';
-                        
                         const inputValue = field.type === 'password' ? '' : value || '';
-                        
-                        formHTML += `<input type="${inputType}" id="${field.name}" name="${field.name}" 
+                        formHTML += `<input type="${field.type}" id="${field.name}" name="${field.name}" 
                             value="${inputValue}" 
                             ${field.required ? 'required' : ''}
                             ${field.maxlength ? `maxlength="${field.maxlength}"` : ''}
                             ${field.step ? `step="${field.step}"` : ''}
-                            ${field.type === 'password' && !recordData ? 'required' : ''}>`;
+                            ${field.type === 'number' ? 'style="width: 100%"' : ''}>`;
                         break;
                 }
                 
@@ -484,7 +623,7 @@
             document.getElementById('modalForm').innerHTML = '';
         }
         
-        // Guardar registro (crear o actualizar)
+        // Guardar registro
         async function saveRecord(event) {
             event.preventDefault();
             
@@ -492,17 +631,19 @@
             const formData = new FormData(form);
             const data = {};
             
-            // Convertir FormData a objeto
             tables[currentTable].fields.forEach(field => {
                 if (field.type === 'checkbox') {
                     data[field.name] = document.getElementById(field.name).checked;
-                } else if (field.type === 'select' && field.name.includes('_id')) {
-                    const value = formData.get(field.name);
-                    data[field.name] = value || null;
                 } else {
                     const value = formData.get(field.name);
                     if (value !== '' && value !== null) {
-                        data[field.name] = value;
+                        if (field.type === 'number') {
+                            data[field.name] = parseFloat(value);
+                        } else {
+                            data[field.name] = value;
+                        }
+                    } else if (field.name.includes('_id')) {
+                        data[field.name] = null;
                     }
                 }
             });
@@ -511,14 +652,14 @@
                 let result;
                 
                 if (currentRecordId) {
-                    // Actualizar registro existente
-                    result = await supabase
+                    // Actualizar
+                    result = await supabaseClient
                         .from(currentTable)
                         .update(data)
                         .eq('id', currentRecordId);
                 } else {
-                    // Crear nuevo registro
-                    result = await supabase
+                    // Crear
+                    result = await supabaseClient
                         .from(currentTable)
                         .insert([data]);
                 }
@@ -531,7 +672,7 @@
                 
             } catch (error) {
                 console.error('Error guardando registro:', error);
-                alert('Error guardando registro: ' + error.message);
+                showError('Error guardando registro: ' + error.message);
             }
         }
         
@@ -542,7 +683,7 @@
             }
             
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from(tableName)
                     .delete()
                     .eq('id', recordId);
@@ -554,8 +695,13 @@
                 
             } catch (error) {
                 console.error('Error eliminando registro:', error);
-                alert('Error eliminando registro: ' + error.message);
+                showError('Error eliminando registro: ' + error.message);
             }
+        }
+        
+        // Mostrar error
+        function showError(message) {
+            alert(message);
         }
         
         // Cerrar modal al hacer clic fuera
