@@ -1,149 +1,143 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+    <meta charset="UTF-8">
     <title>Panel Director Corporativo</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: Arial; margin: 20px; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .btn { padding: 5px 10px; margin: 2px; cursor: pointer; }
-        .btn-edit { background-color: #ffc107; }
-        .btn-delete { background-color: #dc3545; color: white; }
-        .btn-add { background-color: #28a745; color: white; margin-bottom: 10px; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 10% auto; padding: 20px; width: 50%; }
-        .close { float: right; cursor: pointer; }
-        .form-group { margin-bottom: 10px; }
-        .form-group label { display: block; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 5px; }
-        .error { color: red; }
+        body { font-family: sans-serif; margin: 20px; background: #f9f9f9; }
+        h1 { color: #333; }
+        button { padding: 8px 12px; background: #0070f3; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0051bb; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #b02a37; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f2f2f2; }
+        .actions { display: flex; gap: 5px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 500px; max-height: 80vh; overflow-y: auto; }
+        .modal input, .modal select, .modal textarea { width: 100%; padding: 6px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .modal label { font-weight: bold; margin-top: 10px; display: block; }
+        .close { float: right; cursor: pointer; font-size: 20px; }
     </style>
 </head>
 <body>
-    <h2>Gestión de Empresas</h2>
-    <div id="userInfo"></div>
-    <button class="btn btn-add" onclick="openAddModal()">Nueva Empresa</button>
-    <div id="error" class="error"></div>
-    <table id="empresasTable">
+    <h1>Panel del Director Corporativo</h1>
+    <button id="btnNuevaEmpresa">+ Nueva Empresa</button>
+    <table id="tablaEmpresas">
         <thead>
             <tr>
                 <th>Nombre</th>
                 <th>RFC</th>
-                <th>Dirección</th>
-                <th>Teléfono</th>
                 <th>Email</th>
-                <th>Website</th>
                 <th>Moneda</th>
-                <th>Logo</th>
-                <th>Tipo Empresa</th>
-                <th>Régimen Fiscal</th>
+                <th>Tipo</th>
                 <th>Activo</th>
                 <th>Acciones</th>
             </tr>
         </thead>
-        <tbody id="empresasBody">
-        </tbody>
+        <tbody></tbody>
     </table>
 
-    <!-- Modal para agregar/editar empresa -->
-    <div id="empresaModal" class="modal">
+    <!-- Modal para crear/editar empresa -->
+    <div id="modalEmpresa" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h3 id="modalTitle">Nueva Empresa</h3>
-            <form id="empresaForm">
+            <span class="close" id="closeModal">&times;</span>
+            <h2 id="modalTitulo">Nueva Empresa</h2>
+            <form id="formEmpresa">
                 <input type="hidden" id="empresaId">
-                <div class="form-group">
-                    <label>Nombre *</label>
-                    <input type="text" id="nombre" required>
-                </div>
-                <div class="form-group">
-                    <label>RFC *</label>
-                    <input type="text" id="rfc" required>
-                </div>
-                <div class="form-group">
-                    <label>Dirección</label>
-                    <textarea id="direccion"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Teléfono</label>
-                    <input type="text" id="telefono">
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="email">
-                </div>
-                <div class="form-group">
-                    <label>Website</label>
-                    <input type="url" id="website">
-                </div>
-                <div class="form-group">
-                    <label>Moneda *</label>
-                    <select id="moneda_id" required>
-                        <option value="">Seleccione...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Logo URL</label>
-                    <input type="url" id="logo_url">
-                </div>
-                <div class="form-group">
-                    <label>Tipo Empresa</label>
-                    <input type="text" id="tipo_empresa">
-                </div>
-                <div class="form-group">
-                    <label>Régimen Fiscal</label>
-                    <input type="text" id="regimen_fiscal">
-                </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="activo" checked> Activo
-                    </label>
-                </div>
-                <button type="submit" class="btn btn-add">Guardar</button>
+                
+                <label>Nombre *</label>
+                <input type="text" id="nombre" required>
+
+                <label>RFC *</label>
+                <input type="text" id="rfc" required>
+
+                <label>Dirección</label>
+                <textarea id="direccion"></textarea>
+
+                <label>Teléfono</label>
+                <input type="text" id="telefono">
+
+                <label>Email</label>
+                <input type="email" id="email">
+
+                <label>Website</label>
+                <input type="url" id="website">
+
+                <label>Moneda *</label>
+                <select id="moneda_id" required>
+                    <option value="">Seleccione una moneda</option>
+                </select>
+
+                <label>Logo URL</label>
+                <input type="url" id="logo_url">
+
+                <label>Tipo de empresa</label>
+                <input type="text" id="tipo_empresa">
+
+                <label>Régimen fiscal</label>
+                <input type="text" id="regimen_fiscal">
+
+                <label>Activo</label>
+                <select id="activo">
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
+                </select>
+
+                <button type="submit" style="margin-top:15px;">Guardar</button>
             </form>
         </div>
     </div>
 
     <script>
-        // Configuración de Supabase - REEMPLAZA CON TU SERVICE ROLE KEY
+        // --- CONFIGURACIÓN ---
         const SUPABASE_URL = 'https://sknyockrczifqemmdysx.supabase.co';
-        const SUPABASE_SERVICE_KEY = 'tu-service-role-key'; // Reemplazar con la clave de servicio
+        const SUPABASE_SERVICE_KEY = 'tu-service-role-key'; // Reemplazar con la service_role key
 
+        // Crear cliente una sola vez
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
         // Verificar sesión
-        const userJson = sessionStorage.getItem('user');
-        if (!userJson) {
-            window.location.href = 'login.html';
-        } else {
-            const user = JSON.parse(userJson);
-            if (user.rol !== 'Director Corporativo') {
-                alert('Acceso no autorizado');
+        (function verificarSesion() {
+            const usuario = sessionStorage.getItem('usuario');
+            if (!usuario) {
                 window.location.href = 'login.html';
-            } else {
-                document.getElementById('userInfo').innerText = `Bienvenido, ${user.nombres} (${user.rol})`;
-                loadMonedas();
-                loadEmpresas();
-            }
-        }
-
-        let monedas = [];
-
-        async function loadMonedas() {
-            const { data, error } = await supabase
-                .from('monedas')
-                .select('*')
-                .eq('activo', true);
-            if (error) {
-                showError('Error cargando monedas: ' + error.message);
                 return;
             }
-            monedas = data;
+            const userData = JSON.parse(usuario);
+            if (userData.rol !== 'Director Corporativo') {
+                alert('Acceso no autorizado');
+                window.location.href = 'login.html';
+            }
+        })();
+
+        // Variables globales del modal
+        const modal = document.getElementById('modalEmpresa');
+        const modalTitulo = document.getElementById('modalTitulo');
+        const formEmpresa = document.getElementById('formEmpresa');
+        const empresaId = document.getElementById('empresaId');
+
+        // Cargar monedas al abrir la página y al abrir modal
+        async function cargarMonedas() {
+            const { data, error } = await supabase
+                .from('monedas')
+                .select('id, codigo, nombre')
+                .eq('activo', true)
+                .order('codigo');
+            if (error) {
+                console.error('Error cargando monedas:', error);
+                return [];
+            }
+            return data;
+        }
+
+        async function llenarSelectMonedas() {
+            const monedas = await cargarMonedas();
             const select = document.getElementById('moneda_id');
-            select.innerHTML = '<option value="">Seleccione...</option>';
-            data.forEach(m => {
+            select.innerHTML = '<option value="">Seleccione una moneda</option>';
+            monedas.forEach(m => {
                 const option = document.createElement('option');
                 option.value = m.id;
                 option.textContent = `${m.codigo} - ${m.nombre}`;
@@ -151,144 +145,153 @@
             });
         }
 
+        // Cargar empresas en la tabla
         async function loadEmpresas() {
             const { data, error } = await supabase
                 .from('empresas')
-                .select('*, monedas(codigo)')
+                .select(`
+                    *,
+                    monedas (codigo, nombre)
+                `)
                 .order('nombre');
+
             if (error) {
-                showError('Error cargando empresas: ' + error.message);
+                console.error('Error cargando empresas:', error);
+                alert('Error al cargar empresas');
                 return;
             }
-            renderEmpresas(data);
-        }
 
-        function renderEmpresas(empresas) {
-            const tbody = document.getElementById('empresasBody');
+            const tbody = document.querySelector('#tablaEmpresas tbody');
             tbody.innerHTML = '';
-            empresas.forEach(emp => {
-                const row = tbody.insertRow();
-                row.insertCell().textContent = emp.nombre || '';
-                row.insertCell().textContent = emp.rfc || '';
-                row.insertCell().textContent = emp.direccion || '';
-                row.insertCell().textContent = emp.telefono || '';
-                row.insertCell().textContent = emp.email || '';
-                row.insertCell().textContent = emp.website || '';
-                row.insertCell().textContent = emp.monedas?.codigo || '';
-                row.insertCell().textContent = emp.logo_url ? 'Sí' : '';
-                row.insertCell().textContent = emp.tipo_empresa || '';
-                row.insertCell().textContent = emp.regimen_fiscal || '';
-                row.insertCell().textContent = emp.activo ? 'Sí' : 'No';
-                const actionsCell = row.insertCell();
-                const editBtn = document.createElement('button');
-                editBtn.className = 'btn btn-edit';
-                editBtn.textContent = 'Editar';
-                editBtn.onclick = () => openEditModal(emp);
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'btn btn-delete';
-                deleteBtn.textContent = 'Eliminar';
-                deleteBtn.onclick = () => deleteEmpresa(emp.id);
-                actionsCell.appendChild(editBtn);
-                actionsCell.appendChild(deleteBtn);
+            data.forEach(emp => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${emp.nombre || ''}</td>
+                    <td>${emp.rfc || ''}</td>
+                    <td>${emp.email || ''}</td>
+                    <td>${emp.monedas ? emp.monedas.codigo : ''}</td>
+                    <td>${emp.tipo_empresa || ''}</td>
+                    <td>${emp.activo ? 'Sí' : 'No'}</td>
+                    <td class="actions">
+                        <button onclick="editarEmpresa('${emp.id}')">Editar</button>
+                        <button class="btn-danger" onclick="eliminarEmpresa('${emp.id}')">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
             });
         }
 
-        function showError(msg) {
-            document.getElementById('error').textContent = msg;
-        }
+        // Abrir modal para nueva empresa
+        document.getElementById('btnNuevaEmpresa').addEventListener('click', async () => {
+            modalTitulo.innerText = 'Nueva Empresa';
+            formEmpresa.reset();
+            empresaId.value = '';
+            await llenarSelectMonedas();
+            modal.style.display = 'flex';
+        });
 
-        function openAddModal() {
-            document.getElementById('modalTitle').textContent = 'Nueva Empresa';
-            document.getElementById('empresaForm').reset();
-            document.getElementById('empresaId').value = '';
-            document.getElementById('activo').checked = true;
-            document.getElementById('empresaModal').style.display = 'block';
-        }
+        // Cerrar modal
+        document.getElementById('closeModal').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        });
 
-        function openEditModal(emp) {
-            document.getElementById('modalTitle').textContent = 'Editar Empresa';
-            document.getElementById('empresaId').value = emp.id;
-            document.getElementById('nombre').value = emp.nombre || '';
-            document.getElementById('rfc').value = emp.rfc || '';
-            document.getElementById('direccion').value = emp.direccion || '';
-            document.getElementById('telefono').value = emp.telefono || '';
-            document.getElementById('email').value = emp.email || '';
-            document.getElementById('website').value = emp.website || '';
-            document.getElementById('moneda_id').value = emp.moneda_id || '';
-            document.getElementById('logo_url').value = emp.logo_url || '';
-            document.getElementById('tipo_empresa').value = emp.tipo_empresa || '';
-            document.getElementById('regimen_fiscal').value = emp.regimen_fiscal || '';
-            document.getElementById('activo').checked = emp.activo;
-            document.getElementById('empresaModal').style.display = 'block';
-        }
-
-        function closeModal() {
-            document.getElementById('empresaModal').style.display = 'none';
-        }
-
-        document.getElementById('empresaForm').addEventListener('submit', async (e) => {
+        // Guardar empresa (crear o actualizar)
+        formEmpresa.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const id = document.getElementById('empresaId').value;
-            const empresaData = {
+            const id = empresaId.value;
+            const data = {
                 nombre: document.getElementById('nombre').value,
                 rfc: document.getElementById('rfc').value,
-                direccion: document.getElementById('direccion').value || null,
-                telefono: document.getElementById('telefono').value || null,
-                email: document.getElementById('email').value || null,
-                website: document.getElementById('website').value || null,
+                direccion: document.getElementById('direccion').value,
+                telefono: document.getElementById('telefono').value,
+                email: document.getElementById('email').value,
+                website: document.getElementById('website').value,
                 moneda_id: document.getElementById('moneda_id').value,
-                logo_url: document.getElementById('logo_url').value || null,
-                tipo_empresa: document.getElementById('tipo_empresa').value || null,
-                regimen_fiscal: document.getElementById('regimen_fiscal').value || null,
-                activo: document.getElementById('activo').checked
+                logo_url: document.getElementById('logo_url').value,
+                tipo_empresa: document.getElementById('tipo_empresa').value,
+                regimen_fiscal: document.getElementById('regimen_fiscal').value,
+                activo: document.getElementById('activo').value === 'true'
             };
+
+            let error;
             if (id) {
                 // Actualizar
-                empresaData.actualizado_en = new Date();
-                const { error } = await supabase
+                const { error: updateError } = await supabase
                     .from('empresas')
-                    .update(empresaData)
+                    .update(data)
                     .eq('id', id);
-                if (error) {
-                    showError('Error actualizando: ' + error.message);
-                } else {
-                    closeModal();
-                    loadEmpresas();
-                }
+                error = updateError;
             } else {
-                // Insertar
-                const { error } = await supabase
+                // Crear nuevo (sin id)
+                const { error: insertError } = await supabase
                     .from('empresas')
-                    .insert([empresaData]);
-                if (error) {
-                    showError('Error insertando: ' + error.message);
-                } else {
-                    closeModal();
-                    loadEmpresas();
-                }
+                    .insert([data]);
+                error = insertError;
+            }
+
+            if (error) {
+                console.error('Error guardando empresa:', error);
+                alert('Error al guardar la empresa');
+            } else {
+                modal.style.display = 'none';
+                loadEmpresas();
             }
         });
 
-        async function deleteEmpresa(id) {
-            if (!confirm('¿Está seguro de eliminar esta empresa?')) return;
+        // Editar empresa
+        window.editarEmpresa = async (id) => {
+            const { data, error } = await supabase
+                .from('empresas')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (error || !data) {
+                console.error('Error obteniendo empresa:', error);
+                alert('No se pudo cargar la empresa');
+                return;
+            }
+
+            modalTitulo.innerText = 'Editar Empresa';
+            empresaId.value = data.id;
+            document.getElementById('nombre').value = data.nombre || '';
+            document.getElementById('rfc').value = data.rfc || '';
+            document.getElementById('direccion').value = data.direccion || '';
+            document.getElementById('telefono').value = data.telefono || '';
+            document.getElementById('email').value = data.email || '';
+            document.getElementById('website').value = data.website || '';
+            document.getElementById('logo_url').value = data.logo_url || '';
+            document.getElementById('tipo_empresa').value = data.tipo_empresa || '';
+            document.getElementById('regimen_fiscal').value = data.regimen_fiscal || '';
+            document.getElementById('activo').value = data.activo ? 'true' : 'false';
+
+            await llenarSelectMonedas();
+            document.getElementById('moneda_id').value = data.moneda_id || '';
+            modal.style.display = 'flex';
+        };
+
+        // Eliminar empresa (con confirmación)
+        window.eliminarEmpresa = async (id) => {
+            if (!confirm('¿Está seguro de eliminar esta empresa? Esta acción puede afectar datos relacionados.')) return;
+
             const { error } = await supabase
                 .from('empresas')
                 .delete()
                 .eq('id', id);
+
             if (error) {
-                showError('Error eliminando: ' + error.message);
+                console.error('Error eliminando empresa:', error);
+                alert('Error al eliminar la empresa');
             } else {
                 loadEmpresas();
             }
-        }
+        };
 
-        // Cerrar modal si se hace clic fuera
-        window.onclick = function(event) {
-            const modal = document.getElementById('empresaModal');
-            if (event.target == modal) {
-                closeModal();
-            }
-        }
+        // Cargar datos iniciales
+        loadEmpresas();
     </script>
 </body>
 </html>
