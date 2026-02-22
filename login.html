@@ -29,10 +29,10 @@
     <script>
         // --- CONFIGURACIÓN ---
         const SUPABASE_URL = 'https://sknyockrczifqemmdysx.supabase.co';
-        const SUPABASE_SERVICE_KEY = 'tu-service-role-key'; // Reemplazar con la service_role key de Supabase
+        const SUPABASE_SERVICE_KEY = 'tu-service-role-key'; // Reemplazar con la service_role key real
 
-        // Crear cliente una sola vez
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+        // Crear cliente con nombre diferente para evitar conflicto con la variable global 'supabase'
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -43,7 +43,7 @@
 
             try {
                 // Buscar usuario por nombre de usuario (campo 'usuario')
-                const { data: usuarios, error } = await supabase
+                const { data: usuarios, error } = await supabaseClient
                     .from('usuarios')
                     .select('*')
                     .eq('usuario', username)
@@ -72,7 +72,7 @@
                 }
 
                 // Actualizar último acceso
-                await supabase
+                await supabaseClient
                     .from('usuarios')
                     .update({ ultimo_acceso: new Date().toISOString() })
                     .eq('id', usuario.id);
