@@ -1,1218 +1,293 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Director Corporativo</title>
+    <title>Panel Director Corporativo</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background-color: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 20px 0;
-            margin-bottom: 30px;
-            border-radius: 5px;
-        }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-        }
-        
-        h1 {
-            font-size: 24px;
-        }
-        
-        #userInfo {
-            font-size: 14px;
-            background-color: #34495e;
-            padding: 8px 15px;
-            border-radius: 4px;
-        }
-        
-        #logoutBtn {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        #logoutBtn:hover {
-            background-color: #c0392b;
-        }
-        
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        #addEmpresaBtn {
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-        }
-        
-        #addEmpresaBtn:hover {
-            background-color: #219653;
-        }
-        
-        .search-container {
-            display: flex;
-            gap: 10px;
-        }
-        
-        #searchInput {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            width: 300px;
-            font-size: 14px;
-        }
-        
-        #searchBtn {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        
-        #searchBtn:hover {
-            background-color: #2980b9;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 18px;
-            color: #7f8c8d;
-        }
-        
-        .error-message {
-            background-color: #e74c3c;
-            color: white;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .success-message {
-            background-color: #27ae60;
-            color: white;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .table-container {
-            background-color: white;
-            border-radius: 5px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        thead {
-            background-color: #34495e;
-            color: white;
-        }
-        
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        
-        th {
-            font-weight: 600;
-        }
-        
-        tbody tr:hover {
-            background-color: #f9f9f9;
-        }
-        
-        .actions {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .edit-btn, .delete-btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        
-        .edit-btn {
-            background-color: #3498db;
-            color: white;
-        }
-        
-        .edit-btn:hover {
-            background-color: #2980b9;
-        }
-        
-        .delete-btn {
-            background-color: #e74c3c;
-            color: white;
-        }
-        
-        .delete-btn:hover {
-            background-color: #c0392b;
-        }
-        
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            overflow: auto;
-        }
-        
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            width: 90%;
-            max-width: 700px;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        }
-        
-        .modal-header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 20px;
-            border-radius: 8px 8px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .modal-header h2 {
-            font-size: 20px;
-        }
-        
-        .close-modal {
-            color: white;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            background: none;
-            border: none;
-        }
-        
-        .close-modal:hover {
-            color: #ddd;
-        }
-        
-        .modal-body {
-            padding: 30px;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        .form-group input, 
-        .form-group select, 
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .checkbox-group input {
-            width: auto;
-        }
-        
-        .modal-footer {
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 0 0 8px 8px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-        }
-        
-        .modal-footer button {
-            padding: 10px 25px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 15px;
-        }
-        
-        #saveEmpresaBtn {
-            background-color: #27ae60;
-            color: white;
-        }
-        
-        #saveEmpresaBtn:hover {
-            background-color: #219653;
-        }
-        
-        #cancelBtn {
-            background-color: #95a5a6;
-            color: white;
-        }
-        
-        #cancelBtn:hover {
-            background-color: #7f8c8d;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-            }
-            
-            .search-container {
-                width: 100%;
-            }
-            
-            #searchInput {
-                width: 100%;
-            }
-            
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .modal-content {
-                width: 95%;
-                margin: 10% auto;
-            }
-        }
-        
-        /* Estado activo/inactivo */
-        .status-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        
-        .status-active {
-            background-color: #d5f4e6;
-            color: #27ae60;
-        }
-        
-        .status-inactive {
-            background-color: #fdeaea;
-            color: #e74c3c;
-        }
-        
-        /* Paginación */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-            gap: 5px;
-        }
-        
-        .pagination button {
-            padding: 8px 15px;
-            border: 1px solid #ddd;
-            background-color: white;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-        
-        .pagination button.active {
-            background-color: #3498db;
-            color: white;
-            border-color: #3498db;
-        }
-        
-        .pagination button:hover:not(.active) {
-            background-color: #f5f5f5;
-        }
-        
-        /* Sin acceso */
-        .no-access {
-            text-align: center;
-            padding: 60px 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-top: 50px;
-        }
-        
-        .no-access h2 {
-            color: #e74c3c;
-            margin-bottom: 20px;
-        }
-        
-        .no-access p {
-            color: #7f8c8d;
-            font-size: 16px;
-            margin-bottom: 30px;
-        }
-        
-        #loginBtn {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-        }
-        
-        #loginBtn:hover {
-            background-color: #2980b9;
-        }
+        body { font-family: Arial; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .btn { padding: 5px 10px; margin: 2px; cursor: pointer; }
+        .btn-edit { background-color: #ffc107; }
+        .btn-delete { background-color: #dc3545; color: white; }
+        .btn-add { background-color: #28a745; color: white; margin-bottom: 10px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 10% auto; padding: 20px; width: 50%; }
+        .close { float: right; cursor: pointer; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 5px; }
+        .error { color: red; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Sección de acceso denegado (inicialmente visible) -->
-        <div id="noAccessSection" class="no-access">
-            <h2>Acceso Restringido</h2>
-            <p>Esta sección es exclusiva para usuarios con rol de Director Corporativo.</p>
-            <p>Por favor, inicie sesión con credenciales de Director Corporativo.</p>
-            <button id="loginBtn">Iniciar Sesión</button>
-        </div>
-        
-        <!-- Sección principal (inicialmente oculta) -->
-        <div id="mainSection" style="display: none;">
-            <header>
-                <div class="header-content">
-                    <h1>Panel de Director Corporativo - Gestión de Empresas</h1>
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <div id="userInfo">Cargando...</div>
-                        <button id="logoutBtn">Cerrar Sesión</button>
-                    </div>
+    <h2>Gestión de Empresas</h2>
+    <div id="userInfo"></div>
+    <button class="btn btn-add" onclick="openAddModal()">Nueva Empresa</button>
+    <div id="error" class="error"></div>
+    <table id="empresasTable">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>RFC</th>
+                <th>Dirección</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Website</th>
+                <th>Moneda</th>
+                <th>Logo</th>
+                <th>Tipo Empresa</th>
+                <th>Régimen Fiscal</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="empresasBody">
+        </tbody>
+    </table>
+
+    <!-- Modal para agregar/editar empresa -->
+    <div id="empresaModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle">Nueva Empresa</h3>
+            <form id="empresaForm">
+                <input type="hidden" id="empresaId">
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" id="nombre" required>
                 </div>
-            </header>
-            
-            <!-- Mensajes de estado -->
-            <div id="errorMessage" class="error-message"></div>
-            <div id="successMessage" class="success-message"></div>
-            
-            <!-- Controles -->
-            <div class="controls">
-                <button id="addEmpresaBtn">+ Nueva Empresa</button>
-                <div class="search-container">
-                    <input type="text" id="searchInput" placeholder="Buscar empresas por nombre, RFC o email...">
-                    <button id="searchBtn">Buscar</button>
+                <div class="form-group">
+                    <label>RFC *</label>
+                    <input type="text" id="rfc" required>
                 </div>
-            </div>
-            
-            <!-- Tabla de empresas -->
-            <div class="table-container">
-                <div id="loading" class="loading">Cargando empresas...</div>
-                <div id="empresasTableContainer" style="display: none;">
-                    <table id="empresasTable">
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>RFC</th>
-                                <th>Email</th>
-                                <th>Teléfono</th>
-                                <th>Moneda</th>
-                                <th>Tipo</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="empresasTableBody">
-                            <!-- Las empresas se cargarán aquí -->
-                        </tbody>
-                    </table>
-                    
-                    <!-- Paginación -->
-                    <div class="pagination" id="pagination" style="display: none;">
-                        <!-- Los botones de paginación se generarán aquí -->
-                    </div>
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <textarea id="direccion"></textarea>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Modal para agregar/editar empresa -->
-        <div id="empresaModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="modalTitle">Nueva Empresa</h2>
-                    <button class="close-modal">&times;</button>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" id="telefono">
                 </div>
-                <div class="modal-body">
-                    <form id="empresaForm">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="nombre">Nombre de la Empresa *</label>
-                                <input type="text" id="nombre" name="nombre" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="rfc">RFC *</label>
-                                <input type="text" id="rfc" name="rfc" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="email">Email</label>
-                                <input type="email" id="email" name="email">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="telefono">Teléfono</label>
-                                <input type="text" id="telefono" name="telefono">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="website">Sitio Web</label>
-                                <input type="text" id="website" name="website">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="moneda_id">Moneda</label>
-                                <select id="moneda_id" name="moneda_id">
-                                    <option value="">Seleccionar moneda...</option>
-                                    <!-- Las monedas se cargarán dinámicamente -->
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="tipo_empresa">Tipo de Empresa</label>
-                                <select id="tipo_empresa" name="tipo_empresa">
-                                    <option value="">Seleccionar tipo...</option>
-                                    <option value="SA">Sociedad Anónima (SA)</option>
-                                    <option value="SRL">Sociedad de Responsabilidad Limitada (SRL)</option>
-                                    <option value="SC">Sociedad Cooperativa (SC)</option>
-                                    <option value="SAPI">Sociedad Anónima Promotora de Inversión (SAPI)</option>
-                                    <option value="Persona Física">Persona Física</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="regimen_fiscal">Régimen Fiscal</label>
-                                <input type="text" id="regimen_fiscal" name="regimen_fiscal">
-                            </div>
-                            
-                            <div class="form-group" style="grid-column: 1 / -1;">
-                                <label for="direccion">Dirección</label>
-                                <textarea id="direccion" name="direccion" rows="3"></textarea>
-                            </div>
-                            
-                            <div class="form-group" style="grid-column: 1 / -1;">
-                                <label for="logo_url">URL del Logo</label>
-                                <input type="text" id="logo_url" name="logo_url" placeholder="https://ejemplo.com/logo.png">
-                            </div>
-                            
-                            <div class="form-group checkbox-group">
-                                <input type="checkbox" id="activo" name="activo" checked>
-                                <label for="activo">Empresa Activa</label>
-                            </div>
-                        </div>
-                        
-                        <input type="hidden" id="empresaId" name="id">
-                    </form>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email">
                 </div>
-                <div class="modal-footer">
-                    <button id="cancelBtn">Cancelar</button>
-                    <button id="saveEmpresaBtn">Guardar Empresa</button>
+                <div class="form-group">
+                    <label>Website</label>
+                    <input type="url" id="website">
                 </div>
-            </div>
-        </div>
-        
-        <!-- Modal de login -->
-        <div id="loginModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Iniciar Sesión - Director Corporativo</h2>
-                    <button class="close-modal">&times;</button>
+                <div class="form-group">
+                    <label>Moneda *</label>
+                    <select id="moneda_id" required>
+                        <option value="">Seleccione...</option>
+                    </select>
                 </div>
-                <div class="modal-body">
-                    <form id="loginForm">
-                        <div class="form-group">
-                            <label for="loginUsuario">Usuario o Email *</label>
-                            <input type="text" id="loginUsuario" name="loginUsuario" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="loginPassword">Contraseña *</label>
-                            <input type="password" id="loginPassword" name="loginPassword" required>
-                        </div>
-                        
-                        <div id="loginError" class="error-message" style="margin-top: 15px; display: none;"></div>
-                    </form>
+                <div class="form-group">
+                    <label>Logo URL</label>
+                    <input type="url" id="logo_url">
                 </div>
-                <div class="modal-footer">
-                    <button id="cancelLoginBtn">Cancelar</button>
-                    <button id="submitLoginBtn">Iniciar Sesión</button>
+                <div class="form-group">
+                    <label>Tipo Empresa</label>
+                    <input type="text" id="tipo_empresa">
                 </div>
-            </div>
+                <div class="form-group">
+                    <label>Régimen Fiscal</label>
+                    <input type="text" id="regimen_fiscal">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="activo" checked> Activo
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-add">Guardar</button>
+            </form>
         </div>
     </div>
 
     <script>
-        // SOLUCIÓN: Inicializar Supabase solo si no existe
-        if (typeof supabase === 'undefined') {
-            // Configuración de Supabase
-            const SUPABASE_URL = 'https://bsbsvvszfxpzxsybzuvf.supabase.co';
-            const SUPABASE_ANON_KEY = 'sb_publishable_NrJZZp3mSnvJNhdCZJdWzw_8oeI_Ol-';
-            
-            // Inicializar Supabase solo si no existe
-            window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Configuración de Supabase - REEMPLAZA CON TU SERVICE ROLE KEY
+        const SUPABASE_URL = 'https://sknyockrczifqemmdysx.supabase.co';
+        const SUPABASE_SERVICE_KEY = 'tu-service-role-key'; // Reemplazar con la clave de servicio
+
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+        // Verificar sesión
+        const userJson = sessionStorage.getItem('user');
+        if (!userJson) {
+            window.location.href = 'login.html';
+        } else {
+            const user = JSON.parse(userJson);
+            if (user.rol !== 'Director Corporativo') {
+                alert('Acceso no autorizado');
+                window.location.href = 'login.html';
+            } else {
+                document.getElementById('userInfo').innerText = `Bienvenido, ${user.nombres} (${user.rol})`;
+                loadMonedas();
+                loadEmpresas();
+            }
         }
-        
-        // Usar window.supabaseClient para evitar conflictos
-        const supabaseClient = window.supabaseClient || supabase;
-        
-        // Estado de la aplicación
-        let currentUser = null;
-        let empresas = [];
+
         let monedas = [];
-        let currentPage = 1;
-        const itemsPerPage = 10;
-        let isEditing = false;
-        let currentEmpresaId = null;
-        
-        // Elementos DOM
-        const noAccessSection = document.getElementById('noAccessSection');
-        const mainSection = document.getElementById('mainSection');
-        const userInfo = document.getElementById('userInfo');
-        const empresasTableBody = document.getElementById('empresasTableBody');
-        const empresasTableContainer = document.getElementById('empresasTableContainer');
-        const loadingElement = document.getElementById('loading');
-        const errorMessage = document.getElementById('errorMessage');
-        const successMessage = document.getElementById('successMessage');
-        const searchInput = document.getElementById('searchInput');
-        const searchBtn = document.getElementById('searchBtn');
-        const addEmpresaBtn = document.getElementById('addEmpresaBtn');
-        const empresaModal = document.getElementById('empresaModal');
-        const loginModal = document.getElementById('loginModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const empresaForm = document.getElementById('empresaForm');
-        const empresaIdInput = document.getElementById('empresaId');
-        const monedaSelect = document.getElementById('moneda_id');
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const loginForm = document.getElementById('loginForm');
-        const loginError = document.getElementById('loginError');
-        const submitLoginBtn = document.getElementById('submitLoginBtn');
-        const cancelLoginBtn = document.getElementById('cancelLoginBtn');
-        const closeModalButtons = document.querySelectorAll('.close-modal');
-        
-        // Verificar si hay una sesión activa al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            checkCurrentSession();
-            
-            // Event listeners
-            loginBtn.addEventListener('click', showLoginModal);
-            logoutBtn.addEventListener('click', logout);
-            addEmpresaBtn.addEventListener('click', showAddEmpresaModal);
-            searchBtn.addEventListener('click', searchEmpresas);
-            searchInput.addEventListener('keyup', function(event) {
-                if (event.key === 'Enter') {
-                    searchEmpresas();
-                }
-            });
-            
-            // Event listeners para modales
-            closeModalButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    empresaModal.style.display = 'none';
-                    loginModal.style.display = 'none';
-                });
-            });
-            
-            document.getElementById('cancelBtn').addEventListener('click', function() {
-                empresaModal.style.display = 'none';
-            });
-            
-            cancelLoginBtn.addEventListener('click', function() {
-                loginModal.style.display = 'none';
-            });
-            
-            submitLoginBtn.addEventListener('click', login);
-            
-            document.getElementById('saveEmpresaBtn').addEventListener('click', saveEmpresa);
-            
-            // Cerrar modales al hacer clic fuera de ellos
-            window.addEventListener('click', function(event) {
-                if (event.target === empresaModal) {
-                    empresaModal.style.display = 'none';
-                }
-                if (event.target === loginModal) {
-                    loginModal.style.display = 'none';
-                }
-            });
-        });
-        
-        // Verificar si hay una sesión activa
-        async function checkCurrentSession() {
-            const userId = localStorage.getItem('director_user_id');
-            const userRole = localStorage.getItem('director_user_role');
-            const userName = localStorage.getItem('director_user_name');
-            
-            if (userId && userRole === 'Director Corporativo') {
-                currentUser = {
-                    id: userId,
-                    rol: userRole,
-                    nombre: userName
-                };
-                
-                showMainSection();
-                loadMonedas();
-                loadEmpresas();
-            } else {
-                showNoAccessSection();
-            }
-        }
-        
-        // Mostrar sección de acceso denegado
-        function showNoAccessSection() {
-            noAccessSection.style.display = 'block';
-            mainSection.style.display = 'none';
-        }
-        
-        // Mostrar sección principal
-        function showMainSection() {
-            noAccessSection.style.display = 'none';
-            mainSection.style.display = 'block';
-            userInfo.textContent = `Director: ${currentUser.nombre}`;
-        }
-        
-        // Mostrar modal de login
-        function showLoginModal() {
-            loginModal.style.display = 'block';
-            loginForm.reset();
-            loginError.style.display = 'none';
-        }
-        
-        // Función de login DIRECTAMENTE contra la tabla usuarios
-        async function login() {
-            const usuario = document.getElementById('loginUsuario').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-            
-            if (!usuario || !password) {
-                showLoginError('Por favor, complete todos los campos.');
-                return;
-            }
-            
-            try {
-                console.log('Intentando login con:', usuario);
-                
-                // Buscar usuario en la tabla usuarios
-                const { data: usuarios, error } = await supabaseClient
-                    .from('usuarios')
-                    .select('*')
-                    .or(`usuario.ilike.%${usuario}%,email.ilike.%${usuario}%`)
-                    .eq('activo', true)
-                    .limit(1);
-                
-                if (error) {
-                    console.error('Error en consulta:', error);
-                    throw error;
-                }
-                
-                console.log('Usuarios encontrados:', usuarios);
-                
-                if (!usuarios || usuarios.length === 0) {
-                    showLoginError('Usuario no encontrado o inactivo.');
-                    return;
-                }
-                
-                const usuarioData = usuarios[0];
-                console.log('Usuario encontrado:', usuarioData);
-                
-                // Verificar si es Director Corporativo
-                if (usuarioData.rol !== 'Director Corporativo') {
-                    showLoginError('Acceso denegado. Solo los Directores Corporativos pueden acceder.');
-                    return;
-                }
-                
-                // Verificar contraseña (en texto plano según el esquema SQL)
-                if (usuarioData.contrasena_plano !== password) {
-                    showLoginError('Contraseña incorrecta.');
-                    return;
-                }
-                
-                // Guardar sesión
-                localStorage.setItem('director_user_id', usuarioData.id);
-                localStorage.setItem('director_user_role', usuarioData.rol);
-                localStorage.setItem('director_user_name', `${usuarioData.nombres} ${usuarioData.apellido_paterno}`);
-                
-                currentUser = {
-                    id: usuarioData.id,
-                    rol: usuarioData.rol,
-                    nombre: `${usuarioData.nombres} ${usuarioData.apellido_paterno}`
-                };
-                
-                // Cerrar modal y mostrar sección principal
-                loginModal.style.display = 'none';
-                showMainSection();
-                loadMonedas();
-                loadEmpresas();
-                showSuccess('Sesión iniciada correctamente.');
-                
-            } catch (error) {
-                console.error('Error en login:', error);
-                showLoginError('Error al iniciar sesión. Intente nuevamente.');
-            }
-        }
-        
-        // Mostrar error en el modal de login
-        function showLoginError(message) {
-            loginError.textContent = message;
-            loginError.style.display = 'block';
-        }
-        
-        // Función de logout
-        function logout() {
-            localStorage.removeItem('director_user_id');
-            localStorage.removeItem('director_user_role');
-            localStorage.removeItem('director_user_name');
-            currentUser = null;
-            showNoAccessSection();
-            showSuccess('Sesión cerrada correctamente.');
-        }
-        
-        // Cargar monedas para el select
+
         async function loadMonedas() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('monedas')
-                    .select('id, codigo, nombre')
-                    .eq('activo', true)
-                    .order('codigo');
-                
-                if (error) throw error;
-                
-                monedas = data;
-                monedaSelect.innerHTML = '<option value="">Seleccionar moneda...</option>';
-                
-                monedas.forEach(moneda => {
-                    const option = document.createElement('option');
-                    option.value = moneda.id;
-                    option.textContent = `${moneda.codigo} - ${moneda.nombre}`;
-                    monedaSelect.appendChild(option);
-                });
-                
-            } catch (error) {
-                console.error('Error cargando monedas:', error);
-                showError('Error al cargar las monedas.');
+            const { data, error } = await supabase
+                .from('monedas')
+                .select('*')
+                .eq('activo', true);
+            if (error) {
+                showError('Error cargando monedas: ' + error.message);
+                return;
             }
+            monedas = data;
+            const select = document.getElementById('moneda_id');
+            select.innerHTML = '<option value="">Seleccione...</option>';
+            data.forEach(m => {
+                const option = document.createElement('option');
+                option.value = m.id;
+                option.textContent = `${m.codigo} - ${m.nombre}`;
+                select.appendChild(option);
+            });
         }
-        
-        // Cargar empresas
+
         async function loadEmpresas() {
-            loadingElement.style.display = 'block';
-            empresasTableContainer.style.display = 'none';
-            
-            try {
-                const { data, error } = await supabaseClient
-                    .from('empresas')
-                    .select(`
-                        *,
-                        monedas (codigo, nombre)
-                    `)
-                    .order('nombre');
-                
-                if (error) throw error;
-                
-                empresas = data;
-                displayEmpresas();
-                
-            } catch (error) {
-                console.error('Error cargando empresas:', error);
-                showError('Error al cargar las empresas.');
-            } finally {
-                loadingElement.style.display = 'none';
-            }
-        }
-        
-        // Mostrar empresas en la tabla
-        function displayEmpresas(filteredEmpresas = null) {
-            const empresasToDisplay = filteredEmpresas || empresas;
-            empresasTableBody.innerHTML = '';
-            
-            if (empresasToDisplay.length === 0) {
-                empresasTableContainer.style.display = 'none';
-                loadingElement.textContent = 'No se encontraron empresas.';
-                loadingElement.style.display = 'block';
+            const { data, error } = await supabase
+                .from('empresas')
+                .select('*, monedas(codigo)')
+                .order('nombre');
+            if (error) {
+                showError('Error cargando empresas: ' + error.message);
                 return;
             }
-            
-            // Calcular paginación
-            const totalPages = Math.ceil(empresasToDisplay.length / itemsPerPage);
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = Math.min(startIndex + itemsPerPage, empresasToDisplay.length);
-            const paginatedEmpresas = empresasToDisplay.slice(startIndex, endIndex);
-            
-            // Mostrar empresas
-            paginatedEmpresas.forEach(empresa => {
-                const row = document.createElement('tr');
-                
-                // Nombre
-                const nombreCell = document.createElement('td');
-                nombreCell.textContent = empresa.nombre;
-                row.appendChild(nombreCell);
-                
-                // RFC
-                const rfcCell = document.createElement('td');
-                rfcCell.textContent = empresa.rfc;
-                row.appendChild(rfcCell);
-                
-                // Email
-                const emailCell = document.createElement('td');
-                emailCell.textContent = empresa.email || '-';
-                row.appendChild(emailCell);
-                
-                // Teléfono
-                const telefonoCell = document.createElement('td');
-                telefonoCell.textContent = empresa.telefono || '-';
-                row.appendChild(telefonoCell);
-                
-                // Moneda
-                const monedaCell = document.createElement('td');
-                monedaCell.textContent = empresa.monedas ? `${empresa.monedas.codigo}` : '-';
-                row.appendChild(monedaCell);
-                
-                // Tipo de empresa
-                const tipoCell = document.createElement('td');
-                tipoCell.textContent = empresa.tipo_empresa || '-';
-                row.appendChild(tipoCell);
-                
-                // Estado
-                const estadoCell = document.createElement('td');
-                const estadoBadge = document.createElement('span');
-                estadoBadge.className = `status-badge ${empresa.activo ? 'status-active' : 'status-inactive'}`;
-                estadoBadge.textContent = empresa.activo ? 'Activa' : 'Inactiva';
-                estadoCell.appendChild(estadoBadge);
-                row.appendChild(estadoCell);
-                
-                // Acciones
-                const accionesCell = document.createElement('td');
-                const accionesDiv = document.createElement('div');
-                accionesDiv.className = 'actions';
-                
+            renderEmpresas(data);
+        }
+
+        function renderEmpresas(empresas) {
+            const tbody = document.getElementById('empresasBody');
+            tbody.innerHTML = '';
+            empresas.forEach(emp => {
+                const row = tbody.insertRow();
+                row.insertCell().textContent = emp.nombre || '';
+                row.insertCell().textContent = emp.rfc || '';
+                row.insertCell().textContent = emp.direccion || '';
+                row.insertCell().textContent = emp.telefono || '';
+                row.insertCell().textContent = emp.email || '';
+                row.insertCell().textContent = emp.website || '';
+                row.insertCell().textContent = emp.monedas?.codigo || '';
+                row.insertCell().textContent = emp.logo_url ? 'Sí' : '';
+                row.insertCell().textContent = emp.tipo_empresa || '';
+                row.insertCell().textContent = emp.regimen_fiscal || '';
+                row.insertCell().textContent = emp.activo ? 'Sí' : 'No';
+                const actionsCell = row.insertCell();
                 const editBtn = document.createElement('button');
-                editBtn.className = 'edit-btn';
+                editBtn.className = 'btn btn-edit';
                 editBtn.textContent = 'Editar';
-                editBtn.addEventListener('click', () => editEmpresa(empresa.id));
-                
+                editBtn.onclick = () => openEditModal(emp);
                 const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'delete-btn';
+                deleteBtn.className = 'btn btn-delete';
                 deleteBtn.textContent = 'Eliminar';
-                deleteBtn.addEventListener('click', () => deleteEmpresa(empresa.id, empresa.nombre));
-                
-                accionesDiv.appendChild(editBtn);
-                accionesDiv.appendChild(deleteBtn);
-                accionesCell.appendChild(accionesDiv);
-                row.appendChild(accionesCell);
-                
-                empresasTableBody.appendChild(row);
+                deleteBtn.onclick = () => deleteEmpresa(emp.id);
+                actionsCell.appendChild(editBtn);
+                actionsCell.appendChild(deleteBtn);
             });
-            
-            empresasTableContainer.style.display = 'block';
-            
-            // Mostrar paginación si hay más de una página
-            if (totalPages > 1) {
-                displayPagination(totalPages);
-            } else {
-                document.getElementById('pagination').style.display = 'none';
-            }
         }
-        
-        // Mostrar paginación
-        function displayPagination(totalPages) {
-            const paginationDiv = document.getElementById('pagination');
-            paginationDiv.innerHTML = '';
-            paginationDiv.style.display = 'flex';
-            
-            // Botón anterior
-            const prevBtn = document.createElement('button');
-            prevBtn.textContent = '←';
-            prevBtn.disabled = currentPage === 1;
-            prevBtn.addEventListener('click', () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    displayEmpresas();
-                }
-            });
-            paginationDiv.appendChild(prevBtn);
-            
-            // Botones de página
-            for (let i = 1; i <= totalPages; i++) {
-                const pageBtn = document.createElement('button');
-                pageBtn.textContent = i;
-                pageBtn.className = currentPage === i ? 'active' : '';
-                pageBtn.addEventListener('click', () => {
-                    currentPage = i;
-                    displayEmpresas();
-                });
-                paginationDiv.appendChild(pageBtn);
-            }
-            
-            // Botón siguiente
-            const nextBtn = document.createElement('button');
-            nextBtn.textContent = '→';
-            nextBtn.disabled = currentPage === totalPages;
-            nextBtn.addEventListener('click', () => {
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    displayEmpresas();
-                }
-            });
-            paginationDiv.appendChild(nextBtn);
+
+        function showError(msg) {
+            document.getElementById('error').textContent = msg;
         }
-        
-        // Buscar empresas
-        function searchEmpresas() {
-            const searchTerm = searchInput.value.trim().toLowerCase();
-            
-            if (!searchTerm) {
-                currentPage = 1;
-                displayEmpresas();
-                return;
-            }
-            
-            const filteredEmpresas = empresas.filter(empresa => 
-                empresa.nombre.toLowerCase().includes(searchTerm) ||
-                empresa.rfc.toLowerCase().includes(searchTerm) ||
-                (empresa.email && empresa.email.toLowerCase().includes(searchTerm)) ||
-                (empresa.telefono && empresa.telefono.includes(searchTerm))
-            );
-            
-            currentPage = 1;
-            displayEmpresas(filteredEmpresas);
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'Nueva Empresa';
+            document.getElementById('empresaForm').reset();
+            document.getElementById('empresaId').value = '';
+            document.getElementById('activo').checked = true;
+            document.getElementById('empresaModal').style.display = 'block';
         }
-        
-        // Mostrar modal para agregar empresa
-        function showAddEmpresaModal() {
-            isEditing = false;
-            modalTitle.textContent = 'Nueva Empresa';
-            empresaForm.reset();
-            empresaIdInput.value = '';
-            empresaModal.style.display = 'block';
+
+        function openEditModal(emp) {
+            document.getElementById('modalTitle').textContent = 'Editar Empresa';
+            document.getElementById('empresaId').value = emp.id;
+            document.getElementById('nombre').value = emp.nombre || '';
+            document.getElementById('rfc').value = emp.rfc || '';
+            document.getElementById('direccion').value = emp.direccion || '';
+            document.getElementById('telefono').value = emp.telefono || '';
+            document.getElementById('email').value = emp.email || '';
+            document.getElementById('website').value = emp.website || '';
+            document.getElementById('moneda_id').value = emp.moneda_id || '';
+            document.getElementById('logo_url').value = emp.logo_url || '';
+            document.getElementById('tipo_empresa').value = emp.tipo_empresa || '';
+            document.getElementById('regimen_fiscal').value = emp.regimen_fiscal || '';
+            document.getElementById('activo').checked = emp.activo;
+            document.getElementById('empresaModal').style.display = 'block';
         }
-        
-        // Mostrar modal para editar empresa
-        async function editEmpresa(id) {
-            isEditing = true;
-            currentEmpresaId = id;
-            modalTitle.textContent = 'Editar Empresa';
-            
-            try {
-                const { data, error } = await supabaseClient
-                    .from('empresas')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-                
-                if (error) throw error;
-                
-                // Rellenar el formulario con los datos de la empresa
-                document.getElementById('nombre').value = data.nombre || '';
-                document.getElementById('rfc').value = data.rfc || '';
-                document.getElementById('email').value = data.email || '';
-                document.getElementById('telefono').value = data.telefono || '';
-                document.getElementById('website').value = data.website || '';
-                document.getElementById('moneda_id').value = data.moneda_id || '';
-                document.getElementById('tipo_empresa').value = data.tipo_empresa || '';
-                document.getElementById('regimen_fiscal').value = data.regimen_fiscal || '';
-                document.getElementById('direccion').value = data.direccion || '';
-                document.getElementById('logo_url').value = data.logo_url || '';
-                document.getElementById('activo').checked = data.activo;
-                empresaIdInput.value = data.id;
-                
-                empresaModal.style.display = 'block';
-                
-            } catch (error) {
-                console.error('Error cargando empresa:', error);
-                showError('Error al cargar los datos de la empresa.');
-            }
+
+        function closeModal() {
+            document.getElementById('empresaModal').style.display = 'none';
         }
-        
-        // Guardar empresa (crear o actualizar)
-        async function saveEmpresa() {
-            // Validar campos requeridos
-            const nombre = document.getElementById('nombre').value.trim();
-            const rfc = document.getElementById('rfc').value.trim();
-            
-            if (!nombre || !rfc) {
-                showError('Los campos Nombre y RFC son obligatorios.');
-                return;
-            }
-            
-            // Preparar datos
+
+        document.getElementById('empresaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('empresaId').value;
             const empresaData = {
-                nombre: nombre,
-                rfc: rfc,
-                email: document.getElementById('email').value.trim(),
-                telefono: document.getElementById('telefono').value.trim(),
-                website: document.getElementById('website').value.trim(),
-                moneda_id: document.getElementById('moneda_id').value || null,
-                tipo_empresa: document.getElementById('tipo_empresa').value,
-                regimen_fiscal: document.getElementById('regimen_fiscal').value.trim(),
-                direccion: document.getElementById('direccion').value.trim(),
-                logo_url: document.getElementById('logo_url').value.trim(),
-                activo: document.getElementById('activo').checked,
-                actualizado_en: new Date().toISOString()
+                nombre: document.getElementById('nombre').value,
+                rfc: document.getElementById('rfc').value,
+                direccion: document.getElementById('direccion').value || null,
+                telefono: document.getElementById('telefono').value || null,
+                email: document.getElementById('email').value || null,
+                website: document.getElementById('website').value || null,
+                moneda_id: document.getElementById('moneda_id').value,
+                logo_url: document.getElementById('logo_url').value || null,
+                tipo_empresa: document.getElementById('tipo_empresa').value || null,
+                regimen_fiscal: document.getElementById('regimen_fiscal').value || null,
+                activo: document.getElementById('activo').checked
             };
-            
-            try {
-                if (isEditing) {
-                    // Actualizar empresa existente
-                    const { data, error } = await supabaseClient
-                        .from('empresas')
-                        .update(empresaData)
-                        .eq('id', empresaIdInput.value);
-                    
-                    if (error) throw error;
-                    
-                    showSuccess('Empresa actualizada correctamente.');
-                } else {
-                    // Crear nueva empresa
-                    const { data, error } = await supabaseClient
-                        .from('empresas')
-                        .insert([empresaData]);
-                    
-                    if (error) throw error;
-                    
-                    showSuccess('Empresa creada correctamente.');
-                }
-                
-                // Cerrar modal y recargar empresas
-                empresaModal.style.display = 'none';
-                loadEmpresas();
-                
-            } catch (error) {
-                console.error('Error guardando empresa:', error);
-                
-                // Manejar errores específicos
-                if (error.message.includes('duplicate key') || error.message.includes('empresas_rfc_key')) {
-                    showError('El RFC ya existe. Por favor, use un RFC único.');
-                } else {
-                    showError('Error al guardar la empresa. Verifique los datos e intente nuevamente.');
-                }
-            }
-        }
-        
-        // Eliminar empresa
-        async function deleteEmpresa(id, nombre) {
-            if (!confirm(`¿Está seguro de desactivar la empresa "${nombre}"? La empresa no se eliminará, solo se marcará como inactiva.`)) {
-                return;
-            }
-            
-            try {
-                const { data, error } = await supabaseClient
+            if (id) {
+                // Actualizar
+                empresaData.actualizado_en = new Date();
+                const { error } = await supabase
                     .from('empresas')
-                    .update({ activo: false, actualizado_en: new Date().toISOString() })
+                    .update(empresaData)
                     .eq('id', id);
-                
-                if (error) throw error;
-                
-                showSuccess('Empresa desactivada correctamente.');
+                if (error) {
+                    showError('Error actualizando: ' + error.message);
+                } else {
+                    closeModal();
+                    loadEmpresas();
+                }
+            } else {
+                // Insertar
+                const { error } = await supabase
+                    .from('empresas')
+                    .insert([empresaData]);
+                if (error) {
+                    showError('Error insertando: ' + error.message);
+                } else {
+                    closeModal();
+                    loadEmpresas();
+                }
+            }
+        });
+
+        async function deleteEmpresa(id) {
+            if (!confirm('¿Está seguro de eliminar esta empresa?')) return;
+            const { error } = await supabase
+                .from('empresas')
+                .delete()
+                .eq('id', id);
+            if (error) {
+                showError('Error eliminando: ' + error.message);
+            } else {
                 loadEmpresas();
-                
-            } catch (error) {
-                console.error('Error desactivando empresa:', error);
-                showError('Error al desactivar la empresa.');
             }
         }
-        
-        // Mostrar mensaje de error
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-            successMessage.style.display = 'none';
-            
-            setTimeout(() => {
-                errorMessage.style.display = 'none';
-            }, 5000);
-        }
-        
-        // Mostrar mensaje de éxito
-        function showSuccess(message) {
-            successMessage.textContent = message;
-            successMessage.style.display = 'block';
-            errorMessage.style.display = 'none';
-            
-            setTimeout(() => {
-                successMessage.style.display = 'none';
-            }, 5000);
+
+        // Cerrar modal si se hace clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('empresaModal');
+            if (event.target == modal) {
+                closeModal();
+            }
         }
     </script>
 </body>
