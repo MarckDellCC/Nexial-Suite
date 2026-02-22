@@ -94,10 +94,10 @@
     <script>
         // --- CONFIGURACIÓN ---
         const SUPABASE_URL = 'https://sknyockrczifqemmdysx.supabase.co';
-        const SUPABASE_SERVICE_KEY = 'tu-service-role-key'; // Reemplazar con la service_role key
+        const SUPABASE_SERVICE_KEY = 'tu-service-role-key'; // Reemplazar con la service_role key real
 
-        // Crear cliente una sola vez
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+        // Crear cliente con nombre diferente
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
         // Verificar sesión
         (function verificarSesion() {
@@ -121,7 +121,7 @@
 
         // Cargar monedas al abrir la página y al abrir modal
         async function cargarMonedas() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('monedas')
                 .select('id, codigo, nombre')
                 .eq('activo', true)
@@ -147,7 +147,7 @@
 
         // Cargar empresas en la tabla
         async function loadEmpresas() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('empresas')
                 .select(`
                     *,
@@ -219,14 +219,14 @@
             let error;
             if (id) {
                 // Actualizar
-                const { error: updateError } = await supabase
+                const { error: updateError } = await supabaseClient
                     .from('empresas')
                     .update(data)
                     .eq('id', id);
                 error = updateError;
             } else {
-                // Crear nuevo (sin id)
-                const { error: insertError } = await supabase
+                // Crear nuevo
+                const { error: insertError } = await supabaseClient
                     .from('empresas')
                     .insert([data]);
                 error = insertError;
@@ -243,7 +243,7 @@
 
         // Editar empresa
         window.editarEmpresa = async (id) => {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('empresas')
                 .select('*')
                 .eq('id', id)
@@ -277,7 +277,7 @@
         window.eliminarEmpresa = async (id) => {
             if (!confirm('¿Está seguro de eliminar esta empresa? Esta acción puede afectar datos relacionados.')) return;
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('empresas')
                 .delete()
                 .eq('id', id);
