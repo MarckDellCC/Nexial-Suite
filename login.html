@@ -2,97 +2,75 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Nexial Suite</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f0f2f5; }
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f0f2f5; }
         .login-container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 300px; }
-        h2 { margin-top: 0; color: #333; }
-        input { width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #0070f3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #0051bb; }
-        .error { color: red; font-size: 14px; margin-top: 10px; }
+        h2 { margin-top: 0; text-align: center; color: #333; }
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #0056b3; }
+        .error { color: red; text-align: center; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <h2>Iniciar sesión</h2>
+        <h2>Iniciar Sesión</h2>
         <form id="loginForm">
-            <input type="text" id="username" placeholder="Usuario" required>
-            <input type="password" id="password" placeholder="Contraseña" required>
+            <input type="text" id="usuario" placeholder="Usuario" required>
+            <input type="password" id="contrasena" placeholder="Contraseña" required>
             <button type="submit">Entrar</button>
-            <div id="errorMsg" class="error"></div>
+            <div id="errorMessage" class="error"></div>
         </form>
     </div>
 
     <script>
-        // --- CONFIGURACIÓN ---
         const SUPABASE_URL = 'https://sknyockrczifqemmdysx.supabase.co';
-        const SUPABASE_SERVICE_KEY = 'tu-service-role-key'; // Reemplazar con la service_role key real
-
-        // Crear cliente con nombre diferente para evitar conflicto con la variable global 'supabase'
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+        const SUPABASE_ANON_KEY = 'sb_publishable_H3NG5ebaUykfhQgXSezZzw_mwhWAcVQ';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('errorMsg');
-            errorDiv.innerText = '';
+            const usuario = document.getElementById('usuario').value.trim();
+            const contrasena = document.getElementById('contrasena').value;
 
             try {
-                // Buscar usuario por nombre de usuario (campo 'usuario')
-                const { data: usuarios, error } = await supabaseClient
+                const { data, error } = await supabase
                     .from('usuarios')
                     .select('*')
-                    .eq('usuario', username)
-                    .eq('activo', true);
+                    .eq('usuario', usuario)
+                    .eq('contrasena', contrasena)  // Texto plano para pruebas
+                    .eq('activo', true)
+                    .single();
 
-                if (error) throw error;
-
-                if (!usuarios || usuarios.length === 0) {
-                    errorDiv.innerText = 'Usuario no encontrado';
+                if (error || !data) {
+                    document.getElementById('errorMessage').textContent = 'Usuario o contraseña incorrectos';
                     return;
                 }
 
-                const usuario = usuarios[0];
-
-                // Verificar contraseña con bcrypt
-                const passwordValida = bcrypt.compareSync(password, usuario.contrasena);
-                if (!passwordValida) {
-                    errorDiv.innerText = 'Contraseña incorrecta';
-                    return;
-                }
-
-                // Verificar que sea Director Corporativo
-                if (usuario.rol !== 'Director Corporativo') {
-                    errorDiv.innerText = 'Acceso no autorizado. Se requiere rol Director Corporativo.';
-                    return;
-                }
-
-                // Actualizar último acceso
-                await supabaseClient
-                    .from('usuarios')
-                    .update({ ultimo_acceso: new Date().toISOString() })
-                    .eq('id', usuario.id);
-
-                // Guardar datos en sessionStorage
+                // Guardar datos de sesión
                 sessionStorage.setItem('usuario', JSON.stringify({
-                    id: usuario.id,
-                    nombres: usuario.nombres,
-                    apellido_paterno: usuario.apellido_paterno,
-                    email: usuario.email,
-                    usuario: usuario.usuario,
-                    rol: usuario.rol,
-                    empresa_id: usuario.empresa_id
+                    id: data.id,
+                    usuario: data.usuario,
+                    rol: data.rol,
+                    empresa_id: data.empresa_id,
+                    nombres: data.nombres,
+                    apellidos: `${data.apellido_paterno} ${data.apellido_materno || ''}`
                 }));
 
-                // Redirigir
-                window.location.href = 'director_corporativo.html';
+                // Redirigir según rol
+                if (data.rol === 'Director Corporativo') {
+                    window.location.href = 'director_corporativo.html';
+                } else {
+                    // Por ahora solo redirigimos al mismo login con mensaje
+                    document.getElementById('errorMessage').textContent = 'Acceso no autorizado a este panel';
+                    // O podrías redirigir a un dashboard genérico si existiera
+                }
             } catch (err) {
                 console.error(err);
-                errorDiv.innerText = 'Error al conectar con el servidor';
+                document.getElementById('errorMessage').textContent = 'Error de conexión';
             }
         });
     </script>
