@@ -1,35 +1,33 @@
+<!-- login.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Nexial Suite</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f0f2f5; }
         .login-container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 300px; }
-        h2 { margin-top: 0; text-align: center; color: #333; }
-        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        h2 { text-align: center; margin-bottom: 1.5rem; color: #333; }
+        input { width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 0.75rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
         button:hover { background: #0056b3; }
-        .error { color: red; text-align: center; margin-top: 10px; }
+        .error { color: red; text-align: center; margin-top: 1rem; }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <h2>Iniciar Sesión</h2>
+        <h2>Iniciar sesión</h2>
         <form id="loginForm">
             <input type="text" id="usuario" placeholder="Usuario" required>
             <input type="password" id="contrasena" placeholder="Contraseña" required>
             <button type="submit">Entrar</button>
-            <div id="errorMessage" class="error"></div>
+            <div class="error" id="errorMsg"></div>
         </form>
     </div>
 
     <script>
         const SUPABASE_URL = 'https://sknyockrczifqemmdysx.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_H3NG5ebaUykfhQgXSezZzw_mwhWAcVQ';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -37,40 +35,41 @@
             const contrasena = document.getElementById('contrasena').value;
 
             try {
-                const { data, error } = await supabase
-                    .from('usuarios')
-                    .select('*')
-                    .eq('usuario', usuario)
-                    .eq('contrasena', contrasena)  // Texto plano para pruebas
-                    .eq('activo', true)
-                    .single();
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?select=*&usuario=eq.${encodeURIComponent(usuario)}&contrasena=eq.${encodeURIComponent(contrasena)}`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-                if (error || !data) {
-                    document.getElementById('errorMessage').textContent = 'Usuario o contraseña incorrectos';
+                if (!response.ok) throw new Error('Error en la consulta');
+                const users = await response.json();
+
+                if (users.length === 0) {
+                    document.getElementById('errorMsg').textContent = 'Usuario o contraseña incorrectos';
                     return;
                 }
 
-                // Guardar datos de sesión
-                sessionStorage.setItem('usuario', JSON.stringify({
-                    id: data.id,
-                    usuario: data.usuario,
-                    rol: data.rol,
-                    empresa_id: data.empresa_id,
-                    nombres: data.nombres,
-                    apellidos: `${data.apellido_paterno} ${data.apellido_materno || ''}`
+                const user = users[0];
+                // Guardar datos del usuario en sessionStorage
+                sessionStorage.setItem('user', JSON.stringify({
+                    id: user.id,
+                    usuario: user.usuario,
+                    rol: user.rol,
+                    empresa_id: user.empresa_id,
+                    nombres: user.nombres
                 }));
 
-                // Redirigir según rol
-                if (data.rol === 'Director Corporativo') {
+                // Redirigir según el rol (por ahora solo Director Corporativo)
+                if (user.rol === 'Director Corporativo') {
                     window.location.href = 'director_corporativo.html';
                 } else {
-                    // Por ahora solo redirigimos al mismo login con mensaje
-                    document.getElementById('errorMessage').textContent = 'Acceso no autorizado a este panel';
-                    // O podrías redirigir a un dashboard genérico si existiera
+                    document.getElementById('errorMsg').textContent = `Rol "${user.rol}" no tiene acceso a este panel.`;
                 }
-            } catch (err) {
-                console.error(err);
-                document.getElementById('errorMessage').textContent = 'Error de conexión';
+            } catch (error) {
+                console.error(error);
+                document.getElementById('errorMsg').textContent = 'Error de conexión con el servidor';
             }
         });
     </script>
