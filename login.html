@@ -26,8 +26,8 @@
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://sknyockrczifqemmdysx.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_H3NG5ebaUykfhQgXSezZzw_mwhWAcVQ';
+        const SUPABASE_URL = 'https://wmejhhftyuifbpnucnxj.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_My1susjOnp5FfzxJFaPfbA_ZlLaWObo';
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -52,7 +52,6 @@
                 }
 
                 const user = users[0];
-                // Guardar datos del usuario en sessionStorage
                 sessionStorage.setItem('user', JSON.stringify({
                     id: user.id,
                     usuario: user.usuario,
@@ -61,7 +60,6 @@
                     nombres: user.nombres
                 }));
 
-                // Redirigir según el rol (por ahora solo Director Corporativo)
                 if (user.rol === 'Director Corporativo') {
                     window.location.href = 'director_corporativo.html';
                 } else {
