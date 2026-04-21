@@ -33,7 +33,6 @@
 
     <button class="btn-add" id="showAddFormBtn">+ Nueva Empresa</button>
 
-    <!-- Formulario para crear/editar empresa -->
     <div class="form-container" id="empresaFormContainer" style="display: none;">
         <h2 id="formTitle">Nueva Empresa</h2>
         <form id="empresaForm">
@@ -91,7 +90,6 @@
         </form>
     </div>
 
-    <!-- Tabla de empresas -->
     <h2>Empresas registradas</h2>
     <table id="empresasTable">
         <thead>
@@ -111,10 +109,9 @@
     </table>
 
     <script>
-        const SUPABASE_URL = 'https://sknyockrczifqemmdysx.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_H3NG5ebaUykfhQgXSezZzw_mwhWAcVQ';
+        const SUPABASE_URL = 'https://wmejhhftyuifbpnucnxj.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_My1susjOnp5FfzxJFaPfbA_ZlLaWObo';
 
-        // Verificar autenticación y rol
         const userJson = sessionStorage.getItem('user');
         if (!userJson) {
             window.location.href = 'login.html';
@@ -128,9 +125,8 @@
             }
         }
 
-        let monedasMap = new Map(); // id -> codigo
+        let monedasMap = new Map();
 
-        // Cargar monedas para el selector
         async function loadMonedas() {
             const response = await fetch(`${SUPABASE_URL}/rest/v1/monedas?select=id,codigo,nombre&activo=eq.true`, {
                 headers: {
@@ -151,7 +147,6 @@
             });
         }
 
-        // Cargar empresas y mostrarlas en la tabla
         async function loadEmpresas() {
             const tbody = document.getElementById('empresasTableBody');
             tbody.innerHTML = '<tr><td colspan="7">Cargando...</td></tr>';
@@ -186,7 +181,6 @@
                     tbody.appendChild(tr);
                 });
 
-                // Asignar eventos a botones de editar y eliminar
                 document.querySelectorAll('.btn-edit').forEach(btn => {
                     btn.addEventListener('click', () => editEmpresa(btn.dataset.id));
                 });
@@ -199,7 +193,6 @@
             }
         }
 
-        // Función para obtener una empresa por ID
         async function getEmpresaById(id) {
             const response = await fetch(`${SUPABASE_URL}/rest/v1/empresas?id=eq.${id}&select=*`, {
                 headers: {
@@ -212,7 +205,6 @@
             return data[0];
         }
 
-        // Mostrar formulario en modo edición
         async function editEmpresa(id) {
             try {
                 const empresa = await getEmpresaById(id);
@@ -237,7 +229,6 @@
             }
         }
 
-        // Eliminar empresa
         async function deleteEmpresa(id) {
             if (!confirm('¿Está seguro de eliminar esta empresa? Esta acción puede afectar datos relacionados.')) return;
             try {
@@ -256,7 +247,6 @@
             }
         }
 
-        // Guardar (crear o actualizar)
         async function saveEmpresa(event) {
             event.preventDefault();
             const id = document.getElementById('empresaId').value;
@@ -274,7 +264,6 @@
                 activo: document.getElementById('activo').checked
             };
 
-            // Validar campos requeridos
             if (!empresaData.nombre || !empresaData.rfc || !empresaData.moneda_id) {
                 document.getElementById('formError').textContent = 'Nombre, RFC y Moneda son obligatorios.';
                 return;
@@ -283,7 +272,6 @@
             try {
                 let response;
                 if (id) {
-                    // Actualizar
                     response = await fetch(`${SUPABASE_URL}/rest/v1/empresas?id=eq.${id}`, {
                         method: 'PATCH',
                         headers: {
@@ -295,7 +283,6 @@
                         body: JSON.stringify(empresaData)
                     });
                 } else {
-                    // Crear nueva
                     response = await fetch(`${SUPABASE_URL}/rest/v1/empresas`, {
                         method: 'POST',
                         headers: {
@@ -318,7 +305,6 @@
             }
         }
 
-        // Eventos
         document.getElementById('showAddFormBtn').addEventListener('click', () => {
             document.getElementById('formTitle').textContent = 'Nueva Empresa';
             document.getElementById('empresaForm').reset();
@@ -340,7 +326,6 @@
             window.location.href = 'login.html';
         });
 
-        // Inicializar
         (async function init() {
             await loadMonedas();
             await loadEmpresas();
