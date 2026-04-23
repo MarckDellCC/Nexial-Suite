@@ -118,8 +118,6 @@
       const modal = document.getElementById('modal');
       const content = document.getElementById('modal-content');
       const editMode = empresa !== null;
-      const defaultMoneda = ''; // Podrías cargar monedas dinámicamente
-
       content.innerHTML = `
         <h3 class="text-xl font-bold mb-4">${editMode ? 'Editar Empresa' : 'Nueva Empresa'}</h3>
         <form id="empresa-form" class="space-y-4">
@@ -168,7 +166,6 @@
         </form>
       `;
 
-      // Cargar monedas en el select
       cargarMonedasSelect(content.querySelector('select[name="moneda_id"]'), empresa?.moneda_id);
 
       document.getElementById('empresa-form').addEventListener('submit', async (e) => {
@@ -295,24 +292,24 @@
         </form>
       `;
 
-      // Cargar empresas en el select
       cargarEmpresasSelectUsuario(content.querySelector('#empresa-usuario-select'), usuarioActual?.empresa_id);
 
       content.querySelector('#usuario-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
-        if (editMode) delete data.contrasena;
-
-        // Si es nuevo, debemos crear el usuario en auth y luego en usuarios
+        
         if (!editMode) {
-          const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+          // Crear usuario en auth con la API pública de Supabase (signUp)
+          const { data: authData, error: authError } = await supabase.auth.signUp({
             email: data.email,
             password: data.contrasena,
-            email_confirm: true
           });
           if (authError) return alert('Error al crear auth user: ' + authError.message);
+          if (!authData.user) return alert('No se pudo crear el usuario. Verifica el correo.');
           data.auth_id = authData.user.id;
+          delete data.contrasena;
+        } else {
           delete data.contrasena;
         }
 
@@ -346,7 +343,7 @@
       cargarUsuarios(document.getElementById('empresa-select-users').value);
     };
 
-    // Exponer funciones globalmente
+    // Exponer globalmente
     window.editarUsuario = editarUsuario;
     window.eliminarUsuario = eliminarUsuario;
     window.openUsuarioModal = openUsuarioModal;
