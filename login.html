@@ -28,9 +28,10 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     
-    const SUPABASE_URL = 'https://ogkjeokfcosaeqrlyfdj.supabase.co';
-    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_SdiAWuSUYzEQiNF0ILOCOQ_IAKESzos';
-    const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    const supabase = createClient(
+      'https://ogkjeokfcosaeqrlyfdj.supabase.co',
+      'sb_publishable_SdiAWuSUYzEQiNF0ILOCOQ_IAKESzos'
+    );
 
     const form = document.getElementById('login-form');
     const errorDiv = document.getElementById('error-message');
