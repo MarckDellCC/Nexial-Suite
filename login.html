@@ -1,69 +1,65 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Iniciar Sesión - Director Corporativo</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Sistema</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial; background: #f0f2f5; display:flex; justify-content:center; align-items:center; height:100vh; }
+        form { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 300px; }
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; }
+        button { width: 100%; padding: 10px; background: #2c7be5; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .error { color: red; font-size: 0.9em; margin-top: 10px; }
+    </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-    <h1 class="text-2xl font-bold text-center mb-6 text-indigo-600">Acceso Director Corporativo</h1>
-    <div id="error-message" class="mb-4 text-red-500 text-sm hidden"></div>
-    <form id="login-form" class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Correo electrónico</label>
-        <input type="email" id="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Contraseña</label>
-        <input type="password" id="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-      </div>
-      <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-        Ingresar
-      </button>
+<body>
+    <form id="loginForm">
+        <h2>Acceso al Sistema</h2>
+        <input type="email" id="email" placeholder="Correo electrónico" required>
+        <input type="password" id="password" placeholder="Contraseña" required>
+        <button type="submit">Ingresar</button>
+        <div id="error" class="error"></div>
     </form>
-  </div>
 
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    
-    const supabase = createClient(
-      'https://ogkjeokfcosaeqrlyfdj.supabase.co',
-      'sb_publishable_SdiAWuSUYzEQiNF0ILOCOQ_IAKESzos'
-    );
+    <script>
+        // Configura SUPABASE - REEMPLAZA CON TUS DATOS
+        const SUPABASE_URL = 'https://your-project.supabase.co';
+        const SUPABASE_ANON_KEY = 'your-anon-key';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const form = document.getElementById('login-form');
-    const errorDiv = document.getElementById('error-message');
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = '';
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+            // Llamar a la función de login en PostgreSQL
+            const { data, error } = await supabase.rpc('login_user', {
+                p_email: email,
+                p_password: password
+            });
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        errorDiv.textContent = error.message;
-        errorDiv.classList.remove('hidden');
-        return;
-      }
-      
-      // Verificar que sea Director Corporativo
-      const { data: usuario, error: userError } = await supabase
-        .from('usuarios')
-        .select('rol')
-        .eq('auth_id', data.user.id)
-        .single();
+            if (error || !data || data.length === 0) {
+                errorDiv.textContent = 'Credenciales incorrectas o usuario inactivo.';
+                return;
+            }
 
-      if (userError || !usuario || usuario.rol !== 'Director Corporativo') {
-        errorDiv.textContent = 'No tienes permisos de Director Corporativo.';
-        errorDiv.classList.remove('hidden');
-        await supabase.auth.signOut();
-        return;
-      }
+            const user = data[0]; // la función retorna el registro del usuario
 
-      window.location.href = 'director_corporativo.html';
-    });
-  </script>
+            // Guardar sesión en localStorage
+            localStorage.setItem('user_id', user.id);
+            localStorage.setItem('user_rol', user.rol);
+            localStorage.setItem('user_nombres', user.nombres + ' ' + user.apellido_paterno);
+
+            // Redirigir según el rol (por ahora solo Director Corporativo)
+            if (user.rol === 'Director Corporativo') {
+                window.location.href = 'director_corporativo.html';
+            } else {
+                alert('No tienes un dashboard asignado aún. Contacta al administrador.');
+            }
+        });
+    </script>
 </body>
 </html>
