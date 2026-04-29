@@ -6,9 +6,9 @@
     <title>Iniciar Sesión - Sistema</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: Arial; background: #f0f2f5; display:flex; justify-content:center; align-items:center; height:100vh; }
+        body { font-family: Arial; background: #f0f2f5; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
         form { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 300px; }
-        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; }
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
         button { width: 100%; padding: 10px; background: #2c7be5; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
         .error { color: red; font-size: 0.9em; margin-top: 10px; }
     </style>
@@ -23,10 +23,12 @@
     </form>
 
     <script>
-        // Configura SUPABASE - REEMPLAZA CON TUS DATOS
+        // ⚙️ Configuración de Supabase con tus credenciales reales
         const SUPABASE_URL = 'https://fghksesvykkysdviqyvw.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_1wtDvU1kBNqXKXr3uRPPQg_E6kHj9p3';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Se usa un nombre distinto para no chocar con window.supabase
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -35,29 +37,33 @@
             const errorDiv = document.getElementById('error');
             errorDiv.textContent = '';
 
-            // Llamar a la función de login en PostgreSQL
-            const { data, error } = await supabase.rpc('login_user', {
-                p_email: email,
-                p_password: password
-            });
+            try {
+                const { data, error } = await supabaseClient.rpc('login_user', {
+                    p_email: email,
+                    p_password: password
+                });
 
-            if (error || !data || data.length === 0) {
-                errorDiv.textContent = 'Credenciales incorrectas o usuario inactivo.';
-                return;
-            }
+                if (error || !data || data.length === 0) {
+                    errorDiv.textContent = 'Credenciales incorrectas o usuario inactivo.';
+                    return;
+                }
 
-            const user = data[0]; // la función retorna el registro del usuario
+                const user = data[0];
 
-            // Guardar sesión en localStorage
-            localStorage.setItem('user_id', user.id);
-            localStorage.setItem('user_rol', user.rol);
-            localStorage.setItem('user_nombres', user.nombres + ' ' + user.apellido_paterno);
+                // Guardar datos de sesión
+                localStorage.setItem('user_id', user.id);
+                localStorage.setItem('user_rol', user.rol);
+                localStorage.setItem('user_nombres', user.nombres + ' ' + user.apellido_paterno);
 
-            // Redirigir según el rol (por ahora solo Director Corporativo)
-            if (user.rol === 'Director Corporativo') {
-                window.location.href = 'director_corporativo.html';
-            } else {
-                alert('No tienes un dashboard asignado aún. Contacta al administrador.');
+                // Redirigir según rol (por ahora solo Director Corporativo)
+                if (user.rol === 'Director Corporativo') {
+                    window.location.href = 'director_corporativo.html';
+                } else {
+                    alert('No tienes un dashboard asignado aún. Contacta al administrador.');
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Error de conexión. Intenta de nuevo.';
+                console.error(err);
             }
         });
     </script>
