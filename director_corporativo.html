@@ -6,10 +6,10 @@
     <title>Panel Director Corporativo</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: Arial; margin: 0; background: #f5f7fa; }
+        body { font-family: Arial, sans-serif; margin: 0; background: #f5f7fa; }
         header { background: #1a1a2e; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
         header h1 { margin: 0; font-size: 1.3rem; }
-        .user-info { font-size: 0.9rem; display: flex; align-items: center; gap: 1rem; }
+        .user-info { display: flex; align-items: center; gap: 1rem; }
         button.logout { background: #e74c3c; border: none; color: white; padding: 8px 16px; border-radius: 5px; cursor: pointer; }
         .container { max-width: 1200px; margin: 2rem auto; padding: 1rem; }
         .card { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
@@ -37,7 +37,6 @@
     </header>
 
     <div class="container">
-        <!-- Sección de empresas -->
         <div class="card">
             <h2>Gestión de Empresas</h2>
             <button class="btn btn-primary" onclick="openCreateEmpresa()">+ Nueva Empresa</button>
@@ -56,7 +55,7 @@
         </div>
     </div>
 
-    <!-- Modal empresa -->
+    <!-- Modal para crear/editar empresa -->
     <div class="modal" id="empresaModal">
         <div class="modal-content">
             <h3 id="modalTitle">Nueva Empresa</h3>
@@ -103,11 +102,10 @@
     </div>
 
     <script>
-        // ⚙️ Configuración de Supabase (mismas credenciales)
-        const SUPABASE_URL = 'https://fghksesvykkysdviqyvw.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_1wtDvU1kBNqXKXr3uRPPQg_E6kHj9p3';
+        const SUPABASE_URL = 'https://seedkkszavqshjiqopda.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_m73QwNaIs9sr4p54gBOjDw_ihcp9bkO';
 
-        // Verificación de sesión
+        // Verificar sesión
         const userId = localStorage.getItem('user_id');
         const userRol = localStorage.getItem('user_rol');
         if (!userId || userRol !== 'Director Corporativo') {
@@ -116,7 +114,7 @@
             throw new Error('No autorizado');
         }
 
-        // Cliente Supabase con header x-user-id
+        // Instancia con header personalizado
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             global: {
                 headers: { 'x-user-id': userId }
@@ -159,7 +157,6 @@
             });
         }
 
-        // Abrir modal creación
         async function openCreateEmpresa() {
             document.getElementById('modalTitle').textContent = 'Nueva Empresa';
             document.getElementById('empresaId').value = '';
@@ -169,7 +166,6 @@
             document.getElementById('empresaModal').style.display = 'flex';
         }
 
-        // Editar empresa
         async function editEmpresa(id) {
             document.getElementById('modalTitle').textContent = 'Editar Empresa';
             const { data, error } = await supabaseClient
@@ -200,7 +196,6 @@
             document.getElementById('empresaModal').style.display = 'none';
         }
 
-        // Cargar monedas para el select
         async function loadMonedasOptions() {
             const { data, error } = await supabaseClient
                 .from('monedas')
@@ -216,7 +211,6 @@
             });
         }
 
-        // Guardar empresa (crear/actualizar)
         document.getElementById('empresaForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('empresaId').value;
@@ -248,7 +242,6 @@
             loadEmpresas();
         });
 
-        // Eliminar empresa
         async function deleteEmpresa(id) {
             if (!confirm('¿Estás seguro de eliminar esta empresa? Se borrarán todos sus datos relacionados.')) return;
             const { error } = await supabaseClient
@@ -259,7 +252,6 @@
             loadEmpresas();
         }
 
-        // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
             loadEmpresas();
         });
