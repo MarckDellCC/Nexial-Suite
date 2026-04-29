@@ -9,7 +9,7 @@
         body { font-family: Arial; margin: 0; background: #f5f7fa; }
         header { background: #1a1a2e; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
         header h1 { margin: 0; font-size: 1.3rem; }
-        .user-info { font-size: 0.9rem; }
+        .user-info { font-size: 0.9rem; display: flex; align-items: center; gap: 1rem; }
         button.logout { background: #e74c3c; border: none; color: white; padding: 8px 16px; border-radius: 5px; cursor: pointer; }
         .container { max-width: 1200px; margin: 2rem auto; padding: 1rem; }
         .card { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
@@ -20,10 +20,10 @@
         .btn-primary { background: #2c7be5; color: white; }
         .btn-danger { background: #e74c3c; color: white; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 2rem; border-radius: 10px; width: 500px; max-width: 90%; }
+        .modal-content { background: white; padding: 2rem; border-radius: 10px; width: 500px; max-width: 90%; overflow-y: auto; max-height: 80vh; }
         .form-group { margin-bottom: 1rem; }
         .form-group label { display: block; margin-bottom: 4px; font-weight: bold; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
         .flex { display: flex; gap: 1rem; margin-bottom: 1rem; }
     </style>
 </head>
@@ -31,13 +31,13 @@
     <header>
         <h1>Panel Director Corporativo</h1>
         <div class="user-info">
-            Bienvenido, <span id="userName"></span> 
+            <span id="userName"></span>
             <button class="logout" onclick="logout()">Cerrar sesión</button>
         </div>
     </header>
 
     <div class="container">
-        <!-- Sección de empresas (CRUD completo) -->
+        <!-- Sección de empresas -->
         <div class="card">
             <h2>Gestión de Empresas</h2>
             <button class="btn btn-primary" onclick="openCreateEmpresa()">+ Nueva Empresa</button>
@@ -54,11 +54,9 @@
                 <tbody></tbody>
             </table>
         </div>
-
-        <!-- Más secciones se pueden añadir fácilmente (monedas, usuarios, etc.) -->
     </div>
 
-    <!-- Modal para crear/editar empresa -->
+    <!-- Modal empresa -->
     <div class="modal" id="empresaModal">
         <div class="modal-content">
             <h3 id="modalTitle">Nueva Empresa</h3>
@@ -82,7 +80,7 @@
                 </div>
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" id="email">
+                    <input type="email" id="emailEmpresa">
                 </div>
                 <div class="form-group">
                     <label>Website</label>
@@ -105,21 +103,21 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN SUPABASE (mismos datos que en login)
+        // ⚙️ Configuración de Supabase (mismas credenciales)
         const SUPABASE_URL = 'https://fghksesvykkysdviqyvw.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_1wtDvU1kBNqXKXr3uRPPQg_E6kHj9p3';
 
-        // Verificar sesión
+        // Verificación de sesión
         const userId = localStorage.getItem('user_id');
         const userRol = localStorage.getItem('user_rol');
         if (!userId || userRol !== 'Director Corporativo') {
-            alert('Acceso denegado. Redirigiendo al login.');
+            alert('Acceso denegado. Serás redirigido al login.');
             window.location.href = 'login.html';
             throw new Error('No autorizado');
         }
 
-        // Configurar cliente con header x-user-id
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        // Cliente Supabase con header x-user-id
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             global: {
                 headers: { 'x-user-id': userId }
             }
@@ -127,7 +125,6 @@
 
         document.getElementById('userName').textContent = localStorage.getItem('user_nombres') || 'Usuario';
 
-        // Logout
         function logout() {
             localStorage.clear();
             window.location.href = 'login.html';
@@ -135,7 +132,7 @@
 
         // Cargar empresas
         async function loadEmpresas() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('empresas')
                 .select('*, monedas(nombre, codigo)')
                 .order('nombre', { ascending: true });
@@ -162,7 +159,7 @@
             });
         }
 
-        // Abrir modal para nueva empresa
+        // Abrir modal creación
         async function openCreateEmpresa() {
             document.getElementById('modalTitle').textContent = 'Nueva Empresa';
             document.getElementById('empresaId').value = '';
@@ -175,16 +172,22 @@
         // Editar empresa
         async function editEmpresa(id) {
             document.getElementById('modalTitle').textContent = 'Editar Empresa';
-            const { data, error } = await supabase.from('empresas').select('*').eq('id', id).single();
+            const { data, error } = await supabaseClient
+                .from('empresas')
+                .select('*')
+                .eq('id', id)
+                .single();
+
             if (error || !data) {
                 alert('Error al cargar empresa');
                 return;
             }
+
             document.getElementById('empresaId').value = data.id;
             document.getElementById('nombre').value = data.nombre || '';
             document.getElementById('rfc').value = data.rfc || '';
             document.getElementById('telefono').value = data.telefono || '';
-            document.getElementById('email').value = data.email || '';
+            document.getElementById('emailEmpresa').value = data.email || '';
             document.getElementById('website').value = data.website || '';
             document.getElementById('direccion').value = data.direccion || '';
             document.getElementById('activo').checked = data.activo;
@@ -193,14 +196,15 @@
             document.getElementById('empresaModal').style.display = 'flex';
         }
 
-        // Cerrar modal
         function closeModal() {
             document.getElementById('empresaModal').style.display = 'none';
         }
 
-        // Cargar opciones de monedas
+        // Cargar monedas para el select
         async function loadMonedasOptions() {
-            const { data, error } = await supabase.from('monedas').select('id, nombre, codigo');
+            const { data, error } = await supabaseClient
+                .from('monedas')
+                .select('id, nombre, codigo');
             if (error) return;
             const select = document.getElementById('moneda_id');
             select.innerHTML = '';
@@ -221,19 +225,22 @@
                 rfc: document.getElementById('rfc').value,
                 moneda_id: document.getElementById('moneda_id').value,
                 telefono: document.getElementById('telefono').value,
-                email: document.getElementById('email').value,
+                email: document.getElementById('emailEmpresa').value,
                 website: document.getElementById('website').value,
                 direccion: document.getElementById('direccion').value,
                 activo: document.getElementById('activo').checked
             };
 
             if (id) {
-                // Actualizar
-                const { error } = await supabase.from('empresas').update(empresa).eq('id', id);
+                const { error } = await supabaseClient
+                    .from('empresas')
+                    .update(empresa)
+                    .eq('id', id);
                 if (error) { alert('Error al actualizar: ' + error.message); return; }
             } else {
-                // Crear nueva
-                const { error } = await supabase.from('empresas').insert([empresa]);
+                const { error } = await supabaseClient
+                    .from('empresas')
+                    .insert([empresa]);
                 if (error) { alert('Error al crear: ' + error.message); return; }
             }
 
@@ -244,12 +251,15 @@
         // Eliminar empresa
         async function deleteEmpresa(id) {
             if (!confirm('¿Estás seguro de eliminar esta empresa? Se borrarán todos sus datos relacionados.')) return;
-            const { error } = await supabase.from('empresas').delete().eq('id', id);
+            const { error } = await supabaseClient
+                .from('empresas')
+                .delete()
+                .eq('id', id);
             if (error) alert('Error al eliminar: ' + error.message);
             loadEmpresas();
         }
 
-        // Inicializar al cargar
+        // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
             loadEmpresas();
         });
