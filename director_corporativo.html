@@ -1,352 +1,258 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Director Corporativo</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Director Corporativo</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial; margin: 0; background: #f5f7fa; }
+        header { background: #1a1a2e; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { margin: 0; font-size: 1.3rem; }
+        .user-info { font-size: 0.9rem; }
+        button.logout { background: #e74c3c; border: none; color: white; padding: 8px 16px; border-radius: 5px; cursor: pointer; }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 1rem; }
+        .card { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { border: 1px solid #dee2e6; padding: 10px; text-align: left; }
+        th { background: #e9ecef; }
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; }
+        .btn-primary { background: #2c7be5; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 2rem; border-radius: 10px; width: 500px; max-width: 90%; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
+        .flex { display: flex; gap: 1rem; margin-bottom: 1rem; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex">
-  <!-- Sidebar -->
-  <aside class="w-64 bg-indigo-700 text-white flex flex-col">
-    <div class="p-5 text-xl font-bold border-b border-indigo-500">Corporativo</div>
-    <nav class="flex-1 p-4 space-y-2">
-      <button onclick="showSection('empresas')" class="w-full text-left px-3 py-2 rounded hover:bg-indigo-600 focus:outline-none focus:bg-indigo-600">Empresas</button>
-      <button onclick="showSection('usuarios')" class="w-full text-left px-3 py-2 rounded hover:bg-indigo-600 focus:outline-none focus:bg-indigo-600">Usuarios</button>
-    </nav>
-    <div class="p-4 border-t border-indigo-500">
-      <button id="logout-btn" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded">Cerrar sesión</button>
-    </div>
-  </aside>
-
-  <!-- Contenido principal -->
-  <main class="flex-1 p-8 overflow-auto">
-    <div id="empresas-section" class="section hidden">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">Gestión de Empresas</h2>
-        <button onclick="openEmpresaModal()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Nueva Empresa</button>
-      </div>
-      <div id="empresas-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-    </div>
-
-    <div id="usuarios-section" class="section hidden">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">Gestión de Usuarios</h2>
-        <div class="flex space-x-2">
-          <select id="empresa-select-users" class="border rounded px-3 py-2">
-            <option value="">Seleccione una empresa</option>
-          </select>
-          <button onclick="openUsuarioModal()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Nuevo Usuario</button>
+<body>
+    <header>
+        <h1>Panel Director Corporativo</h1>
+        <div class="user-info">
+            Bienvenido, <span id="userName"></span> 
+            <button class="logout" onclick="logout()">Cerrar sesión</button>
         </div>
-      </div>
-      <div id="usuarios-list" class="bg-white rounded shadow overflow-x-auto"></div>
-    </div>
-  </main>
+    </header>
 
-  <!-- Modal (genérico) -->
-  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" id="modal-content"></div>
-  </div>
-
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const supabase = createClient(
-      'https://ogkjeokfcosaeqrlyfdj.supabase.co',
-      'sb_publishable_SdiAWuSUYzEQiNF0ILOCOQ_IAKESzos'
-    );
-
-    // Verificar sesión y rol
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    if (!session) window.location.href = 'login.html';
-
-    const { data: usuario } = await supabase.from('usuarios').select('rol').eq('auth_id', session.user.id).single();
-    if (!usuario || usuario.rol !== 'Director Corporativo') {
-      alert('No tienes permiso para acceder a este panel.');
-      await supabase.auth.signOut();
-      window.location.href = 'login.html';
-    }
-
-    // Cerrar sesión
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      window.location.href = 'login.html';
-    });
-
-    // Funciones de navegación
-    window.showSection = (section) => {
-      document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
-      document.getElementById(`${section}-section`).classList.remove('hidden');
-      if (section === 'empresas') cargarEmpresas();
-      if (section === 'usuarios') { cargarEmpresasSelect(); cargarUsuarios(); }
-    };
-
-    // Inicializar
-    showSection('empresas');
-
-    // ============== EMPRESAS ==============
-    async function cargarEmpresas() {
-      const { data: empresas, error } = await supabase.from('empresas').select('*');
-      if (error) return alert(error.message);
-      const container = document.getElementById('empresas-list');
-      container.innerHTML = empresas.map(e => `
-        <div class="bg-white p-4 rounded shadow">
-          <h3 class="font-semibold text-lg">${e.nombre}</h3>
-          <p class="text-sm text-gray-600">RFC: ${e.rfc}</p>
-          <p class="text-sm">Email: ${e.email || '-'}</p>
-          <div class="mt-3 flex space-x-2">
-            <button onclick="editarEmpresa('${e.id}')" class="text-blue-600 hover:underline">Editar</button>
-            <button onclick="eliminarEmpresa('${e.id}')" class="text-red-600 hover:underline">Eliminar</button>
-          </div>
+    <div class="container">
+        <!-- Sección de empresas (CRUD completo) -->
+        <div class="card">
+            <h2>Gestión de Empresas</h2>
+            <button class="btn btn-primary" onclick="openCreateEmpresa()">+ Nueva Empresa</button>
+            <table id="empresasTable">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>RFC</th>
+                        <th>Moneda</th>
+                        <th>Activo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
-      `).join('');
-    }
 
-    window.editarEmpresa = async (id) => {
-      const { data } = await supabase.from('empresas').select('*').eq('id', id).single();
-      openEmpresaModal(data);
-    };
+        <!-- Más secciones se pueden añadir fácilmente (monedas, usuarios, etc.) -->
+    </div>
 
-    window.eliminarEmpresa = async (id) => {
-      if (!confirm('¿Eliminar esta empresa? Se borrarán todos sus datos asociados.')) return;
-      const { error } = await supabase.from('empresas').delete().eq('id', id);
-      if (error) alert(error.message);
-      cargarEmpresas();
-    };
+    <!-- Modal para crear/editar empresa -->
+    <div class="modal" id="empresaModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Nueva Empresa</h3>
+            <form id="empresaForm">
+                <input type="hidden" id="empresaId">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>RFC</label>
+                    <input type="text" id="rfc" required>
+                </div>
+                <div class="form-group">
+                    <label>Moneda</label>
+                    <select id="moneda_id" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" id="telefono">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email">
+                </div>
+                <div class="form-group">
+                    <label>Website</label>
+                    <input type="text" id="website">
+                </div>
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <textarea id="direccion" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Activo</label>
+                    <input type="checkbox" id="activo" checked>
+                </div>
+                <div class="flex">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    window.openEmpresaModal = (empresa = null) => {
-      const modal = document.getElementById('modal');
-      const content = document.getElementById('modal-content');
-      const editMode = empresa !== null;
-      content.innerHTML = `
-        <h3 class="text-xl font-bold mb-4">${editMode ? 'Editar Empresa' : 'Nueva Empresa'}</h3>
-        <form id="empresa-form" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium">Nombre</label>
-              <input type="text" name="nombre" value="${empresa?.nombre || ''}" required class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-              <label class="block text-sm font-medium">RFC</label>
-              <input type="text" name="rfc" value="${empresa?.rfc || ''}" required class="w-full border rounded px-3 py-2">
-            </div>
-            <div class="col-span-2">
-              <label class="block text-sm font-medium">Dirección</label>
-              <input type="text" name="direccion" value="${empresa?.direccion || ''}" class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-              <label class="block text-sm font-medium">Teléfono</label>
-              <input type="text" name="telefono" value="${empresa?.telefono || ''}" class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-              <label class="block text-sm font-medium">Email</label>
-              <input type="email" name="email" value="${empresa?.email || ''}" class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-              <label class="block text-sm font-medium">Website</label>
-              <input type="url" name="website" value="${empresa?.website || ''}" class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-              <label class="block text-sm font-medium">Moneda</label>
-              <select name="moneda_id" required class="w-full border rounded px-3 py-2"></select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium">Tipo de empresa</label>
-              <input type="text" name="tipo_empresa" value="${empresa?.tipo_empresa || ''}" class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-              <label class="block text-sm font-medium">Régimen Fiscal</label>
-              <input type="text" name="regimen_fiscal" value="${empresa?.regimen_fiscal || ''}" class="w-full border rounded px-3 py-2">
-            </div>
-          </div>
-          <div class="flex justify-end space-x-2">
-            <button type="button" onclick="cerrarModal()" class="px-4 py-2 border rounded">Cancelar</button>
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Guardar</button>
-          </div>
-        </form>
-      `;
+    <script>
+        // CONFIGURACIÓN SUPABASE (mismos datos que en login)
+        const SUPABASE_URL = 'https://your-project.supabase.co';
+        const SUPABASE_ANON_KEY = 'your-anon-key';
 
-      cargarMonedasSelect(content.querySelector('select[name="moneda_id"]'), empresa?.moneda_id);
-
-      document.getElementById('empresa-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData.entries());
-        let res;
-        if (editMode) {
-          res = await supabase.from('empresas').update(data).eq('id', empresa.id);
-        } else {
-          res = await supabase.from('empresas').insert(data);
-        }
-        if (res.error) alert(res.error.message);
-        else {
-          cerrarModal();
-          cargarEmpresas();
-        }
-      });
-
-      modal.classList.remove('hidden');
-    };
-
-    async function cargarMonedasSelect(selectElement, selectedId = null) {
-      const { data: monedas } = await supabase.from('monedas').select('id, codigo');
-      selectElement.innerHTML = monedas.map(m => `<option value="${m.id}" ${selectedId === m.id ? 'selected' : ''}>${m.codigo}</option>`).join('');
-    }
-
-    window.cerrarModal = () => document.getElementById('modal').classList.add('hidden');
-
-    // ============== USUARIOS ==============
-    async function cargarEmpresasSelect() {
-      const select = document.getElementById('empresa-select-users');
-      const { data: empresas } = await supabase.from('empresas').select('id, nombre');
-      select.innerHTML = '<option value="">Todas las empresas</option>' + empresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
-      select.onchange = () => cargarUsuarios(select.value);
-    }
-
-    async function cargarUsuarios(empresaId = '') {
-      let query = supabase.from('usuarios').select('*, empresas(nombre)');
-      if (empresaId) query = query.eq('empresa_id', empresaId);
-      const { data: usuarios, error } = await query;
-      if (error) return alert(error.message);
-      const container = document.getElementById('usuarios-list');
-      container.innerHTML = `
-        <table class="w-full text-sm">
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="p-2 text-left">Nombre</th>
-              <th class="p-2 text-left">Email</th>
-              <th class="p-2 text-left">Usuario</th>
-              <th class="p-2 text-left">Rol</th>
-              <th class="p-2 text-left">Empresa</th>
-              <th class="p-2 text-left">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${usuarios.map(u => `
-              <tr class="border-b">
-                <td class="p-2">${u.nombres} ${u.apellido_paterno}</td>
-                <td class="p-2">${u.email}</td>
-                <td class="p-2">${u.usuario}</td>
-                <td class="p-2">${u.rol}</td>
-                <td class="p-2">${u.empresas?.nombre || '-'}</td>
-                <td class="p-2 space-x-1">
-                  <button onclick="editarUsuario('${u.id}')" class="text-blue-600 hover:underline">Editar</button>
-                  <button onclick="eliminarUsuario('${u.id}')" class="text-red-600 hover:underline">Eliminar</button>
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-    }
-
-    window.openUsuarioModal = (usuarioActual = null) => {
-      const modal = document.getElementById('modal');
-      const content = document.getElementById('modal-content');
-      const editMode = usuarioActual !== null;
-      const title = editMode ? 'Editar Usuario' : 'Nuevo Usuario';
-      content.innerHTML = `
-        <h3 class="text-xl font-bold mb-4">${title}</h3>
-        <form id="usuario-form" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium">Nombres</label>
-              <input type="text" name="nombres" value="${usuarioActual?.nombres || ''}" required class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-              <label class="block text-sm font-medium">Apellido Paterno</label>
-              <input type="text" name="apellido_paterno" value="${usuarioActual?.apellido_paterno || ''}" required class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-              <label class="block text-sm font-medium">Apellido Materno</label>
-              <input type="text" name="apellido_materno" value="${usuarioActual?.apellido_materno || ''}" class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-              <label class="block text-sm font-medium">Email</label>
-              <input type="email" name="email" value="${usuarioActual?.email || ''}" required class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-              <label class="block text-sm font-medium">Usuario</label>
-              <input type="text" name="usuario" value="${usuarioActual?.usuario || ''}" required class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-              <label class="block text-sm font-medium">Rol</label>
-              <select name="rol" required class="w-full border rounded px-3 py-2">
-                ${['Director General', 'Director Financiero', 'Supervisor Senior', 'Ejecutivo Comercial', 'Especialista Logístico', 'Gestor de Almacén'].map(r => `<option value="${r}" ${usuarioActual?.rol === r ? 'selected' : ''}>${r}</option>`).join('')}
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium">Empresa</label>
-              <select name="empresa_id" required class="w-full border rounded px-3 py-2" id="empresa-usuario-select"></select>
-            </div>
-            ${!editMode ? `
-            <div class="col-span-2">
-              <label class="block text-sm font-medium">Contraseña</label>
-              <input type="password" name="contrasena" required class="w-full border rounded px-3 py-2">
-            </div>` : ''}
-          </div>
-          <div class="flex justify-end space-x-2">
-            <button type="button" onclick="cerrarModal()" class="px-4 py-2 border rounded">Cancelar</button>
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Guardar</button>
-          </div>
-        </form>
-      `;
-
-      cargarEmpresasSelectUsuario(content.querySelector('#empresa-usuario-select'), usuarioActual?.empresa_id);
-
-      content.querySelector('#usuario-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData.entries());
-        
-        if (!editMode) {
-          // Crear usuario en auth con la API pública de Supabase (signUp)
-          const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: data.email,
-            password: data.contrasena,
-          });
-          if (authError) return alert('Error al crear auth user: ' + authError.message);
-          if (!authData.user) return alert('No se pudo crear el usuario. Verifica el correo.');
-          data.auth_id = authData.user.id;
-          delete data.contrasena;
-        } else {
-          delete data.contrasena;
+        // Verificar sesión
+        const userId = localStorage.getItem('user_id');
+        const userRol = localStorage.getItem('user_rol');
+        if (!userId || userRol !== 'Director Corporativo') {
+            alert('Acceso denegado. Redirigiendo al login.');
+            window.location.href = 'login.html';
+            throw new Error('No autorizado');
         }
 
-        const { error } = editMode 
-          ? await supabase.from('usuarios').update(data).eq('id', usuarioActual.id)
-          : await supabase.from('usuarios').insert(data);
-        if (error) alert(error.message);
-        else {
-          cerrarModal();
-          cargarUsuarios(document.getElementById('empresa-select-users').value);
+        // Configurar cliente con header x-user-id
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            global: {
+                headers: { 'x-user-id': userId }
+            }
+        });
+
+        document.getElementById('userName').textContent = localStorage.getItem('user_nombres') || 'Usuario';
+
+        // Logout
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
         }
-      });
 
-      modal.classList.remove('hidden');
-    };
+        // Cargar empresas
+        async function loadEmpresas() {
+            const { data, error } = await supabase
+                .from('empresas')
+                .select('*, monedas(nombre, codigo)')
+                .order('nombre', { ascending: true });
 
-    async function cargarEmpresasSelectUsuario(selectElement, selectedId = null) {
-      const { data: empresas } = await supabase.from('empresas').select('id, nombre');
-      selectElement.innerHTML = empresas.map(e => `<option value="${e.id}" ${selectedId === e.id ? 'selected' : ''}>${e.nombre}</option>`).join('');
-    }
+            if (error) {
+                console.error('Error cargando empresas:', error);
+                return;
+            }
 
-    window.editarUsuario = async (id) => {
-      const { data } = await supabase.from('usuarios').select('*').eq('id', id).single();
-      openUsuarioModal(data);
-    };
+            const tbody = document.querySelector('#empresasTable tbody');
+            tbody.innerHTML = '';
+            data.forEach(empresa => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${empresa.nombre}</td>
+                    <td>${empresa.rfc}</td>
+                    <td>${empresa.monedas?.nombre || ''} (${empresa.monedas?.codigo || ''})</td>
+                    <td>${empresa.activo ? 'Sí' : 'No'}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="editEmpresa('${empresa.id}')">Editar</button>
+                        <button class="btn btn-danger" onclick="deleteEmpresa('${empresa.id}')">Eliminar</button>
+                    </td>
+                `;
+            });
+        }
 
-    window.eliminarUsuario = async (id) => {
-      if (!confirm('¿Eliminar permanentemente este usuario?')) return;
-      const { error } = await supabase.from('usuarios').delete().eq('id', id);
-      if (error) alert(error.message);
-      cargarUsuarios(document.getElementById('empresa-select-users').value);
-    };
+        // Abrir modal para nueva empresa
+        async function openCreateEmpresa() {
+            document.getElementById('modalTitle').textContent = 'Nueva Empresa';
+            document.getElementById('empresaId').value = '';
+            document.getElementById('empresaForm').reset();
+            document.getElementById('activo').checked = true;
+            await loadMonedasOptions();
+            document.getElementById('empresaModal').style.display = 'flex';
+        }
 
-    // Exponer globalmente
-    window.editarUsuario = editarUsuario;
-    window.eliminarUsuario = eliminarUsuario;
-    window.openUsuarioModal = openUsuarioModal;
-  </script>
+        // Editar empresa
+        async function editEmpresa(id) {
+            document.getElementById('modalTitle').textContent = 'Editar Empresa';
+            const { data, error } = await supabase.from('empresas').select('*').eq('id', id).single();
+            if (error || !data) {
+                alert('Error al cargar empresa');
+                return;
+            }
+            document.getElementById('empresaId').value = data.id;
+            document.getElementById('nombre').value = data.nombre || '';
+            document.getElementById('rfc').value = data.rfc || '';
+            document.getElementById('telefono').value = data.telefono || '';
+            document.getElementById('email').value = data.email || '';
+            document.getElementById('website').value = data.website || '';
+            document.getElementById('direccion').value = data.direccion || '';
+            document.getElementById('activo').checked = data.activo;
+            await loadMonedasOptions();
+            document.getElementById('moneda_id').value = data.moneda_id;
+            document.getElementById('empresaModal').style.display = 'flex';
+        }
+
+        // Cerrar modal
+        function closeModal() {
+            document.getElementById('empresaModal').style.display = 'none';
+        }
+
+        // Cargar opciones de monedas
+        async function loadMonedasOptions() {
+            const { data, error } = await supabase.from('monedas').select('id, nombre, codigo');
+            if (error) return;
+            const select = document.getElementById('moneda_id');
+            select.innerHTML = '';
+            data.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = `${m.nombre} (${m.codigo})`;
+                select.appendChild(opt);
+            });
+        }
+
+        // Guardar empresa (crear/actualizar)
+        document.getElementById('empresaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('empresaId').value;
+            const empresa = {
+                nombre: document.getElementById('nombre').value,
+                rfc: document.getElementById('rfc').value,
+                moneda_id: document.getElementById('moneda_id').value,
+                telefono: document.getElementById('telefono').value,
+                email: document.getElementById('email').value,
+                website: document.getElementById('website').value,
+                direccion: document.getElementById('direccion').value,
+                activo: document.getElementById('activo').checked
+            };
+
+            if (id) {
+                // Actualizar
+                const { error } = await supabase.from('empresas').update(empresa).eq('id', id);
+                if (error) { alert('Error al actualizar: ' + error.message); return; }
+            } else {
+                // Crear nueva
+                const { error } = await supabase.from('empresas').insert([empresa]);
+                if (error) { alert('Error al crear: ' + error.message); return; }
+            }
+
+            closeModal();
+            loadEmpresas();
+        });
+
+        // Eliminar empresa
+        async function deleteEmpresa(id) {
+            if (!confirm('¿Estás seguro de eliminar esta empresa? Se borrarán todos sus datos relacionados.')) return;
+            const { error } = await supabase.from('empresas').delete().eq('id', id);
+            if (error) alert('Error al eliminar: ' + error.message);
+            loadEmpresas();
+        }
+
+        // Inicializar al cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEmpresas();
+        });
+    </script>
 </body>
 </html>
