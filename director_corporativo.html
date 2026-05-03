@@ -49,7 +49,7 @@
         th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; }
         th { background: #f8f9fa; font-weight: 600; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 2rem; border-radius: 10px; width: 650px; max-width: 95%; max-height: 85vh; overflow-y: auto; }
+        .modal-content { background: white; padding: 2rem; border-radius: 10px; width: 700px; max-width: 95%; max-height: 85vh; overflow-y: auto; }
         .form-group { margin-bottom: 1rem; }
         .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.9rem; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; }
@@ -58,7 +58,7 @@
         .flex { display: flex; gap: 1rem; margin-top: 1rem; }
         .select-with-btn { display: flex; gap: 0.5rem; align-items: center; }
         .select-with-btn select { flex: 1; }
-        .filter-bar { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+        .filter-bar { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
         .filter-bar label { font-weight: 600; margin-right: 0.25rem; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
         .stat-card { background: var(--card-bg); border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
@@ -116,7 +116,6 @@
             <button class="tab" data-tab="stats">📊 Estadísticas</button>
         </div>
 
-        <!-- EMPRESAS -->
         <div id="tab-empresas" class="card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h2>Gestión de Empresas</h2>
@@ -125,34 +124,18 @@
             <table id="empresasTable"><thead><tr><th>Nombre</th><th>Tax ID</th><th>Moneda</th><th>País</th><th>Email</th><th>Activo</th><th></th></tr></thead><tbody></tbody></table>
         </div>
 
-        <!-- USUARIOS -->
         <div id="tab-usuarios" class="card" style="display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h2>Gestión de Usuarios</h2>
                 <button class="btn btn-primary" onclick="openModalUsuario()">+ Nuevo Usuario</button>
             </div>
             <div class="filter-bar">
-                <div>
-                    <label>Empresa:</label>
-                    <select id="filtroEmpresa"><option value="">Todas</option></select>
-                </div>
-                <div>
-                    <label>Rol:</label>
-                    <select id="filtroRol">
-                        <option value="">Todos</option>
-                        <option value="Director General">Director General</option>
-                        <option value="Director Financiero">Director Financiero</option>
-                        <option value="Supervisor Senior">Supervisor Senior</option>
-                        <option value="Ejecutivo Comercial">Ejecutivo Comercial</option>
-                        <option value="Gestor de Almacén">Gestor de Almacén</option>
-                        <option value="Especialista Logístico">Especialista Logístico</option>
-                    </select>
-                </div>
+                <div><label>Empresa:</label><select id="filtroEmpresa"><option value="">Todas</option></select></div>
+                <div><label>Rol:</label><select id="filtroRol"><option value="">Todos</option><option value="Director General">Director General</option><option value="Director Financiero">Director Financiero</option><option value="Supervisor Senior">Supervisor Senior</option><option value="Ejecutivo Comercial">Ejecutivo Comercial</option><option value="Gestor de Almacén">Gestor de Almacén</option><option value="Especialista Logístico">Especialista Logístico</option></select></div>
             </div>
             <table id="usuariosTable"><thead><tr><th>Nombre</th><th>Email</th><th>Usuario</th><th>Rol</th><th>Empresa</th><th>Activo</th><th></th></tr></thead><tbody></tbody></table>
         </div>
 
-        <!-- ESTADÍSTICAS -->
         <div id="tab-stats" class="card" style="display:none;">
             <h2>📈 Resumen de Ventas Hoy</h2>
             <div class="stats-grid" id="statsContainer"></div>
@@ -163,39 +146,19 @@
     <div class="modal" id="empresaModal"><div class="modal-content">
         <h3 id="modalEmpresaTitle">Nueva Empresa</h3>
         <form id="empresaForm"><input type="hidden" id="empresaId">
+            <div class="form-row"><div class="form-group"><label>Nombre *</label><input type="text" id="empNombre" required></div><div class="form-group"><label>Tax ID *</label><input type="text" id="empRfc" required></div></div>
             <div class="form-row">
-                <div class="form-group"><label>Nombre *</label><input type="text" id="empNombre" required></div>
-                <div class="form-group"><label>Tax ID *</label><input type="text" id="empRfc" required></div>
+                <div class="form-group"><label>País</label><div class="sugerencias-pais"><input type="text" id="empPais" placeholder="Escribe el país..." autocomplete="off"><div class="sugerencias-lista" id="listaPaises"></div></div></div>
+                <div class="form-group"><label>Moneda *</label><div class="select-with-btn"><select id="empMoneda" required></select><button type="button" class="btn-icon" title="Nueva moneda" onclick="openModalMoneda(null, 'empMoneda')">+</button></div></div>
             </div>
             <div class="form-row">
-                <div class="form-group">
-                    <label>País</label>
-                    <div class="sugerencias-pais">
-                        <input type="text" id="empPais" placeholder="Escribe el país..." autocomplete="off">
-                        <div class="sugerencias-lista" id="listaPaises"></div>
-                    </div>
-                </div>
-                <div class="form-group"><label>Moneda *</label>
-                    <div class="select-with-btn">
-                        <select id="empMoneda" required></select>
-                        <button type="button" class="btn-icon" title="Nueva moneda" onclick="openModalMoneda(null, 'empMoneda')">+</button>
-                    </div>
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group"><label>Ciudad</label><input type="text" id="empCiudad"></div>
-                <div class="form-group"><label>Estado/Provincia</label><input type="text" id="empEstado"></div>
+                <div class="form-group"><label>Ciudad</label><div class="sugerencias-pais" id="wrapperCiudad"><input type="text" id="empCiudad" placeholder="Escribe la ciudad..." autocomplete="off"><div class="sugerencias-lista" id="listaCiudades"></div></div></div>
+                <div class="form-group"><label>Estado/Provincia</label><div class="sugerencias-pais" id="wrapperEstado"><input type="text" id="empEstado" placeholder="Escribe el estado..." autocomplete="off"><div class="sugerencias-lista" id="listaEstados"></div></div></div>
                 <div class="form-group"><label>Código Postal</label><input type="text" id="empCodigoPostal"></div>
             </div>
-            <div class="form-row">
-                <div class="form-group"><label>Teléfono</label><input type="text" id="empTel"></div>
-                <div class="form-group"><label>Email</label><input type="email" id="empEmail"></div>
-            </div>
-            <div class="form-row">
-                <div class="form-group"><label>Sitio Web</label><input type="text" id="empWeb"></div>
-                <div class="form-group"><label>Tipo de Empresa</label><input type="text" id="empTipoEmpresa" placeholder="Ej. Retail, Servicios..."></div>
-            </div>
-            <div class="form-group"><label>Régimen Fiscal</label><input type="text" id="empRegimenFiscal" placeholder="Ej. General, Simplificado..."></div>
+            <div class="form-row"><div class="form-group"><label>Teléfono</label><input type="text" id="empTel"></div><div class="form-group"><label>Email</label><input type="email" id="empEmail"></div></div>
+            <div class="form-row"><div class="form-group"><label>Sitio Web</label><input type="text" id="empWeb"></div><div class="form-group"><label>Tipo de Empresa</label><div class="sugerencias-pais" id="wrapperTipoEmpresa"><input type="text" id="empTipoEmpresa" placeholder="Ej. Retail, Servicios..." autocomplete="off"><div class="sugerencias-lista" id="listaTipoEmpresa"></div></div></div></div>
+            <div class="form-group"><label>Régimen Fiscal</label><div class="sugerencias-pais" id="wrapperRegimenFiscal"><input type="text" id="empRegimenFiscal" placeholder="Ej. General, Simplificado..." autocomplete="off"><div class="sugerencias-lista" id="listaRegimenFiscal"></div></div></div>
             <div class="form-group"><label>Dirección</label><textarea id="empDir" rows="2"></textarea></div>
             <div class="form-group"><label><input type="checkbox" id="empActivo" checked> Activo</label></div>
             <div class="flex"><button type="submit" class="btn btn-primary">Guardar</button><button type="button" class="btn btn-logout" onclick="closeModal('empresaModal')">Cancelar</button></div>
@@ -240,93 +203,115 @@
     <script>
         const SUPABASE_URL = 'https://syoienwxlmauitopxone.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_BlxURubQbfvoRUIlXDEwUA_DYx3jAt3';
-
         const userId = localStorage.getItem('user_id');
         const userRol = localStorage.getItem('user_rol');
         if (!userId || userRol !== 'Director Corporativo') {
             alert('Acceso denegado. Redirigiendo al login.');
             window.location.href = 'login.html';
         }
-
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             global: { headers: { 'x-user-id': userId } }
         });
-
         document.getElementById('userName').textContent = localStorage.getItem('user_nombres') || 'Usuario';
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
 
         // ==================== TOAST ====================
         function showToast(msg, type = 'success') {
-            const t = document.getElementById('toast');
-            t.textContent = msg; t.className = 'toast ' + type; t.style.display = 'block';
+            const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast ' + type; t.style.display = 'block';
             setTimeout(() => t.style.display = 'none', 3000);
         }
 
-        // ==================== LISTA DE PAÍSES (SUGERENCIAS) ====================
+        // ==================== LISTAS PARA SUGERENCIAS ====================
         let nombresPaises = [];
+        let ciudadesPorPais = [];
+        let estadosPorPais = [];
+
+        // Listas fijas para tipo empresa y régimen fiscal
+        const listaTipoEmpresa = ['Retail','Servicios','Manufactura','Tecnología','Mayorista','Distribuidor','Franquicia','Comercio electrónico','Consultoría','Agroindustria','Minería','Construcción','Turismo','Educación','Salud'];
+        const listaRegimenFiscal = ['General','Simplificado','Agropecuario','Profesional','Microempresa','Régimen de pequeños contribuyentes','Exento','Zona franca'];
+
         async function cargarListaPaises() {
             try {
                 const res = await fetch('https://restcountries.com/v3.1/all?fields=name');
                 const data = await res.json();
                 nombresPaises = data.map(p => p.name.common).sort();
-            } catch (e) {
-                console.warn('No se pudo cargar lista de países');
-            }
+            } catch (e) { console.warn('No se pudo cargar lista de países'); }
         }
         cargarListaPaises();
 
-        const inputPais = document.getElementById('empPais');
-        const listaSugerencias = document.getElementById('listaPaises');
-
-        inputPais.addEventListener('input', function() {
-            const texto = this.value.toLowerCase();
-            listaSugerencias.innerHTML = '';
-            if (texto.length === 0) { listaSugerencias.style.display = 'none'; return; }
-            const filtradas = nombresPaises.filter(p => p.toLowerCase().startsWith(texto)).slice(0, 8);
-            if (filtradas.length === 0) { listaSugerencias.style.display = 'none'; return; }
-            filtradas.forEach(p => {
-                const div = document.createElement('div');
-                div.textContent = p;
-                div.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    inputPais.value = p;
-                    listaSugerencias.style.display = 'none';
-                    inputPais.dispatchEvent(new Event('change'));
-                });
-                listaSugerencias.appendChild(div);
-            });
-            listaSugerencias.style.display = 'block';
-        });
-
-        inputPais.addEventListener('blur', () => {
-            setTimeout(() => { listaSugerencias.style.display = 'none'; }, 200);
-        });
-
-        inputPais.addEventListener('change', async function() {
-            const country = this.value.trim();
-            if (!country) return;
+        // Cargar ciudades y estados al cambiar país
+        async function cargarUbicaciones(pais) {
+            if (!pais) { ciudadesPorPais = []; estadosPorPais = []; return; }
             try {
-                const response = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(country)}?fullText=true`);
-                if (!response.ok) { showToast('País no encontrado. Verifica el nombre.', 'error'); return; }
-                const data = await response.json();
-                const currencies = data[0].currencies;
-                const code = Object.keys(currencies)[0];
-                const currency = currencies[code];
-                
-                document.getElementById('monCodigo').value = code;
-                document.getElementById('monNombre').value = currency.name;
-                document.getElementById('monSimbolo').value = currency.symbol || '';
-                document.getElementById('monPais').value = country;
-                document.getElementById('monTasa').value = '';
-                document.getElementById('monActivo').checked = true;
-                document.getElementById('monedaId').value = '';
-                document.getElementById('modalMonedaTitle').textContent = 'Nueva Moneda (autocompletada)';
-                document.getElementById('monedaModal').dataset.refreshSelect = 'empMoneda';
-                document.getElementById('monedaModal').style.display = 'flex';
-                setTimeout(() => fetchExchangeRate(), 400);
+                const [respCiudades, respEstados] = await Promise.all([
+                    fetch('https://countriesnow.space/api/v0.1/countries/cities', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ country: pais })
+                    }),
+                    fetch('https://countriesnow.space/api/v0.1/countries/states', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ country: pais })
+                    })
+                ]);
+                const dataCiudades = await respCiudades.json();
+                const dataEstados = await respEstados.json();
+                if (dataCiudades.error === false && dataCiudades.data) {
+                    ciudadesPorPais = dataCiudades.data.sort();
+                } else { ciudadesPorPais = []; }
+                if (dataEstados.error === false && dataEstados.data && dataEstados.data.states) {
+                    estadosPorPais = dataEstados.data.states.map(s => s.name).sort();
+                } else { estadosPorPais = []; }
             } catch (err) {
-                showToast('Error al consultar país. Intenta de nuevo.', 'error');
+                ciudadesPorPais = []; estadosPorPais = [];
+                console.warn('No se pudieron cargar ciudades/estados');
             }
+        }
+
+        // ==================== MANEJO GENÉRICO DE SUGERENCIAS ====================
+        function setupSugerencias(inputId, listaId, obtenerLista) {
+            const input = document.getElementById(inputId);
+            const listaEl = document.getElementById(listaId);
+            input.addEventListener('input', function() {
+                const texto = this.value.toLowerCase();
+                listaEl.innerHTML = '';
+                const lista = obtenerLista();
+                if (!texto || lista.length === 0) { listaEl.style.display = 'none'; return; }
+                const filtradas = lista.filter(item => item.toLowerCase().startsWith(texto)).slice(0, 8);
+                if (filtradas.length === 0) { listaEl.style.display = 'none'; return; }
+                filtradas.forEach(item => {
+                    const div = document.createElement('div');
+                    div.textContent = item;
+                    div.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        input.value = item;
+                        listaEl.style.display = 'none';
+                    });
+                    listaEl.appendChild(div);
+                });
+                listaEl.style.display = 'block';
+            });
+            input.addEventListener('blur', () => setTimeout(() => listaEl.style.display = 'none', 200));
+        }
+
+        function obtenerListaPaises() { return nombresPaises; }
+        function obtenerListaCiudades() { return ciudadesPorPais; }
+        function obtenerListaEstados() { return estadosPorPais; }
+        function obtenerListaTipoEmpresa() { return listaTipoEmpresa; }
+        function obtenerListaRegimenFiscal() { return listaRegimenFiscal; }
+
+        // Inicializar sugerencias
+        setupSugerencias('empPais', 'listaPaises', obtenerListaPaises);
+        setupSugerencias('empCiudad', 'listaCiudades', obtenerListaCiudades);
+        setupSugerencias('empEstado', 'listaEstados', obtenerListaEstados);
+        setupSugerencias('empTipoEmpresa', 'listaTipoEmpresa', obtenerListaTipoEmpresa);
+        setupSugerencias('empRegimenFiscal', 'listaRegimenFiscal', obtenerListaRegimenFiscal);
+
+        // Actualizar ciudades/estados al cambiar país
+        document.getElementById('empPais').addEventListener('change', async function() {
+            const pais = this.value.trim();
+            await cargarUbicaciones(pais);
         });
 
         // ==================== TABS ====================
@@ -376,7 +361,11 @@
                     document.getElementById('empDir').value = data.direccion || '';
                     document.getElementById('empActivo').checked = data.activo;
                     document.getElementById('empMoneda').value = data.moneda_id;
+                    // Cargar ubicaciones del país existente
+                    if (data.pais) await cargarUbicaciones(data.pais);
                 }
+            } else {
+                ciudadesPorPais = []; estadosPorPais = [];
             }
             document.getElementById('empresaModal').style.display = 'flex';
         }
@@ -461,9 +450,7 @@
             const usuarioInput = document.getElementById('usrUsuario');
             if (!usuarioInput.value) {
                 const email = this.value;
-                if (email.includes('@')) {
-                    usuarioInput.value = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '_');
-                }
+                if (email.includes('@')) usuarioInput.value = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '_');
             }
         });
 
@@ -494,7 +481,6 @@
 
         // ==================== MONEDAS ====================
         let tasaAnterior = null;
-
         async function openModalMoneda(id = null, refreshSelectId = null) {
             if (!id && !document.getElementById('monedaId').value) {
                 document.getElementById('monedaForm').reset();
@@ -515,28 +501,21 @@
                     document.getElementById('monActivo').checked = data.activo;
                     tasaAnterior = parseFloat(data.tasa_cambio) || null;
                 }
-            } else {
-                tasaAnterior = null;
-            }
+            } else { tasaAnterior = null; }
             document.getElementById('monedaModal').dataset.refreshSelect = refreshSelectId || '';
             document.getElementById('monedaModal').style.display = 'flex';
-
             const codigoActual = document.getElementById('monCodigo').value.trim();
-            if (codigoActual && codigoActual.length === 3) {
-                setTimeout(() => fetchExchangeRate(), 300);
-            }
+            if (codigoActual && codigoActual.length === 3) setTimeout(() => fetchExchangeRate(), 300);
         }
 
         async function fetchExchangeRate() {
             const code = document.getElementById('monCodigo').value.trim().toUpperCase();
             if (!code || code.length !== 3) return;
-
             const container = document.getElementById('tasaFieldContainer');
             const inputTasa = document.getElementById('monTasa');
             const diferenciaSpan = document.getElementById('tasaDiferencia');
             container.classList.add('loading');
             diferenciaSpan.textContent = '';
-
             try {
                 const response = await fetch(`https://open.er-api.com/v6/latest/USD`);
                 const data = await response.json();
@@ -549,8 +528,6 @@
                         const signo = cambio >= 0 ? '+' : '';
                         diferenciaSpan.innerHTML = `Tasa anterior: ${tasaAnterior.toFixed(6)} → Nueva: ${nuevaTasa.toFixed(6)} (${signo}${cambio.toFixed(6)}, ${signo}${porcentaje}%)`;
                         diferenciaSpan.style.color = cambio >= 0 ? '#27ae60' : '#e74c3c';
-                    } else if (tasaAnterior === null && document.getElementById('monedaId').value) {
-                        // Si estamos editando pero no se pudo obtener tasa anterior (no debería pasar)
                     }
                 } else {
                     inputTasa.placeholder = 'No encontrada, ingrésala manualmente';
@@ -564,9 +541,7 @@
 
         document.getElementById('monCodigo').addEventListener('blur', () => {
             const code = document.getElementById('monCodigo').value.trim();
-            if (code.length === 3) {
-                fetchExchangeRate();
-            }
+            if (code.length === 3) fetchExchangeRate();
         });
 
         document.getElementById('monedaForm').addEventListener('submit', async (e) => {
@@ -627,7 +602,6 @@
             callback();
         }
 
-        // ==================== INICIALIZACIÓN ====================
         loadEmpresas();
     </script>
 </body>
