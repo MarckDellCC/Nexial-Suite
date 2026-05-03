@@ -262,7 +262,7 @@
                 <small id="tasaDiferencia" class="diferencia-tasa"></small>
             </div>
             <div class="form-group"><label><input type="checkbox" id="monActivo" checked> Activo</label></div>
-            <div class="flex"><button type="submit" class="btn btn-primary">Guardar</button><button type="button" class="btn btn-logout" onclick="closeModal('monedaModal')">Cancelar</button></div>
+            <div class="flex"><button type="submit" class="btn btn-primary">Guardar</button><button type="button" class="btn btn-logout" onclick="cancelMonedaModal()">Cancelar</button></div>
         </form>
     </div></div>
 
@@ -275,7 +275,7 @@
         const userId = localStorage.getItem('user_id');
         const userRol = localStorage.getItem('user_rol');
         if (!userId || userRol !== 'Director Corporativo') {
-            alert('Acceso denegado. Redirigiendo al login.');
+            alert('Acceso denegado. Redirigiendo al inicio de sesión.');
             window.location.href = 'login.html';
         }
 
@@ -285,6 +285,9 @@
 
         document.getElementById('userName').textContent = localStorage.getItem('user_nombres') || 'Usuario';
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+
+        // Variable para cargar geografía después de cerrar el modal de moneda
+        window.pendingCountryGeo = null;
 
         // ==================== TOAST ====================
         function showToast(msg, type = 'success') {
@@ -314,7 +317,7 @@
                 const data = await res.json();
                 nombresPaises = data.map(p => p.name.common).sort();
             } catch (e) {
-                console.warn('No se pudo cargar lista de países');
+                console.warn('No se pudo cargar la lista de países');
             }
         }
         cargarListaPaises();
@@ -382,23 +385,33 @@
                 const currencies = data[0].currencies;
                 const code = Object.keys(currencies)[0];
                 const currency = currencies[code];
-                
-                document.getElementById('monCodigo').value = code;
-                document.getElementById('monNombre').value = currency.name;
-                document.getElementById('monSimbolo').value = currency.symbol || '';
-                document.getElementById('monPais').value = country;
-                document.getElementById('monTasa').value = '';
-                document.getElementById('monActivo').checked = true;
-                document.getElementById('monedaId').value = '';
-                document.getElementById('modalMonedaTitle').textContent = 'Nueva Moneda (autocompletada)';
-                document.getElementById('monedaModal').dataset.refreshSelect = 'empMoneda';
-                document.getElementById('monedaModal').style.display = 'flex';
-                setTimeout(() => fetchExchangeRate(), 400);
+
+                // Verificar si la moneda ya existe en el sistema
+                const { data: existingMoneda, error: monError } = await supabaseClient.from('monedas').select('id').eq('codigo', code).maybeSingle();
+                if (monError) { showToast('Error al verificar la moneda: ' + monError.message, 'error'); return; }
+
+                if (existingMoneda) {
+                    // Moneda ya existe → seleccionar automáticamente y cargar geografía
+                    document.getElementById('empMoneda').value = existingMoneda.id;
+                    cargarEstadosYCiudades(country);
+                } else {
+                    // Moneda no existe → abrir modal para crearla, luego cargar geografía
+                    document.getElementById('monCodigo').value = code;
+                    document.getElementById('monNombre').value = currency.name;
+                    document.getElementById('monSimbolo').value = currency.symbol || '';
+                    document.getElementById('monPais').value = country;
+                    document.getElementById('monTasa').value = '';
+                    document.getElementById('monActivo').checked = true;
+                    document.getElementById('monedaId').value = '';
+                    document.getElementById('modalMonedaTitle').textContent = 'Nueva Moneda (autocompletada)';
+                    document.getElementById('monedaModal').dataset.refreshSelect = 'empMoneda';
+                    window.pendingCountryGeo = country;       // Se cargará al cerrar el modal
+                    document.getElementById('monedaModal').style.display = 'flex';
+                    setTimeout(() => fetchExchangeRate(), 400);
+                }
             } catch (err) {
-                showToast('Error al consultar país. Intenta de nuevo.', 'error');
+                showToast('Error al consultar el país. Intenta de nuevo.', 'error');
             }
-            // Cargar estados/ciudades para este país
-            cargarEstadosYCiudades(country);
         });
 
         // ==================== ESTADOS Y CIUDADES ====================
@@ -424,13 +437,13 @@
                 body.data.states.forEach(s => {
                     datosGeograficos.ciudadesPorEstado[s.name] = s.cities || [];
                 });
-                // Actualizar lista de estados
                 document.getElementById('empEstado').dispatchEvent(new Event('input'));
                 document.getElementById('empCiudad').dispatchEvent(new Event('input'));
+                showToast(`Estados y ciudades de ${pais} cargados.`, 'success');
             } catch (e) {
                 datosGeograficos.estados = [];
                 datosGeograficos.ciudadesPorEstado = {};
-                showToast('No se pudieron cargar estados/ciudades para ' + pais, 'error');
+                showToast('No se pudieron cargar estados/ciudades para ' + pais + '.', 'error');
             } finally {
                 loaderEstado.textContent = '';
                 loaderCiudad.textContent = '';
@@ -438,7 +451,6 @@
         }
 
         setupSugerencias('empEstado', 'listaEstados', () => datosGeograficos.estados, (estadoSeleccionado) => {
-            // Al seleccionar estado, regenerar sugerencias de ciudad
             document.getElementById('empCiudad').dispatchEvent(new Event('input'));
         });
 
@@ -447,10 +459,8 @@
             if (estado && datosGeograficos.ciudadesPorEstado[estado]) {
                 return datosGeograficos.ciudadesPorEstado[estado];
             }
-            // Si no hay estado seleccionado, devolver todas las ciudades de todos los estados
             return Object.values(datosGeograficos.ciudadesPorEstado).flat();
         }, () => {
-            // Al seleccionar ciudad, intentar autocompletar CP
             sugerirCodigoPostal();
         });
 
@@ -464,7 +474,6 @@
                 listaCP.style.display = 'none';
                 return;
             }
-            // Obtener código de país ISO2
             let iso2 = '';
             try {
                 const res = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(pais)}?fullText=true`);
@@ -490,11 +499,11 @@
                         });
                         listaCP.appendChild(div);
                     });
-                    listaCP.style.display = 'block';
-                    // También podemos auto-asignar el primero si solo hay uno
                     if (codigos.length === 1) {
                         document.getElementById('empCodigoPostal').value = codigos[0];
                         listaCP.style.display = 'none';
+                    } else {
+                        listaCP.style.display = 'block';
                     }
                 } else {
                     listaCP.style.display = 'none';
@@ -553,7 +562,7 @@
         // ==================== EMPRESAS ====================
         async function loadEmpresas() {
             const { data, error } = await supabaseClient.from('empresas').select('*, monedas(codigo, nombre)').order('nombre');
-            if (error) { showToast('Error cargando empresas: ' + error.message, 'error'); return; }
+            if (error) { showToast('Error al cargar las empresas: ' + error.message, 'error'); return; }
             const tbody = document.querySelector('#empresasTable tbody');
             tbody.innerHTML = data.map(e => `<tr>
                 <td>${e.nombre}</td><td>${e.rfc}</td><td>${e.monedas?.codigo || ''}</td><td>${e.pais || ''}</td><td>${e.email || ''}</td><td>${e.activo ? '✅' : '❌'}</td>
@@ -567,7 +576,8 @@
             document.getElementById('empresaForm').reset();
             document.getElementById('empActivo').checked = true;
             await loadMonedasSelect('empMoneda');
-            // Limpiar geografía
+            // Limpiar geografía pendiente
+            window.pendingCountryGeo = null;
             datosGeograficos = { estados: [], ciudadesPorEstado: {} };
             document.querySelectorAll('.sugerencias-lista').forEach(l => l.style.display = 'none');
             if (id) {
@@ -616,8 +626,8 @@
                 activo: document.getElementById('empActivo').checked
             };
             const { error } = id ? await supabaseClient.from('empresas').update(payload).eq('id', id) : await supabaseClient.from('empresas').insert([payload]);
-            if (error) { showToast('Error: ' + error.message, 'error'); return; }
-            showToast('Empresa guardada correctamente');
+            if (error) { showToast('Error al guardar la empresa: ' + error.message, 'error'); return; }
+            showToast('Empresa guardada correctamente.', 'success');
             closeModal('empresaModal'); loadEmpresas();
         });
 
@@ -629,7 +639,7 @@
             if (empresaFiltro) query = query.eq('empresa_id', empresaFiltro);
             if (rolFiltro) query = query.eq('rol', rolFiltro);
             const { data, error } = await query;
-            if (error) { showToast('Error cargando usuarios: ' + error.message, 'error'); return; }
+            if (error) { showToast('Error al cargar usuarios: ' + error.message, 'error'); return; }
             const tbody = document.querySelector('#usuariosTable tbody');
             tbody.innerHTML = data.map(u => `<tr>
                 <td>${u.nombres} ${u.apellido_paterno} ${u.apellido_materno || ''}</td>
@@ -697,12 +707,12 @@
             };
             if (password) {
                 const { data: crypted, error: errCrypt } = await supabaseClient.rpc('crypt_password', { pass: password });
-                if (errCrypt) { showToast('Error cifrando contraseña', 'error'); return; }
+                if (errCrypt) { showToast('Error al cifrar la contraseña.', 'error'); return; }
                 payload.contrasena = crypted;
             }
             const { error } = id ? await supabaseClient.from('usuarios').update(payload).eq('id', id) : await supabaseClient.from('usuarios').insert([payload]);
-            if (error) { showToast('Error: ' + error.message, 'error'); return; }
-            showToast('Usuario guardado correctamente');
+            if (error) { showToast('Error al guardar el usuario: ' + error.message, 'error'); return; }
+            showToast('Usuario guardado correctamente.', 'success');
             closeModal('usuarioModal'); loadUsuarios();
         });
 
@@ -738,6 +748,15 @@
             const codigoActual = document.getElementById('monCodigo').value.trim();
             if (codigoActual && codigoActual.length === 3) {
                 setTimeout(() => fetchExchangeRate(), 300);
+            }
+        }
+
+        function cancelMonedaModal() {
+            closeModal('monedaModal');
+            const country = window.pendingCountryGeo;
+            if (country) {
+                cargarEstadosYCiudades(country);
+                window.pendingCountryGeo = null;
             }
         }
 
@@ -793,18 +812,28 @@
                 activo: document.getElementById('monActivo').checked
             };
             const { error } = id ? await supabaseClient.from('monedas').update(payload).eq('id', id) : await supabaseClient.from('monedas').insert([payload]);
-            if (error) { showToast('Error: ' + error.message, 'error'); return; }
-            showToast('Moneda guardada correctamente');
+            if (error) { showToast('Error al guardar la moneda: ' + error.message, 'error'); return; }
+            showToast('Moneda guardada correctamente.', 'success');
             closeModal('monedaModal');
             const refreshId = document.getElementById('monedaModal').dataset.refreshSelect;
             if (refreshId) await loadMonedasSelect(refreshId);
+            // Si la creación fue provocada por una selección de país, cargar geografía y seleccionar la moneda recién creada
+            if (window.pendingCountryGeo) {
+                const codigo = document.getElementById('monCodigo').value;
+                const { data: monedaData } = await supabaseClient.from('monedas').select('id').eq('codigo', codigo).single();
+                if (monedaData) {
+                    document.getElementById('empMoneda').value = monedaData.id;
+                }
+                cargarEstadosYCiudades(window.pendingCountryGeo);
+                window.pendingCountryGeo = null;
+            }
         });
 
         // ==================== ESTADÍSTICAS ====================
         async function loadStats() {
             const today = new Date().toISOString().slice(0, 10);
             const { data: ventas, error } = await supabaseClient.from('ventas').select('total, empresa_id, empresas(nombre)').eq('estado', 'completada').gte('fecha', today);
-            if (error) { document.getElementById('statsContainer').innerHTML = '<p>Error cargando estadísticas.</p>'; return; }
+            if (error) { document.getElementById('statsContainer').innerHTML = '<p>Error al cargar las estadísticas.</p>'; return; }
             const stats = {};
             (ventas || []).forEach(v => {
                 const nombre = v.empresas?.nombre || 'Sin empresa';
@@ -834,8 +863,8 @@
         async function deleteRegistro(tabla, id, callback) {
             if (!confirm('¿Eliminar este registro permanentemente?')) return;
             const { error } = await supabaseClient.from(tabla).delete().eq('id', id);
-            if (error) { showToast('Error: ' + error.message, 'error'); return; }
-            showToast('Registro eliminado');
+            if (error) { showToast('Error al eliminar: ' + error.message, 'error'); return; }
+            showToast('Registro eliminado correctamente.', 'success');
             callback();
         }
 
