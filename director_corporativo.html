@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* (mismos estilos que antes, se omiten por brevedad) */
         :root {
             --bg: #f0f2f5;
             --card-bg: #ffffff;
@@ -97,6 +98,7 @@
         .sugerencias-lista div:hover { background: #f0f2f5; }
         .small-loader { font-size: 0.8rem; color: var(--text-secondary); margin-left: 4px; }
         .info-text { font-size: 0.8rem; color: #888; margin-top: 2px; }
+        .password-hint { font-size: 0.8rem; color: #666; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -241,7 +243,14 @@
             <div class="form-row"><div class="form-group"><label>Nombres *</label><input type="text" id="usrNombres" required></div><div class="form-group"><label>Apellido Paterno *</label><input type="text" id="usrApaterno" required></div></div>
             <div class="form-group"><label>Apellido Materno</label><input type="text" id="usrAmaterno"></div>
             <div class="form-row"><div class="form-group"><label>Email *</label><input type="email" id="usrEmail" required></div><div class="form-group"><label>Usuario <small>(auto si vacío)</small> *</label><input type="text" id="usrUsuario" required></div></div>
-            <div class="form-row"><div class="form-group"><label>Contraseña <span id="usrPassReq">*</span></label><input type="password" id="usrPassword"></div><div class="form-group"><label>Rol *</label><select id="usrRol" required><option value="Director General">Director General</option><option value="Director Financiero">Director Financiero</option><option value="Supervisor Senior">Supervisor Senior</option><option value="Ejecutivo Comercial">Ejecutivo Comercial</option><option value="Gestor de Almacén">Gestor de Almacén</option><option value="Especialista Logístico">Especialista Logístico</option></select></div></div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Contraseña <span id="usrPassReq">*</span></label>
+                    <input type="password" id="usrPassword" placeholder="Contraseña">
+                    <div id="usrPasswordHint" class="password-hint"></div>
+                </div>
+                <div class="form-group"><label>Rol *</label><select id="usrRol" required><option value="Director General">Director General</option><option value="Director Financiero">Director Financiero</option><option value="Supervisor Senior">Supervisor Senior</option><option value="Ejecutivo Comercial">Ejecutivo Comercial</option><option value="Gestor de Almacén">Gestor de Almacén</option><option value="Especialista Logístico">Especialista Logístico</option></select></div>
+            </div>
             <div class="form-group"><label><input type="checkbox" id="usrActivo" checked> Activo</label></div>
             <div class="flex"><button type="submit" class="btn btn-primary">Guardar</button><button type="button" class="btn btn-logout" onclick="closeModal('usuarioModal')">Cancelar</button></div>
         </form>
@@ -444,12 +453,10 @@
             const config = catalogosPais[pais] || catalogosPais['default'];
             const selectTipo = document.getElementById('empTipoEmpresa');
             const selectRegimen = document.getElementById('empRegimenFiscal');
-            // Guardar valor actual
             const tipoActual = selectTipo.value;
             const regimenActual = selectRegimen.value;
             selectTipo.innerHTML = '<option value="">Seleccione...</option>' + config.tipos.map(t => `<option value="${t}">${t}</option>`).join('');
             selectRegimen.innerHTML = '<option value="">Seleccione...</option>' + config.regimenes.map(r => `<option value="${r}">${r}</option>`).join('');
-            // Restaurar si existía
             if (config.tipos.includes(tipoActual)) selectTipo.value = tipoActual;
             if (config.regimenes.includes(regimenActual)) selectRegimen.value = regimenActual;
         }
@@ -590,7 +597,6 @@
             datosGeograficos = { estados: [], ciudadesPorEstado: {} };
             document.querySelectorAll('.sugerencias-lista').forEach(l => l.style.display = 'none');
             document.getElementById('cpInfo').textContent = '';
-            // Resetear catálogos a default
             actualizarSelectsCatalogo('');
             if (id) {
                 const { data } = await supabaseClient.from('empresas').select('*').eq('id', id).single();
@@ -611,7 +617,6 @@
                         actualizarSelectsCatalogo(data.pais);
                         cargarEstadosYCiudades(data.pais);
                     }
-                    // Cargar tipo y régimen en los selects (deben estar ya poblados)
                     setTimeout(() => {
                         if (data.tipo_empresa) {
                             const selTipo = document.getElementById('empTipoEmpresa');
@@ -683,13 +688,43 @@
         document.getElementById('filtroRol').addEventListener('change', loadUsuarios);
 
         async function openModalUsuario(id = null) {
-            document.getElementById('modalUsuarioTitle').textContent = id ? 'Editar Usuario' : 'Nuevo Usuario';
-            document.getElementById('usuarioId').value = id || '';
-            document.getElementById('usuarioForm').reset();
+            const modalTitle = document.getElementById('modalUsuarioTitle');
+            const usuarioIdInput = document.getElementById('usuarioId');
+            const form = document.getElementById('usuarioForm');
+            const passInput = document.getElementById('usrPassword');
+            const passReqSpan = document.getElementById('usrPassReq');
+            const passHint = document.getElementById('usrPasswordHint');
+
+            modalTitle.textContent = id ? 'Editar Usuario' : 'Nuevo Usuario';
+            usuarioIdInput.value = id || '';
+
+            // Limpiar solo campos que no son contraseña
+            document.getElementById('usrEmpresa').value = '';
+            document.getElementById('usrNombres').value = '';
+            document.getElementById('usrApaterno').value = '';
+            document.getElementById('usrAmaterno').value = '';
+            document.getElementById('usrEmail').value = '';
+            document.getElementById('usrUsuario').value = '';
+            document.getElementById('usrRol').value = 'Director General';
             document.getElementById('usrActivo').checked = true;
-            document.getElementById('usrPassReq').textContent = id ? '' : '*';
-            document.getElementById('usrPassword').required = !id;
+
+            // Configurar campo de contraseña según modo
+            if (id) {
+                passInput.value = '';
+                passInput.placeholder = 'Sin cambios';
+                passInput.required = false;
+                passReqSpan.textContent = '';
+                passHint.textContent = 'Dejar en blanco para mantener la contraseña actual.';
+            } else {
+                passInput.value = '';
+                passInput.placeholder = 'Contraseña';
+                passInput.required = true;
+                passReqSpan.textContent = '*';
+                passHint.textContent = '';
+            }
+
             await loadEmpresasSelect('usrEmpresa');
+
             if (id) {
                 const { data } = await supabaseClient.from('usuarios').select('*').eq('id', id).single();
                 if (data) {
@@ -731,7 +766,7 @@
                 rol: document.getElementById('usrRol').value,
                 activo: document.getElementById('usrActivo').checked
             };
-            if (password) {
+            if (password && password.trim() !== '') {
                 const { data: crypted, error: errCrypt } = await supabaseClient.rpc('crypt_password', { pass: password });
                 if (errCrypt) { showToast('Error al cifrar la contraseña.', 'error'); return; }
                 payload.contrasena = crypted;
