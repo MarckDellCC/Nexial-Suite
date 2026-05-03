@@ -80,6 +80,21 @@
             margin-top: 0.5rem;
             display: none;
         }
+        .remember-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+        }
+        .remember-row input[type="checkbox"] {
+            width: auto;
+            accent-color: #0066ff;
+        }
+        .remember-row label {
+            font-size: 0.85rem;
+            color: #aaa;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -97,6 +112,10 @@
                 <label for="password">Contraseña</label>
                 <input type="password" id="password" placeholder="Ingresa tu contraseña" required>
             </div>
+            <div class="remember-row">
+                <input type="checkbox" id="rememberMe">
+                <label for="rememberMe">Recordarme</label>
+            </div>
             <button type="submit" id="submitBtn">Iniciar sesión</button>
             <div class="error-message" id="errorMsg"></div>
         </form>
@@ -105,7 +124,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
-        // Usamos 'supabaseClient' en lugar de 'supabase' para evitar conflicto con otras declaraciones
+        // Usamos 'supabaseClient' para evitar conflictos
         const SUPABASE_URL = 'https://syoienwxlmauitopxone.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_BlxURubQbfvoRUIlXDEwUA_DYx3jAt3';
 
@@ -114,10 +133,19 @@
         const form = document.getElementById('loginForm');
         const errorMsg = document.getElementById('errorMsg');
         const submitBtn = document.getElementById('submitBtn');
+        const emailInput = document.getElementById('email');
+        const rememberCheck = document.getElementById('rememberMe');
+
+        // Cargar email guardado si existe y marcar checkbox
+        const savedEmail = localStorage.getItem('rememberedEmail');
+        if (savedEmail) {
+            emailInput.value = savedEmail;
+            rememberCheck.checked = true;
+        }
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value.trim();
+            const email = emailInput.value.trim();
             const password = document.getElementById('password').value;
 
             if (!email || !password) {
@@ -130,7 +158,6 @@
             errorMsg.style.display = 'none';
 
             try {
-                // Llamamos a la función login_user del SQL
                 const { data, error } = await supabaseClient.rpc('login_user', {
                     p_email: email,
                     p_password: password
@@ -148,6 +175,8 @@
                 }
 
                 const user = data[0];
+
+                // Guardar datos de sesión
                 localStorage.setItem('user_id', user.id);
                 localStorage.setItem('user_empresa_id', user.empresa_id);
                 localStorage.setItem('user_nombres', user.nombres);
@@ -155,11 +184,19 @@
                 localStorage.setItem('user_email', user.email);
                 localStorage.setItem('user_rol', user.rol);
 
+                // Recordar correo si el checkbox está marcado, si no, eliminarlo
+                if (rememberCheck.checked) {
+                    localStorage.setItem('rememberedEmail', email);
+                } else {
+                    localStorage.removeItem('rememberedEmail');
+                }
+
+                // Redirigir según el rol
                 if (user.rol === 'Director Corporativo') {
                     window.location.href = 'director_corporativo.html';
                 } else {
                     alert('Inicio de sesión exitoso. Rol: ' + user.rol);
-                    // Redirigir según corresponda
+                    // Redirigir según corresponda a otros paneles
                 }
             } catch (err) {
                 console.error('Error inesperado:', err);
