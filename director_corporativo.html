@@ -155,7 +155,8 @@
             window.location.href = 'login.html';
         }
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        // Cliente Supabase (nombre evitando conflicto)
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             global: { headers: { 'x-user-id': userId } }
         });
 
@@ -186,7 +187,7 @@
 
         // ==================== EMPRESAS ====================
         async function loadEmpresas() {
-            const { data, error } = await supabase.from('empresas').select('*, monedas(codigo, nombre)').order('nombre');
+            const { data, error } = await supabaseClient.from('empresas').select('*, monedas(codigo, nombre)').order('nombre');
             if (error) { showToast('Error cargando empresas: ' + error.message, 'error'); return; }
             const tbody = document.querySelector('#empresasTable tbody');
             tbody.innerHTML = data.map(e => `<tr>
@@ -202,7 +203,7 @@
             document.getElementById('empActivo').checked = true;
             await loadMonedasSelect('empMoneda');
             if (id) {
-                const { data } = await supabase.from('empresas').select('*').eq('id', id).single();
+                const { data } = await supabaseClient.from('empresas').select('*').eq('id', id).single();
                 if (data) {
                     document.getElementById('empNombre').value = data.nombre || '';
                     document.getElementById('empRfc').value = data.rfc || '';
@@ -231,7 +232,7 @@
                 direccion: document.getElementById('empDir').value,
                 activo: document.getElementById('empActivo').checked
             };
-            const { error } = id ? await supabase.from('empresas').update(payload).eq('id', id) : await supabase.from('empresas').insert([payload]);
+            const { error } = id ? await supabaseClient.from('empresas').update(payload).eq('id', id) : await supabaseClient.from('empresas').insert([payload]);
             if (error) { showToast('Error: ' + error.message, 'error'); return; }
             showToast('Empresa guardada correctamente');
             closeModal('empresaModal'); loadEmpresas();
@@ -239,7 +240,7 @@
 
         // ==================== USUARIOS ====================
         async function loadUsuarios() {
-            const { data, error } = await supabase.from('usuarios').select('*, empresas(nombre)').order('nombres');
+            const { data, error } = await supabaseClient.from('usuarios').select('*, empresas(nombre)').order('nombres');
             if (error) { showToast('Error cargando usuarios: ' + error.message, 'error'); return; }
             const tbody = document.querySelector('#usuariosTable tbody');
             tbody.innerHTML = data.map(u => `<tr>
@@ -257,7 +258,7 @@
             document.getElementById('usrPassword').required = !id;
             await loadEmpresasSelect('usrEmpresa');
             if (id) {
-                const { data } = await supabase.from('usuarios').select('*').eq('id', id).single();
+                const { data } = await supabaseClient.from('usuarios').select('*').eq('id', id).single();
                 if (data) {
                     document.getElementById('usrEmpresa').value = data.empresa_id;
                     document.getElementById('usrNombres').value = data.nombres || '';
@@ -288,11 +289,11 @@
                 activo: document.getElementById('usrActivo').checked
             };
             if (password) {
-                const { data: crypted, error: errCrypt } = await supabase.rpc('crypt_password', { pass: password });
+                const { data: crypted, error: errCrypt } = await supabaseClient.rpc('crypt_password', { pass: password });
                 if (errCrypt) { showToast('Error cifrando contraseña', 'error'); return; }
                 payload.contrasena = crypted;
             }
-            const { error } = id ? await supabase.from('usuarios').update(payload).eq('id', id) : await supabase.from('usuarios').insert([payload]);
+            const { error } = id ? await supabaseClient.from('usuarios').update(payload).eq('id', id) : await supabaseClient.from('usuarios').insert([payload]);
             if (error) { showToast('Error: ' + error.message, 'error'); return; }
             showToast('Usuario guardado correctamente');
             closeModal('usuarioModal'); loadUsuarios();
@@ -300,7 +301,7 @@
 
         // ==================== MONEDAS ====================
         async function loadMonedas() {
-            const { data, error } = await supabase.from('monedas').select('*').order('codigo');
+            const { data, error } = await supabaseClient.from('monedas').select('*').order('codigo');
             if (error) { showToast('Error cargando monedas: ' + error.message, 'error'); return; }
             const tbody = document.querySelector('#monedasTable tbody');
             tbody.innerHTML = data.map(m => `<tr>
@@ -315,7 +316,7 @@
             document.getElementById('monedaForm').reset();
             document.getElementById('monActivo').checked = true;
             if (id) {
-                const { data } = await supabase.from('monedas').select('*').eq('id', id).single();
+                const { data } = await supabaseClient.from('monedas').select('*').eq('id', id).single();
                 if (data) {
                     document.getElementById('monCodigo').value = data.codigo || '';
                     document.getElementById('monNombre').value = data.nombre || '';
@@ -338,7 +339,7 @@
                 tasa_cambio: parseFloat(document.getElementById('monTasa').value) || null,
                 activo: document.getElementById('monActivo').checked
             };
-            const { error } = id ? await supabase.from('monedas').update(payload).eq('id', id) : await supabase.from('monedas').insert([payload]);
+            const { error } = id ? await supabaseClient.from('monedas').update(payload).eq('id', id) : await supabaseClient.from('monedas').insert([payload]);
             if (error) { showToast('Error: ' + error.message, 'error'); return; }
             showToast('Moneda guardada correctamente');
             closeModal('monedaModal'); loadMonedas();
@@ -347,7 +348,7 @@
         // ==================== ESTADÍSTICAS ====================
         async function loadStats() {
             const today = new Date().toISOString().slice(0, 10);
-            const { data: ventas, error } = await supabase.from('ventas').select('total, empresa_id, empresas(nombre)').eq('estado', 'completada').gte('fecha', today);
+            const { data: ventas, error } = await supabaseClient.from('ventas').select('total, empresa_id, empresas(nombre)').eq('estado', 'completada').gte('fecha', today);
             if (error) { document.getElementById('statsContainer').innerHTML = '<p>Error cargando estadísticas.</p>'; return; }
             const stats = {};
             (ventas || []).forEach(v => {
@@ -366,18 +367,18 @@
         // ==================== UTILIDADES ====================
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         async function loadMonedasSelect(selectId) {
-            const { data } = await supabase.from('monedas').select('id, codigo, nombre').order('codigo');
+            const { data } = await supabaseClient.from('monedas').select('id, codigo, nombre').order('codigo');
             const select = document.getElementById(selectId);
             select.innerHTML = data?.map(m => `<option value="${m.id}">${m.codigo} - ${m.nombre}</option>`).join('') || '';
         }
         async function loadEmpresasSelect(selectId) {
-            const { data } = await supabase.from('empresas').select('id, nombre').order('nombre');
+            const { data } = await supabaseClient.from('empresas').select('id, nombre').order('nombre');
             const select = document.getElementById(selectId);
             select.innerHTML = data?.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('') || '';
         }
         async function deleteRegistro(tabla, id, callback) {
             if (!confirm('¿Eliminar este registro permanentemente?')) return;
-            const { error } = await supabase.from(tabla).delete().eq('id', id);
+            const { error } = await supabaseClient.from(tabla).delete().eq('id', id);
             if (error) { showToast('Error: ' + error.message, 'error'); return; }
             showToast('Registro eliminado');
             callback();
