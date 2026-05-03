@@ -155,7 +155,13 @@
         <h3 id="modalMonedaTitle">Nueva Moneda</h3>
         <form id="monedaForm"><input type="hidden" id="monedaId">
             <div class="form-row"><div class="form-group"><label>Código (3 letras) *</label><input type="text" id="monCodigo" required maxlength="3" style="text-transform:uppercase"></div><div class="form-group"><label>Nombre *</label><input type="text" id="monNombre" required></div></div>
-            <div class="form-row"><div class="form-group"><label>Símbolo</label><input type="text" id="monSimbolo"></div><div class="form-group"><label>Tasa de cambio</label><input type="number" step="any" id="monTasa"></div></div>
+            <div class="form-row"><div class="form-group"><label>Símbolo</label><input type="text" id="monSimbolo"></div><div class="form-group">
+                <label>Tasa de cambio (1 USD = ?)</label>
+                <div class="select-with-btn">
+                    <input type="number" step="any" id="monTasa" style="flex:1;" placeholder="Ej. 20.5">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="fetchExchangeRate()" title="Obtener tasa actual">💰</button>
+                </div>
+            </div></div>
             <div class="form-group"><label><input type="checkbox" id="monActivo" checked> Activo</label></div>
             <div class="flex"><button type="submit" class="btn btn-primary">Guardar</button><button type="button" class="btn btn-logout" onclick="closeModal('monedaModal')">Cancelar</button></div>
         </form>
@@ -249,7 +255,6 @@
                 const code = Object.keys(currencies)[0];
                 const currency = currencies[code];
                 
-                // Prellenar el modal de moneda rápida
                 document.getElementById('monCodigo').value = code;
                 document.getElementById('monNombre').value = currency.name;
                 document.getElementById('monSimbolo').value = currency.symbol || '';
@@ -371,7 +376,6 @@
 
         // ==================== MONEDAS ====================
         async function openModalMoneda(id = null, refreshSelectId = null) {
-            // Si no se están rellenando datos automáticos (por país), limpiar
             if (!id && !document.getElementById('monedaId').value) {
                 document.getElementById('monedaForm').reset();
                 document.getElementById('monActivo').checked = true;
@@ -390,6 +394,28 @@
             }
             document.getElementById('monedaModal').dataset.refreshSelect = refreshSelectId || '';
             document.getElementById('monedaModal').style.display = 'flex';
+        }
+
+        // ==================== OBTENER TASA DE CAMBIO ====================
+        async function fetchExchangeRate() {
+            const baseCurrency = 'USD';
+            const code = document.getElementById('monCodigo').value.trim().toUpperCase();
+            if (!code) {
+                showToast('Primero ingresa el código de moneda (3 letras).', 'error');
+                return;
+            }
+            try {
+                const response = await fetch(`https://open.er-api.com/v6/latest/${baseCurrency}`);
+                const data = await response.json();
+                if (data.result === 'success' && data.rates[code]) {
+                    document.getElementById('monTasa').value = data.rates[code].toFixed(6);
+                    showToast(`Tasa obtenida: 1 ${baseCurrency} = ${data.rates[code]} ${code}`, 'success');
+                } else {
+                    showToast(`No se encontró la moneda "${code}" en la API.`, 'error');
+                }
+            } catch (err) {
+                showToast('Error al consultar la tasa de cambio.', 'error');
+            }
         }
 
         document.getElementById('monedaForm').addEventListener('submit', async (e) => {
