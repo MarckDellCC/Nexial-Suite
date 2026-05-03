@@ -43,6 +43,8 @@
         .flex { display: flex; gap: 1rem; margin-top: 1rem; }
         .select-with-btn { display: flex; gap: 0.5rem; align-items: center; }
         .select-with-btn select { flex: 1; }
+        .filter-bar { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+        .filter-bar label { font-weight: 600; margin-right: 0.25rem; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
         .stat-card { background: var(--card-bg); border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .stat-value { font-size: 2rem; font-weight: bold; color: var(--primary); }
@@ -65,7 +67,6 @@
         <div class="tabs">
             <button class="tab active" data-tab="empresas">🏭 Empresas</button>
             <button class="tab" data-tab="usuarios">👥 Usuarios</button>
-            <button class="tab" data-tab="monedas">💱 Monedas</button>
             <button class="tab" data-tab="stats">📊 Estadísticas</button>
         </div>
 
@@ -75,7 +76,7 @@
                 <h2>Gestión de Empresas</h2>
                 <button class="btn btn-primary" onclick="openModalEmpresa()">+ Nueva Empresa</button>
             </div>
-            <table id="empresasTable"><thead><tr><th>Nombre</th><th>Tax ID</th><th>Moneda</th><th>Email</th><th>Activo</th><th></th></tr></thead><tbody></tbody></table>
+            <table id="empresasTable"><thead><tr><th>Nombre</th><th>Registration Number (Tax ID)</th><th>Moneda</th><th>Email</th><th>Activo</th><th></th></tr></thead><tbody></tbody></table>
         </div>
 
         <!-- USUARIOS -->
@@ -84,16 +85,25 @@
                 <h2>Gestión de Usuarios</h2>
                 <button class="btn btn-primary" onclick="openModalUsuario()">+ Nuevo Usuario</button>
             </div>
-            <table id="usuariosTable"><thead><tr><th>Nombre</th><th>Email</th><th>Usuario</th><th>Rol</th><th>Empresa</th><th>Activo</th><th></th></tr></thead><tbody></tbody></table>
-        </div>
-
-        <!-- MONEDAS -->
-        <div id="tab-monedas" class="card" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>Gestión de Monedas</h2>
-                <button class="btn btn-primary" onclick="openModalMoneda()">+ Nueva Moneda</button>
+            <div class="filter-bar">
+                <div>
+                    <label>Empresa:</label>
+                    <select id="filtroEmpresa"><option value="">Todas</option></select>
+                </div>
+                <div>
+                    <label>Rol:</label>
+                    <select id="filtroRol">
+                        <option value="">Todos</option>
+                        <option value="Director General">Director General</option>
+                        <option value="Director Financiero">Director Financiero</option>
+                        <option value="Supervisor Senior">Supervisor Senior</option>
+                        <option value="Ejecutivo Comercial">Ejecutivo Comercial</option>
+                        <option value="Gestor de Almacén">Gestor de Almacén</option>
+                        <option value="Especialista Logístico">Especialista Logístico</option>
+                    </select>
+                </div>
             </div>
-            <table id="monedasTable"><thead><tr><th>Código</th><th>Nombre</th><th>Símbolo</th><th>Tasa Cambio</th><th>Activo</th><th></th></tr></thead><tbody></tbody></table>
+            <table id="usuariosTable"><thead><tr><th>Nombre</th><th>Email</th><th>Usuario</th><th>Rol</th><th>Empresa</th><th>Activo</th><th></th></tr></thead><tbody></tbody></table>
         </div>
 
         <!-- ESTADÍSTICAS -->
@@ -108,7 +118,7 @@
         <h3 id="modalEmpresaTitle">Nueva Empresa</h3>
         <form id="empresaForm"><input type="hidden" id="empresaId">
             <div class="form-group"><label>Nombre *</label><input type="text" id="empNombre" required></div>
-            <div class="form-group"><label>Tax ID / CIF / RUT *</label><input type="text" id="empRfc" required></div>
+            <div class="form-group"><label>Registration Number (Tax ID) *</label><input type="text" id="empRfc" required></div>
             <div class="form-group"><label>Moneda *</label>
                 <div class="select-with-btn">
                     <select id="empMoneda" required></select>
@@ -137,7 +147,7 @@
         </form>
     </div></div>
 
-    <!-- MODAL MONEDA -->
+    <!-- MODAL MONEDA (rápido) -->
     <div class="modal" id="monedaModal"><div class="modal-content">
         <h3 id="modalMonedaTitle">Nueva Moneda</h3>
         <form id="monedaForm"><input type="hidden" id="monedaId">
@@ -183,11 +193,10 @@
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                document.querySelectorAll('#tab-empresas, #tab-usuarios, #tab-monedas, #tab-stats').forEach(c => c.style.display = 'none');
+                document.querySelectorAll('#tab-empresas, #tab-usuarios, #tab-stats').forEach(c => c.style.display = 'none');
                 document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
                 if (btn.dataset.tab === 'empresas') loadEmpresas();
-                if (btn.dataset.tab === 'usuarios') loadUsuarios();
-                if (btn.dataset.tab === 'monedas') loadMonedas();
+                if (btn.dataset.tab === 'usuarios') { loadUsuarios(); loadFiltroEmpresas(); }
                 if (btn.dataset.tab === 'stats') loadStats();
             });
         });
@@ -245,16 +254,30 @@
             closeModal('empresaModal'); loadEmpresas();
         });
 
-        // ==================== USUARIOS ====================
+        // ==================== USUARIOS (con filtros) ====================
         async function loadUsuarios() {
-            const { data, error } = await supabaseClient.from('usuarios').select('*, empresas(nombre)').order('nombres');
+            const empresaFiltro = document.getElementById('filtroEmpresa')?.value || '';
+            const rolFiltro = document.getElementById('filtroRol')?.value || '';
+            let query = supabaseClient.from('usuarios').select('*, empresas(nombre)').order('nombres');
+            if (empresaFiltro) query = query.eq('empresa_id', empresaFiltro);
+            if (rolFiltro) query = query.eq('rol', rolFiltro);
+            const { data, error } = await query;
             if (error) { showToast('Error cargando usuarios: ' + error.message, 'error'); return; }
             const tbody = document.querySelector('#usuariosTable tbody');
             tbody.innerHTML = data.map(u => `<tr>
-                <td>${u.nombres} ${u.apellido_paterno}</td><td>${u.email}</td><td>${u.usuario}</td><td>${u.rol}</td><td>${u.empresas?.nombre || ''}</td><td>${u.activo ? '✅' : '❌'}</td>
+                <td>${u.nombres} ${u.apellido_paterno} ${u.apellido_materno || ''}</td>
+                <td>${u.email}</td><td>${u.usuario}</td><td>${u.rol}</td><td>${u.empresas?.nombre || ''}</td><td>${u.activo ? '✅' : '❌'}</td>
                 <td><button class="btn btn-primary btn-sm" onclick="editUsuario('${u.id}')">Editar</button> <button class="btn btn-logout btn-sm" onclick="deleteRegistro('usuarios','${u.id}',loadUsuarios)">Eliminar</button></td>
             </tr>`).join('');
         }
+
+        async function loadFiltroEmpresas() {
+            const { data } = await supabaseClient.from('empresas').select('id, nombre').order('nombre');
+            const select = document.getElementById('filtroEmpresa');
+            select.innerHTML = '<option value="">Todas</option>' + data.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+        }
+        document.getElementById('filtroEmpresa').addEventListener('change', loadUsuarios);
+        document.getElementById('filtroRol').addEventListener('change', loadUsuarios);
 
         async function openModalUsuario(id = null) {
             document.getElementById('modalUsuarioTitle').textContent = id ? 'Editar Usuario' : 'Nuevo Usuario';
@@ -281,7 +304,7 @@
         }
         function editUsuario(id) { openModalUsuario(id); }
 
-        // Autogenerar usuario al perder el foco del email
+        // Autocompletar usuario desde email
         document.getElementById('usrEmail').addEventListener('blur', function() {
             const usuarioInput = document.getElementById('usrUsuario');
             if (!usuarioInput.value) {
@@ -317,17 +340,7 @@
             closeModal('usuarioModal'); loadUsuarios();
         });
 
-        // ==================== MONEDAS ====================
-        async function loadMonedas() {
-            const { data, error } = await supabaseClient.from('monedas').select('*').order('codigo');
-            if (error) { showToast('Error cargando monedas: ' + error.message, 'error'); return; }
-            const tbody = document.querySelector('#monedasTable tbody');
-            tbody.innerHTML = data.map(m => `<tr>
-                <td>${m.codigo}</td><td>${m.nombre}</td><td>${m.simbolo || ''}</td><td>${m.tasa_cambio || ''}</td><td>${m.activo ? '✅' : '❌'}</td>
-                <td><button class="btn btn-primary btn-sm" onclick="editMoneda('${m.id}')">Editar</button> <button class="btn btn-logout btn-sm" onclick="deleteRegistro('monedas','${m.id}',loadMonedas)">Eliminar</button></td>
-            </tr>`).join('');
-        }
-
+        // ==================== MONEDAS (rápido) ====================
         async function openModalMoneda(id = null, refreshSelectId = null) {
             document.getElementById('modalMonedaTitle').textContent = id ? 'Editar Moneda' : 'Nueva Moneda';
             document.getElementById('monedaId').value = id || '';
@@ -343,11 +356,9 @@
                     document.getElementById('monActivo').checked = data.activo;
                 }
             }
-            // Guardar qué select refrescar después de crear/editar
             document.getElementById('monedaModal').dataset.refreshSelect = refreshSelectId || '';
             document.getElementById('monedaModal').style.display = 'flex';
         }
-        function editMoneda(id) { openModalMoneda(id); }
 
         document.getElementById('monedaForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -363,10 +374,8 @@
             if (error) { showToast('Error: ' + error.message, 'error'); return; }
             showToast('Moneda guardada correctamente');
             closeModal('monedaModal');
-            // Refrescar el select que invocó la creación rápida, si existe
             const refreshId = document.getElementById('monedaModal').dataset.refreshSelect;
             if (refreshId) await loadMonedasSelect(refreshId);
-            loadMonedas(); // refrescar tabla
         });
 
         // ==================== ESTADÍSTICAS ====================
