@@ -49,7 +49,7 @@
         th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; }
         th { background: #f8f9fa; font-weight: 600; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 2rem; border-radius: 10px; width: 700px; max-width: 95%; max-height: 85vh; overflow-y: auto; }
+        .modal-content { background: white; padding: 2rem; border-radius: 10px; width: 650px; max-width: 95%; max-height: 85vh; overflow-y: auto; }
         .form-group { margin-bottom: 1rem; }
         .form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.9rem; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; }
@@ -81,7 +81,7 @@
         .tasa-field.loading .loading-spinner { display: block; }
         .tasa-field.loading input { background: #f8f9fa; }
         .diferencia-tasa { font-size: 0.8rem; margin-top: 2px; }
-        .sugerencias-contenedor { position: relative; }
+        .sugerencias { position: relative; }
         .sugerencias-lista {
             position: absolute;
             background: white;
@@ -95,6 +95,7 @@
         }
         .sugerencias-lista div { padding: 8px; cursor: pointer; }
         .sugerencias-lista div:hover { background: #f0f2f5; }
+        .small-loader { font-size: 0.8rem; color: var(--text-secondary); margin-left: 4px; }
     </style>
 </head>
 <body>
@@ -168,10 +169,12 @@
                 <div class="form-group"><label>Tax ID *</label><input type="text" id="empRfc" required></div>
             </div>
             <div class="form-row">
-                <div class="form-group sugerencias-contenedor">
+                <div class="form-group">
                     <label>País</label>
-                    <input type="text" id="empPais" placeholder="Escribe el país..." autocomplete="off">
-                    <div class="sugerencias-lista" id="listaPaises"></div>
+                    <div class="sugerencias">
+                        <input type="text" id="empPais" placeholder="Escribe el país..." autocomplete="off">
+                        <div class="sugerencias-lista" id="listaPaises"></div>
+                    </div>
                 </div>
                 <div class="form-group"><label>Moneda *</label>
                     <div class="select-with-btn">
@@ -181,18 +184,26 @@
                 </div>
             </div>
             <div class="form-row">
-                <div class="form-group sugerencias-contenedor">
-                    <label>Ciudad</label>
-                    <input type="text" id="empCiudad" placeholder="Escribe la ciudad..." autocomplete="off">
-                    <div class="sugerencias-lista" id="listaCiudades"></div>
+                <div class="form-group">
+                    <label>Ciudad <span id="loaderCiudad" class="small-loader"></span></label>
+                    <div class="sugerencias">
+                        <input type="text" id="empCiudad" placeholder="Empieza a escribir..." autocomplete="off">
+                        <div class="sugerencias-lista" id="listaCiudades"></div>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Estado/Provincia</label>
-                    <input type="text" id="empEstado" placeholder="Se llenará automáticamente">
+                    <label>Estado/Provincia <span id="loaderEstado" class="small-loader"></span></label>
+                    <div class="sugerencias">
+                        <input type="text" id="empEstado" placeholder="Empieza a escribir..." autocomplete="off">
+                        <div class="sugerencias-lista" id="listaEstados"></div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Código Postal</label>
-                    <input type="text" id="empCodigoPostal">
+                    <div class="sugerencias">
+                        <input type="text" id="empCodigoPostal" placeholder="Automático si es posible" autocomplete="off">
+                        <div class="sugerencias-lista" id="listaCP"></div>
+                    </div>
                 </div>
             </div>
             <div class="form-row">
@@ -201,20 +212,22 @@
             </div>
             <div class="form-row">
                 <div class="form-group"><label>Sitio Web</label><input type="text" id="empWeb"></div>
-                <div class="form-group sugerencias-contenedor">
+                <div class="form-group">
                     <label>Tipo de Empresa</label>
-                    <input type="text" id="empTipoEmpresa" placeholder="Ej. Retail, Servicios..." autocomplete="off">
-                    <div class="sugerencias-lista" id="listaTipoEmpresa"></div>
+                    <div class="sugerencias">
+                        <input type="text" id="empTipoEmpresa" placeholder="Ej. Sociedad Anónima..." autocomplete="off">
+                        <div class="sugerencias-lista" id="listaTipoEmpresa"></div>
+                    </div>
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-group sugerencias-contenedor">
-                    <label>Régimen Fiscal</label>
-                    <input type="text" id="empRegimenFiscal" placeholder="Ej. General, Simplificado..." autocomplete="off">
+            <div class="form-group">
+                <label>Régimen Fiscal</label>
+                <div class="sugerencias">
+                    <input type="text" id="empRegimenFiscal" placeholder="Ej. Régimen General..." autocomplete="off">
                     <div class="sugerencias-lista" id="listaRegimenFiscal"></div>
                 </div>
-                <div class="form-group"><label>Dirección</label><textarea id="empDir" rows="2"></textarea></div>
             </div>
+            <div class="form-group"><label>Dirección</label><textarea id="empDir" rows="2"></textarea></div>
             <div class="form-group"><label><input type="checkbox" id="empActivo" checked> Activo</label></div>
             <div class="flex"><button type="submit" class="btn btn-primary">Guardar</button><button type="button" class="btn btn-logout" onclick="closeModal('empresaModal')">Cancelar</button></div>
         </form>
@@ -280,50 +293,20 @@
             setTimeout(() => t.style.display = 'none', 3000);
         }
 
-        // ==================== LISTAS ESTÁTICAS ====================
-        const tiposEmpresa = [
-            "Sociedad Anónima", "Sociedad de Responsabilidad Limitada", "Empresa Unipersonal",
-            "Sociedad Colectiva", "Sociedad Comandita Simple", "Sociedad Comandita por Acciones",
-            "Empresa Individual de Responsabilidad Limitada", "Corporación", "Cooperativa",
-            "Asociación", "Fundación", "Retail", "Servicios", "Tecnología", "Manufactura"
-        ];
-
-        const regimenesFiscales = [
-            "General", "Simplificado", "Régimen Especial", "Agropecuario",
-            "Exportador", "Zona Franca", "Pequeño Contribuyente"
-        ];
-
-        // ==================== FUNCIÓN GENÉRICA DE SUGERENCIAS ====================
-        function configurarSugerencias(inputId, listaId, obtenerSugerenciasCallback, onSeleccion) {
-            const input = document.getElementById(inputId);
-            const lista = document.getElementById(listaId);
-
-            input.addEventListener('input', async function() {
-                const texto = this.value;
-                if (texto.length === 0) { lista.style.display = 'none'; return; }
-                const sugerencias = await obtenerSugerenciasCallback(texto);
-                lista.innerHTML = '';
-                if (!sugerencias || sugerencias.length === 0) { lista.style.display = 'none'; return; }
-                sugerencias.forEach(item => {
-                    const div = document.createElement('div');
-                    div.textContent = typeof item === 'string' ? item : item.nombre;
-                    div.addEventListener('mousedown', (e) => {
-                        e.preventDefault();
-                        this.value = typeof item === 'string' ? item : item.nombre;
-                        lista.style.display = 'none';
-                        if (onSeleccion) onSeleccion(item);
-                    });
-                    lista.appendChild(div);
-                });
-                lista.style.display = 'block';
+        // ==================== TABS ====================
+        document.querySelectorAll('.tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('#tab-empresas, #tab-usuarios, #tab-stats').forEach(c => c.style.display = 'none');
+                document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
+                if (btn.dataset.tab === 'empresas') loadEmpresas();
+                if (btn.dataset.tab === 'usuarios') { loadUsuarios(); loadFiltroEmpresas(); }
+                if (btn.dataset.tab === 'stats') loadStats();
             });
+        });
 
-            input.addEventListener('blur', () => {
-                setTimeout(() => { lista.style.display = 'none'; }, 200);
-            });
-        }
-
-        // ==================== SUGERENCIAS PAÍS ====================
+        // ==================== PAÍSES (SUGERENCIAS) ====================
         let nombresPaises = [];
         async function cargarListaPaises() {
             try {
@@ -336,15 +319,60 @@
         }
         cargarListaPaises();
 
-        configurarSugerencias('empPais', 'listaPaises', 
-            (texto) => nombresPaises.filter(p => p.toLowerCase().startsWith(texto.toLowerCase())).slice(0, 8),
-            (paisSeleccionado) => {
-                // Al seleccionar país, buscar moneda
-                document.getElementById('empPais').dispatchEvent(new Event('change'));
-            }
-        );
+        function setupSugerencias(inputId, listaId, dataSource, onSelectCallback) {
+            const input = document.getElementById(inputId);
+            const lista = document.getElementById(listaId);
+            input.addEventListener('input', function() {
+                const texto = this.value.toLowerCase();
+                lista.innerHTML = '';
+                if (texto.length === 0) { lista.style.display = 'none'; return; }
+                const filtrados = dataSource().filter(item => item.toLowerCase().includes(texto)).slice(0, 8);
+                if (filtrados.length === 0) { lista.style.display = 'none'; return; }
+                filtrados.forEach(item => {
+                    const div = document.createElement('div');
+                    div.textContent = item;
+                    div.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        input.value = item;
+                        lista.style.display = 'none';
+                        if (onSelectCallback) onSelectCallback(item);
+                    });
+                    lista.appendChild(div);
+                });
+                lista.style.display = 'block';
+            });
+            input.addEventListener('blur', () => {
+                setTimeout(() => { lista.style.display = 'none'; }, 200);
+            });
+        }
 
-        document.getElementById('empPais').addEventListener('change', async function() {
+        // País
+        const inputPais = document.getElementById('empPais');
+        const listaPaises = document.getElementById('listaPaises');
+        inputPais.addEventListener('input', function() {
+            const texto = this.value.toLowerCase();
+            listaPaises.innerHTML = '';
+            if (texto.length === 0) { listaPaises.style.display = 'none'; return; }
+            const filtradas = nombresPaises.filter(p => p.toLowerCase().startsWith(texto)).slice(0, 8);
+            if (filtradas.length === 0) { listaPaises.style.display = 'none'; return; }
+            filtradas.forEach(p => {
+                const div = document.createElement('div');
+                div.textContent = p;
+                div.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    inputPais.value = p;
+                    listaPaises.style.display = 'none';
+                    inputPais.dispatchEvent(new Event('change'));
+                });
+                listaPaises.appendChild(div);
+            });
+            listaPaises.style.display = 'block';
+        });
+        inputPais.addEventListener('blur', () => {
+            setTimeout(() => { listaPaises.style.display = 'none'; }, 200);
+        });
+
+        inputPais.addEventListener('change', async function() {
             const country = this.value.trim();
             if (!country) return;
             try {
@@ -369,68 +397,158 @@
             } catch (err) {
                 showToast('Error al consultar país. Intenta de nuevo.', 'error');
             }
+            // Cargar estados/ciudades para este país
+            cargarEstadosYCiudades(country);
         });
 
-        // ==================== SUGERENCIAS CIUDAD (Open-Meteo) ====================
-        let debounceTimer;
-        configurarSugerencias('empCiudad', 'listaCiudades',
-            (texto) => {
-                return new Promise((resolve) => {
-                    clearTimeout(debounceTimer);
-                    debounceTimer = setTimeout(async () => {
-                        if (texto.length < 2) { resolve([]); return; }
-                        try {
-                            const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(texto)}&count=5&language=es&format=json`);
-                            const data = await res.json();
-                            if (!data.results) { resolve([]); return; }
-                            const sugerencias = data.results.map(r => ({
-                                nombre: r.name + (r.admin1 ? `, ${r.admin1}` : '') + (r.country ? ` (${r.country})` : ''),
-                                admin1: r.admin1 || '',
-                                country: r.country || ''
-                            }));
-                            resolve(sugerencias);
-                        } catch (e) {
-                            console.warn('Error buscando ciudades', e);
-                            resolve([]);
-                        }
-                    }, 300);
+        // ==================== ESTADOS Y CIUDADES ====================
+        let datosGeograficos = { estados: [], ciudadesPorEstado: {} };
+        async function cargarEstadosYCiudades(pais) {
+            const loaderEstado = document.getElementById('loaderEstado');
+            const loaderCiudad = document.getElementById('loaderCiudad');
+            loaderEstado.textContent = '⏳';
+            loaderCiudad.textContent = '⏳';
+            try {
+                const res = await fetch('https://countriesnow.space/api/v0.1/countries/states', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ country: pais })
                 });
-            },
-            (itemSeleccionado) => {
-                // Rellenar estado/provincia automáticamente si existe
-                if (itemSeleccionado.admin1) {
-                    document.getElementById('empEstado').value = itemSeleccionado.admin1;
+                const body = await res.json();
+                if (body.error || !body.data || !body.data.states) {
+                    throw new Error('Sin datos');
                 }
-                // Si no hay país, podríamos poner el país, pero con cuidado de no sobreescribir
-                if (!document.getElementById('empPais').value && itemSeleccionado.country) {
-                    document.getElementById('empPais').value = itemSeleccionado.country;
-                }
+                const states = body.data.states.map(s => s.name);
+                datosGeograficos.estados = states;
+                datosGeograficos.ciudadesPorEstado = {};
+                body.data.states.forEach(s => {
+                    datosGeograficos.ciudadesPorEstado[s.name] = s.cities || [];
+                });
+                // Actualizar lista de estados
+                document.getElementById('empEstado').dispatchEvent(new Event('input'));
+                document.getElementById('empCiudad').dispatchEvent(new Event('input'));
+            } catch (e) {
+                datosGeograficos.estados = [];
+                datosGeograficos.ciudadesPorEstado = {};
+                showToast('No se pudieron cargar estados/ciudades para ' + pais, 'error');
+            } finally {
+                loaderEstado.textContent = '';
+                loaderCiudad.textContent = '';
             }
-        );
+        }
 
-        // ==================== SUGERENCIAS TIPO DE EMPRESA Y RÉGIMEN FISCAL ====================
-        configurarSugerencias('empTipoEmpresa', 'listaTipoEmpresa',
-            (texto) => tiposEmpresa.filter(t => t.toLowerCase().startsWith(texto.toLowerCase())),
-            null
-        );
-
-        configurarSugerencias('empRegimenFiscal', 'listaRegimenFiscal',
-            (texto) => regimenesFiscales.filter(r => r.toLowerCase().startsWith(texto.toLowerCase())),
-            null
-        );
-
-        // ==================== TABS ====================
-        document.querySelectorAll('.tab').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                document.querySelectorAll('#tab-empresas, #tab-usuarios, #tab-stats').forEach(c => c.style.display = 'none');
-                document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
-                if (btn.dataset.tab === 'empresas') loadEmpresas();
-                if (btn.dataset.tab === 'usuarios') { loadUsuarios(); loadFiltroEmpresas(); }
-                if (btn.dataset.tab === 'stats') loadStats();
-            });
+        setupSugerencias('empEstado', 'listaEstados', () => datosGeograficos.estados, (estadoSeleccionado) => {
+            // Al seleccionar estado, regenerar sugerencias de ciudad
+            document.getElementById('empCiudad').dispatchEvent(new Event('input'));
         });
+
+        setupSugerencias('empCiudad', 'listaCiudades', () => {
+            const estado = document.getElementById('empEstado').value.trim();
+            if (estado && datosGeograficos.ciudadesPorEstado[estado]) {
+                return datosGeograficos.ciudadesPorEstado[estado];
+            }
+            // Si no hay estado seleccionado, devolver todas las ciudades de todos los estados
+            return Object.values(datosGeograficos.ciudadesPorEstado).flat();
+        }, () => {
+            // Al seleccionar ciudad, intentar autocompletar CP
+            sugerirCodigoPostal();
+        });
+
+        // ==================== CÓDIGO POSTAL (Zippopotam) ====================
+        async function sugerirCodigoPostal() {
+            const pais = document.getElementById('empPais').value.trim();
+            const estado = document.getElementById('empEstado').value.trim();
+            const ciudad = document.getElementById('empCiudad').value.trim();
+            const listaCP = document.getElementById('listaCP');
+            if (!pais || !estado || !ciudad) {
+                listaCP.style.display = 'none';
+                return;
+            }
+            // Obtener código de país ISO2
+            let iso2 = '';
+            try {
+                const res = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(pais)}?fullText=true`);
+                const data = await res.json();
+                iso2 = data[0].cca2.toLowerCase();
+            } catch { return; }
+            try {
+                const url = `https://api.zippopotam.us/${iso2}/${encodeURIComponent(estado)}/${encodeURIComponent(ciudad)}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('No encontrado');
+                const body = await res.json();
+                const codigos = body.places ? body.places.map(p => p['post code']) : [];
+                if (codigos.length > 0) {
+                    const inputCP = document.getElementById('empCodigoPostal');
+                    listaCP.innerHTML = '';
+                    codigos.forEach(cp => {
+                        const div = document.createElement('div');
+                        div.textContent = cp;
+                        div.addEventListener('mousedown', (e) => {
+                            e.preventDefault();
+                            inputCP.value = cp;
+                            listaCP.style.display = 'none';
+                        });
+                        listaCP.appendChild(div);
+                    });
+                    listaCP.style.display = 'block';
+                    // También podemos auto-asignar el primero si solo hay uno
+                    if (codigos.length === 1) {
+                        document.getElementById('empCodigoPostal').value = codigos[0];
+                        listaCP.style.display = 'none';
+                    }
+                } else {
+                    listaCP.style.display = 'none';
+                }
+            } catch (e) {
+                listaCP.style.display = 'none';
+            }
+        }
+
+        document.getElementById('empCodigoPostal').addEventListener('input', function() {
+            const lista = document.getElementById('listaCP');
+            if (this.value.trim() === '') {
+                sugerirCodigoPostal();
+            } else {
+                lista.style.display = 'none';
+            }
+        });
+
+        // ==================== TIPO DE EMPRESA Y RÉGIMEN FISCAL ====================
+        const catalogosPais = {
+            'Bolivia': {
+                tipos: ['Unipersonal', 'Sociedad de Responsabilidad Limitada', 'Sociedad Anónima', 'Sociedad Colectiva', 'Sociedad en Comandita Simple', 'Sociedad en Comandita por Acciones', 'Empresa Individual de Responsabilidad Limitada'],
+                regimenes: ['Régimen General', 'Régimen Agropecuario Unificado', 'Régimen Simplificado', 'Régimen de la Micro y Pequeña Empresa']
+            },
+            'México': {
+                tipos: ['Persona Física con Actividad Empresarial', 'Sociedad Anónima', 'Sociedad de Responsabilidad Limitada', 'Sociedad Cooperativa', 'Sociedad por Acciones Simplificada'],
+                regimenes: ['Régimen General de Ley', 'Régimen de Incorporación Fiscal', 'Régimen de Actividades Profesionales', 'Régimen de Arrendamiento', 'Régimen de Sueldos y Salarios']
+            },
+            'Argentina': {
+                tipos: ['Sociedad Anónima', 'Sociedad de Responsabilidad Limitada', 'Sociedad Colectiva', 'Sociedad en Comandita Simple', 'Sociedad en Comandita por Acciones', 'Sociedad de Capital e Industria'],
+                regimenes: ['Régimen General', 'Monotributo', 'Régimen de Autónomos']
+            },
+            'Colombia': {
+                tipos: ['Sociedad Anónima', 'Sociedad de Responsabilidad Limitada', 'Sociedad por Acciones Simplificada', 'Sociedad Colectiva', 'Empresa Unipersonal', 'Sociedad en Comandita Simple', 'Sociedad en Comandita por Acciones'],
+                regimenes: ['Régimen Común', 'Régimen Simplificado', 'Régimen Especial']
+            },
+            'Chile': {
+                tipos: ['Sociedad Anónima', 'Sociedad de Responsabilidad Limitada', 'Sociedad Colectiva', 'Empresa Individual de Responsabilidad Limitada', 'Sociedad por Acciones'],
+                regimenes: ['Régimen General', 'Régimen Pro Pyme', 'Régimen de la Microempresa Familiar']
+            },
+            'default': {
+                tipos: ['Unipersonal', 'Sociedad', 'Corporación', 'Cooperativa', 'Otro'],
+                regimenes: ['Régimen General', 'Régimen Simplificado', 'Régimen Especial']
+            }
+        };
+
+        function obtenerCatalogo(campo) {
+            const pais = document.getElementById('empPais').value.trim();
+            const config = catalogosPais[pais] || catalogosPais['default'];
+            return campo === 'tipo' ? config.tipos : config.regimenes;
+        }
+
+        setupSugerencias('empTipoEmpresa', 'listaTipoEmpresa', () => obtenerCatalogo('tipo'));
+        setupSugerencias('empRegimenFiscal', 'listaRegimenFiscal', () => obtenerCatalogo('regimen'));
 
         // ==================== EMPRESAS ====================
         async function loadEmpresas() {
@@ -449,6 +567,9 @@
             document.getElementById('empresaForm').reset();
             document.getElementById('empActivo').checked = true;
             await loadMonedasSelect('empMoneda');
+            // Limpiar geografía
+            datosGeograficos = { estados: [], ciudadesPorEstado: {} };
+            document.querySelectorAll('.sugerencias-lista').forEach(l => l.style.display = 'none');
             if (id) {
                 const { data } = await supabaseClient.from('empresas').select('*').eq('id', id).single();
                 if (data) {
@@ -466,6 +587,9 @@
                     document.getElementById('empDir').value = data.direccion || '';
                     document.getElementById('empActivo').checked = data.activo;
                     document.getElementById('empMoneda').value = data.moneda_id;
+                    if (data.pais) {
+                        cargarEstadosYCiudades(data.pais);
+                    }
                 }
             }
             document.getElementById('empresaModal').style.display = 'flex';
