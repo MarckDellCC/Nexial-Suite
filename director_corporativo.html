@@ -96,6 +96,7 @@
         .sugerencias-lista div { padding: 8px; cursor: pointer; }
         .sugerencias-lista div:hover { background: #f0f2f5; }
         .small-loader { font-size: 0.8rem; color: var(--text-secondary); margin-left: 4px; }
+        .info-text { font-size: 0.8rem; color: #888; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -204,6 +205,7 @@
                         <input type="text" id="empCodigoPostal" placeholder="Automático si es posible" autocomplete="off">
                         <div class="sugerencias-lista" id="listaCP"></div>
                     </div>
+                    <small id="cpInfo" class="info-text"></small>
                 </div>
             </div>
             <div class="form-row">
@@ -214,18 +216,16 @@
                 <div class="form-group"><label>Sitio Web</label><input type="text" id="empWeb"></div>
                 <div class="form-group">
                     <label>Tipo de Empresa</label>
-                    <div class="sugerencias">
-                        <input type="text" id="empTipoEmpresa" placeholder="Ej. Sociedad Anónima..." autocomplete="off">
-                        <div class="sugerencias-lista" id="listaTipoEmpresa"></div>
-                    </div>
+                    <select id="empTipoEmpresa">
+                        <option value="">Seleccione...</option>
+                    </select>
                 </div>
             </div>
             <div class="form-group">
                 <label>Régimen Fiscal</label>
-                <div class="sugerencias">
-                    <input type="text" id="empRegimenFiscal" placeholder="Ej. Régimen General..." autocomplete="off">
-                    <div class="sugerencias-lista" id="listaRegimenFiscal"></div>
-                </div>
+                <select id="empRegimenFiscal">
+                    <option value="">Seleccione...</option>
+                </select>
             </div>
             <div class="form-group"><label>Dirección</label><textarea id="empDir" rows="2"></textarea></div>
             <div class="form-group"><label><input type="checkbox" id="empActivo" checked> Activo</label></div>
@@ -286,7 +286,6 @@
         document.getElementById('userName').textContent = localStorage.getItem('user_nombres') || 'Usuario';
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
 
-        // Variable para cargar geografía después de cerrar el modal de moneda
         window.pendingCountryGeo = null;
 
         // ==================== TOAST ====================
@@ -378,6 +377,8 @@
         inputPais.addEventListener('change', async function() {
             const country = this.value.trim();
             if (!country) return;
+            // Actualizar selects de tipo empresa y régimen fiscal
+            actualizarSelectsCatalogo(country);
             try {
                 const response = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(country)}?fullText=true`);
                 if (!response.ok) { showToast('País no encontrado. Verifica el nombre.', 'error'); return; }
@@ -386,16 +387,13 @@
                 const code = Object.keys(currencies)[0];
                 const currency = currencies[code];
 
-                // Verificar si la moneda ya existe en el sistema
                 const { data: existingMoneda, error: monError } = await supabaseClient.from('monedas').select('id').eq('codigo', code).maybeSingle();
                 if (monError) { showToast('Error al verificar la moneda: ' + monError.message, 'error'); return; }
 
                 if (existingMoneda) {
-                    // Moneda ya existe → seleccionar automáticamente y cargar geografía
                     document.getElementById('empMoneda').value = existingMoneda.id;
                     cargarEstadosYCiudades(country);
                 } else {
-                    // Moneda no existe → abrir modal para crearla, luego cargar geografía
                     document.getElementById('monCodigo').value = code;
                     document.getElementById('monNombre').value = currency.name;
                     document.getElementById('monSimbolo').value = currency.symbol || '';
@@ -405,7 +403,7 @@
                     document.getElementById('monedaId').value = '';
                     document.getElementById('modalMonedaTitle').textContent = 'Nueva Moneda (autocompletada)';
                     document.getElementById('monedaModal').dataset.refreshSelect = 'empMoneda';
-                    window.pendingCountryGeo = country;       // Se cargará al cerrar el modal
+                    window.pendingCountryGeo = country;
                     document.getElementById('monedaModal').style.display = 'flex';
                     setTimeout(() => fetchExchangeRate(), 400);
                 }
@@ -413,6 +411,48 @@
                 showToast('Error al consultar el país. Intenta de nuevo.', 'error');
             }
         });
+
+        // ==================== CATÁLOGOS POR PAÍS (TIPO EMPRESA / RÉGIMEN FISCAL) ====================
+        const catalogosPais = {
+            'Bolivia': {
+                tipos: ['Unipersonal', 'Sociedad de Responsabilidad Limitada', 'Sociedad Anónima', 'Sociedad Colectiva', 'Sociedad en Comandita Simple', 'Sociedad en Comandita por Acciones', 'Empresa Individual de Responsabilidad Limitada'],
+                regimenes: ['Régimen General', 'Régimen Agropecuario Unificado', 'Régimen Simplificado', 'Régimen de la Micro y Pequeña Empresa']
+            },
+            'México': {
+                tipos: ['Persona Física con Actividad Empresarial', 'Sociedad Anónima', 'Sociedad de Responsabilidad Limitada', 'Sociedad Cooperativa', 'Sociedad por Acciones Simplificada'],
+                regimenes: ['Régimen General de Ley', 'Régimen de Incorporación Fiscal', 'Régimen de Actividades Profesionales', 'Régimen de Arrendamiento', 'Régimen de Sueldos y Salarios']
+            },
+            'Argentina': {
+                tipos: ['Sociedad Anónima', 'Sociedad de Responsabilidad Limitada', 'Sociedad Colectiva', 'Sociedad en Comandita Simple', 'Sociedad en Comandita por Acciones', 'Sociedad de Capital e Industria'],
+                regimenes: ['Régimen General', 'Monotributo', 'Régimen de Autónomos']
+            },
+            'Colombia': {
+                tipos: ['Sociedad Anónima', 'Sociedad de Responsabilidad Limitada', 'Sociedad por Acciones Simplificada', 'Sociedad Colectiva', 'Empresa Unipersonal', 'Sociedad en Comandita Simple', 'Sociedad en Comandita por Acciones'],
+                regimenes: ['Régimen Común', 'Régimen Simplificado', 'Régimen Especial']
+            },
+            'Chile': {
+                tipos: ['Sociedad Anónima', 'Sociedad de Responsabilidad Limitada', 'Sociedad Colectiva', 'Empresa Individual de Responsabilidad Limitada', 'Sociedad por Acciones'],
+                regimenes: ['Régimen General', 'Régimen Pro Pyme', 'Régimen de la Microempresa Familiar']
+            },
+            'default': {
+                tipos: ['Unipersonal', 'Sociedad', 'Corporación', 'Cooperativa', 'Otro'],
+                regimenes: ['Régimen General', 'Régimen Simplificado', 'Régimen Especial']
+            }
+        };
+
+        function actualizarSelectsCatalogo(pais) {
+            const config = catalogosPais[pais] || catalogosPais['default'];
+            const selectTipo = document.getElementById('empTipoEmpresa');
+            const selectRegimen = document.getElementById('empRegimenFiscal');
+            // Guardar valor actual
+            const tipoActual = selectTipo.value;
+            const regimenActual = selectRegimen.value;
+            selectTipo.innerHTML = '<option value="">Seleccione...</option>' + config.tipos.map(t => `<option value="${t}">${t}</option>`).join('');
+            selectRegimen.innerHTML = '<option value="">Seleccione...</option>' + config.regimenes.map(r => `<option value="${r}">${r}</option>`).join('');
+            // Restaurar si existía
+            if (config.tipos.includes(tipoActual)) selectTipo.value = tipoActual;
+            if (config.regimenes.includes(regimenActual)) selectRegimen.value = regimenActual;
+        }
 
         // ==================== ESTADOS Y CIUDADES ====================
         let datosGeograficos = { estados: [], ciudadesPorEstado: {} };
@@ -464,14 +504,16 @@
             sugerirCodigoPostal();
         });
 
-        // ==================== CÓDIGO POSTAL (Zippopotam) ====================
+        // ==================== CÓDIGO POSTAL ====================
         async function sugerirCodigoPostal() {
             const pais = document.getElementById('empPais').value.trim();
             const estado = document.getElementById('empEstado').value.trim();
             const ciudad = document.getElementById('empCiudad').value.trim();
             const listaCP = document.getElementById('listaCP');
+            const cpInfo = document.getElementById('cpInfo');
+            listaCP.style.display = 'none';
+            cpInfo.textContent = '';
             if (!pais || !estado || !ciudad) {
-                listaCP.style.display = 'none';
                 return;
             }
             let iso2 = '';
@@ -479,7 +521,10 @@
                 const res = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(pais)}?fullText=true`);
                 const data = await res.json();
                 iso2 = data[0].cca2.toLowerCase();
-            } catch { return; }
+            } catch {
+                cpInfo.textContent = 'No se pudo verificar el código del país.';
+                return;
+            }
             try {
                 const url = `https://api.zippopotam.us/${iso2}/${encodeURIComponent(estado)}/${encodeURIComponent(ciudad)}`;
                 const res = await fetch(url);
@@ -496,68 +541,33 @@
                             e.preventDefault();
                             inputCP.value = cp;
                             listaCP.style.display = 'none';
+                            cpInfo.textContent = '';
                         });
                         listaCP.appendChild(div);
                     });
                     if (codigos.length === 1) {
                         document.getElementById('empCodigoPostal').value = codigos[0];
-                        listaCP.style.display = 'none';
+                        cpInfo.textContent = '';
                     } else {
                         listaCP.style.display = 'block';
+                        cpInfo.textContent = 'Selecciona un código postal de la lista.';
                     }
                 } else {
-                    listaCP.style.display = 'none';
+                    cpInfo.textContent = 'No se encontraron códigos postales para esta ubicación. Ingrésalo manualmente.';
                 }
             } catch (e) {
-                listaCP.style.display = 'none';
+                cpInfo.textContent = 'No disponible automáticamente, ingresa el código postal manualmente.';
             }
         }
 
         document.getElementById('empCodigoPostal').addEventListener('input', function() {
             const lista = document.getElementById('listaCP');
+            lista.style.display = 'none';
+            document.getElementById('cpInfo').textContent = '';
             if (this.value.trim() === '') {
                 sugerirCodigoPostal();
-            } else {
-                lista.style.display = 'none';
             }
         });
-
-        // ==================== TIPO DE EMPRESA Y RÉGIMEN FISCAL ====================
-        const catalogosPais = {
-            'Bolivia': {
-                tipos: ['Unipersonal', 'Sociedad de Responsabilidad Limitada', 'Sociedad Anónima', 'Sociedad Colectiva', 'Sociedad en Comandita Simple', 'Sociedad en Comandita por Acciones', 'Empresa Individual de Responsabilidad Limitada'],
-                regimenes: ['Régimen General', 'Régimen Agropecuario Unificado', 'Régimen Simplificado', 'Régimen de la Micro y Pequeña Empresa']
-            },
-            'México': {
-                tipos: ['Persona Física con Actividad Empresarial', 'Sociedad Anónima', 'Sociedad de Responsabilidad Limitada', 'Sociedad Cooperativa', 'Sociedad por Acciones Simplificada'],
-                regimenes: ['Régimen General de Ley', 'Régimen de Incorporación Fiscal', 'Régimen de Actividades Profesionales', 'Régimen de Arrendamiento', 'Régimen de Sueldos y Salarios']
-            },
-            'Argentina': {
-                tipos: ['Sociedad Anónima', 'Sociedad de Responsabilidad Limitada', 'Sociedad Colectiva', 'Sociedad en Comandita Simple', 'Sociedad en Comandita por Acciones', 'Sociedad de Capital e Industria'],
-                regimenes: ['Régimen General', 'Monotributo', 'Régimen de Autónomos']
-            },
-            'Colombia': {
-                tipos: ['Sociedad Anónima', 'Sociedad de Responsabilidad Limitada', 'Sociedad por Acciones Simplificada', 'Sociedad Colectiva', 'Empresa Unipersonal', 'Sociedad en Comandita Simple', 'Sociedad en Comandita por Acciones'],
-                regimenes: ['Régimen Común', 'Régimen Simplificado', 'Régimen Especial']
-            },
-            'Chile': {
-                tipos: ['Sociedad Anónima', 'Sociedad de Responsabilidad Limitada', 'Sociedad Colectiva', 'Empresa Individual de Responsabilidad Limitada', 'Sociedad por Acciones'],
-                regimenes: ['Régimen General', 'Régimen Pro Pyme', 'Régimen de la Microempresa Familiar']
-            },
-            'default': {
-                tipos: ['Unipersonal', 'Sociedad', 'Corporación', 'Cooperativa', 'Otro'],
-                regimenes: ['Régimen General', 'Régimen Simplificado', 'Régimen Especial']
-            }
-        };
-
-        function obtenerCatalogo(campo) {
-            const pais = document.getElementById('empPais').value.trim();
-            const config = catalogosPais[pais] || catalogosPais['default'];
-            return campo === 'tipo' ? config.tipos : config.regimenes;
-        }
-
-        setupSugerencias('empTipoEmpresa', 'listaTipoEmpresa', () => obtenerCatalogo('tipo'));
-        setupSugerencias('empRegimenFiscal', 'listaRegimenFiscal', () => obtenerCatalogo('regimen'));
 
         // ==================== EMPRESAS ====================
         async function loadEmpresas() {
@@ -576,10 +586,12 @@
             document.getElementById('empresaForm').reset();
             document.getElementById('empActivo').checked = true;
             await loadMonedasSelect('empMoneda');
-            // Limpiar geografía pendiente
             window.pendingCountryGeo = null;
             datosGeograficos = { estados: [], ciudadesPorEstado: {} };
             document.querySelectorAll('.sugerencias-lista').forEach(l => l.style.display = 'none');
+            document.getElementById('cpInfo').textContent = '';
+            // Resetear catálogos a default
+            actualizarSelectsCatalogo('');
             if (id) {
                 const { data } = await supabaseClient.from('empresas').select('*').eq('id', id).single();
                 if (data) {
@@ -592,14 +604,28 @@
                     document.getElementById('empTel').value = data.telefono || '';
                     document.getElementById('empEmail').value = data.email || '';
                     document.getElementById('empWeb').value = data.website || '';
-                    document.getElementById('empTipoEmpresa').value = data.tipo_empresa || '';
-                    document.getElementById('empRegimenFiscal').value = data.regimen_fiscal || '';
                     document.getElementById('empDir').value = data.direccion || '';
                     document.getElementById('empActivo').checked = data.activo;
                     document.getElementById('empMoneda').value = data.moneda_id;
                     if (data.pais) {
+                        actualizarSelectsCatalogo(data.pais);
                         cargarEstadosYCiudades(data.pais);
                     }
+                    // Cargar tipo y régimen en los selects (deben estar ya poblados)
+                    setTimeout(() => {
+                        if (data.tipo_empresa) {
+                            const selTipo = document.getElementById('empTipoEmpresa');
+                            if ([...selTipo.options].some(o => o.value === data.tipo_empresa)) {
+                                selTipo.value = data.tipo_empresa;
+                            }
+                        }
+                        if (data.regimen_fiscal) {
+                            const selReg = document.getElementById('empRegimenFiscal');
+                            if ([...selReg.options].some(o => o.value === data.regimen_fiscal)) {
+                                selReg.value = data.regimen_fiscal;
+                            }
+                        }
+                    }, 100);
                 }
             }
             document.getElementById('empresaModal').style.display = 'flex';
@@ -817,7 +843,6 @@
             closeModal('monedaModal');
             const refreshId = document.getElementById('monedaModal').dataset.refreshSelect;
             if (refreshId) await loadMonedasSelect(refreshId);
-            // Si la creación fue provocada por una selección de país, cargar geografía y seleccionar la moneda recién creada
             if (window.pendingCountryGeo) {
                 const codigo = document.getElementById('monCodigo').value;
                 const { data: monedaData } = await supabaseClient.from('monedas').select('id').eq('codigo', codigo).single();
