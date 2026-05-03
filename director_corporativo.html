@@ -24,6 +24,7 @@
         .btn-logout { background: var(--danger); color: white; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-sm { padding: 4px 10px; font-size: 0.8rem; }
+        .btn-icon { background: none; border: 1px solid var(--border); border-radius: 6px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; vertical-align: middle; }
         .container { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
         .tabs { display: flex; gap: 0.25rem; margin-bottom: 0; }
         .tab { padding: 0.75rem 1.5rem; background: #e2e8f0; border: none; cursor: pointer; border-radius: 8px 8px 0 0; font-weight: 500; }
@@ -40,6 +41,8 @@
         .form-row { display: flex; gap: 1rem; }
         .form-row .form-group { flex: 1; }
         .flex { display: flex; gap: 1rem; margin-top: 1rem; }
+        .select-with-btn { display: flex; gap: 0.5rem; align-items: center; }
+        .select-with-btn select { flex: 1; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
         .stat-card { background: var(--card-bg); border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .stat-value { font-size: 2rem; font-weight: bold; color: var(--primary); }
@@ -106,7 +109,12 @@
         <form id="empresaForm"><input type="hidden" id="empresaId">
             <div class="form-group"><label>Nombre *</label><input type="text" id="empNombre" required></div>
             <div class="form-group"><label>Tax ID / CIF / RUT *</label><input type="text" id="empRfc" required></div>
-            <div class="form-group"><label>Moneda *</label><select id="empMoneda" required></select></div>
+            <div class="form-group"><label>Moneda *</label>
+                <div class="select-with-btn">
+                    <select id="empMoneda" required></select>
+                    <button type="button" class="btn-icon" title="Nueva moneda" onclick="openModalMoneda(null, 'empMoneda')">+</button>
+                </div>
+            </div>
             <div class="form-row"><div class="form-group"><label>Teléfono</label><input type="text" id="empTel"></div><div class="form-group"><label>Email</label><input type="email" id="empEmail"></div></div>
             <div class="form-group"><label>Website</label><input type="text" id="empWeb"></div>
             <div class="form-group"><label>Dirección</label><textarea id="empDir" rows="2"></textarea></div>
@@ -122,7 +130,7 @@
             <div class="form-group"><label>Empresa *</label><select id="usrEmpresa" required></select></div>
             <div class="form-row"><div class="form-group"><label>Nombres *</label><input type="text" id="usrNombres" required></div><div class="form-group"><label>Apellido Paterno *</label><input type="text" id="usrApaterno" required></div></div>
             <div class="form-group"><label>Apellido Materno</label><input type="text" id="usrAmaterno"></div>
-            <div class="form-row"><div class="form-group"><label>Email *</label><input type="email" id="usrEmail" required></div><div class="form-group"><label>Usuario *</label><input type="text" id="usrUsuario" required></div></div>
+            <div class="form-row"><div class="form-group"><label>Email *</label><input type="email" id="usrEmail" required></div><div class="form-group"><label>Usuario <small>(auto si vacío)</small> *</label><input type="text" id="usrUsuario" required></div></div>
             <div class="form-row"><div class="form-group"><label>Contraseña <span id="usrPassReq">*</span></label><input type="password" id="usrPassword"></div><div class="form-group"><label>Rol *</label><select id="usrRol" required><option value="Director General">Director General</option><option value="Director Financiero">Director Financiero</option><option value="Supervisor Senior">Supervisor Senior</option><option value="Ejecutivo Comercial">Ejecutivo Comercial</option><option value="Gestor de Almacén">Gestor de Almacén</option><option value="Especialista Logístico">Especialista Logístico</option></select></div></div>
             <div class="form-group"><label><input type="checkbox" id="usrActivo" checked> Activo</label></div>
             <div class="flex"><button type="submit" class="btn btn-primary">Guardar</button><button type="button" class="btn btn-logout" onclick="closeModal('usuarioModal')">Cancelar</button></div>
@@ -144,8 +152,8 @@
 
     <script>
         // ==================== CONFIGURACIÓN ====================
-        const SUPABASE_URL = 'https://yfqrvefumomumvalebkj.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_MCtD5zQ0mz21sy4PdhbKrA_nHRY_ZOL';
+        const SUPABASE_URL = 'https://lmnajvyfpfeupndwtnjl.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_sqbIz3nzHMp8z2gvJZbDhA_CPjB3Bo1';
 
         // ==================== AUTENTICACIÓN ====================
         const userId = localStorage.getItem('user_id');
@@ -155,7 +163,6 @@
             window.location.href = 'login.html';
         }
 
-        // Cliente Supabase (nombre evitando conflicto)
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             global: { headers: { 'x-user-id': userId } }
         });
@@ -274,6 +281,17 @@
         }
         function editUsuario(id) { openModalUsuario(id); }
 
+        // Autogenerar usuario al perder el foco del email
+        document.getElementById('usrEmail').addEventListener('blur', function() {
+            const usuarioInput = document.getElementById('usrUsuario');
+            if (!usuarioInput.value) {
+                const email = this.value;
+                if (email.includes('@')) {
+                    usuarioInput.value = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '_');
+                }
+            }
+        });
+
         document.getElementById('usuarioForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('usuarioId').value;
@@ -310,7 +328,7 @@
             </tr>`).join('');
         }
 
-        async function openModalMoneda(id = null) {
+        async function openModalMoneda(id = null, refreshSelectId = null) {
             document.getElementById('modalMonedaTitle').textContent = id ? 'Editar Moneda' : 'Nueva Moneda';
             document.getElementById('monedaId').value = id || '';
             document.getElementById('monedaForm').reset();
@@ -325,6 +343,8 @@
                     document.getElementById('monActivo').checked = data.activo;
                 }
             }
+            // Guardar qué select refrescar después de crear/editar
+            document.getElementById('monedaModal').dataset.refreshSelect = refreshSelectId || '';
             document.getElementById('monedaModal').style.display = 'flex';
         }
         function editMoneda(id) { openModalMoneda(id); }
@@ -342,7 +362,11 @@
             const { error } = id ? await supabaseClient.from('monedas').update(payload).eq('id', id) : await supabaseClient.from('monedas').insert([payload]);
             if (error) { showToast('Error: ' + error.message, 'error'); return; }
             showToast('Moneda guardada correctamente');
-            closeModal('monedaModal'); loadMonedas();
+            closeModal('monedaModal');
+            // Refrescar el select que invocó la creación rápida, si existe
+            const refreshId = document.getElementById('monedaModal').dataset.refreshSelect;
+            if (refreshId) await loadMonedasSelect(refreshId);
+            loadMonedas(); // refrescar tabla
         });
 
         // ==================== ESTADÍSTICAS ====================
