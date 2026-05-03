@@ -85,7 +85,6 @@
 <body>
     <div class="login-container">
         <div class="logo">
-            <!-- Ícono de cerebro (Font Awesome) -->
             <i class="fas fa-brain"></i>
         </div>
         <h2>Nexial Suite</h2>
@@ -103,15 +102,14 @@
         </form>
     </div>
 
-    <!-- Font Awesome para el ícono del cerebro -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
+        // Usamos 'supabaseClient' en lugar de 'supabase' para evitar conflicto con otras declaraciones
         const SUPABASE_URL = 'https://syoienwxlmauitopxone.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_BlxURubQbfvoRUIlXDEwUA_DYx3jAt3';
 
-        // Crear cliente de Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const form = document.getElementById('loginForm');
         const errorMsg = document.getElementById('errorMsg');
@@ -132,8 +130,8 @@
             errorMsg.style.display = 'none';
 
             try {
-                // Llamar a la función login_user definida en el SQL
-                const { data, error } = await supabase.rpc('login_user', {
+                // Llamamos a la función login_user del SQL
+                const { data, error } = await supabaseClient.rpc('login_user', {
                     p_email: email,
                     p_password: password
                 });
@@ -144,14 +142,12 @@
                     return;
                 }
 
-                // La función devuelve una tabla; si no coincide, data estará vacío
                 if (!data || data.length === 0) {
                     showError('Credenciales incorrectas. Verifica tu email y contraseña.');
                     return;
                 }
 
-                const user = data[0]; // primer (y único) registro
-                // Guardar datos en localStorage para usar en la sesión
+                const user = data[0];
                 localStorage.setItem('user_id', user.id);
                 localStorage.setItem('user_empresa_id', user.empresa_id);
                 localStorage.setItem('user_nombres', user.nombres);
@@ -159,14 +155,11 @@
                 localStorage.setItem('user_email', user.email);
                 localStorage.setItem('user_rol', user.rol);
 
-                // Redirigir según el rol
                 if (user.rol === 'Director Corporativo') {
                     window.location.href = 'director_corporativo.html';
                 } else {
-                    // Puedes agregar más redirecciones para otros roles aquí
-                    // Por ahora, redirigimos a un panel genérico o mostramos mensaje
                     alert('Inicio de sesión exitoso. Rol: ' + user.rol);
-                    // Por ejemplo: window.location.href = 'panel_general.html';
+                    // Redirigir según corresponda
                 }
             } catch (err) {
                 console.error('Error inesperado:', err);
@@ -180,7 +173,6 @@
         function showError(message) {
             errorMsg.textContent = message;
             errorMsg.style.display = 'block';
-            // Ocultar después de 5 segundos
             clearTimeout(window.errorTimeout);
             window.errorTimeout = setTimeout(() => {
                 errorMsg.style.display = 'none';
